@@ -1,6 +1,7 @@
 # Claude Code local settings (personal, not shared)
 .claude/settings.local.json
 .claude/projects/
+.claude/worktrees/
 
 # Node.js
 node_modules/
