@@ -1,9 +1,12 @@
 ---
 import { Image } from 'astro:assets';
 import logo from '../assets/logo-yoko.png';
+
+// トップページのみ透明スタート、それ以外は最初から背景色を表示
+const isHome = Astro.url.pathname === '/';
 ---
 
-<header class="site-header" id="site-header">
+<header class="site-header" id="site-header" data-transparent={isHome}>
   <div class="header-inner">
     <a href="/" class="header-logo" aria-label="夢源風人 トップへ">
       <Image
@@ -58,8 +61,9 @@ import logo from '../assets/logo-yoko.png';
 <script>
   const header = document.getElementById('site-header');
   if (header) {
+    const isTransparent = header.dataset.transparent === 'true';
     const onScroll = () => {
-      if (window.scrollY > 40) {
+      if (window.scrollY > 40 || !isTransparent) {
         header.classList.add('header--scrolled');
       } else {
         header.classList.remove('header--scrolled');
