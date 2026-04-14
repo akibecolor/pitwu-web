@@ -10,13 +10,15 @@ interface Props {
 
 const { article, comments = [] } = Astro.props;
 
-const displayDate = new Date(article.publishedAt).toLocaleDateString('ja-JP', {
+// 表示日: wpDate があれば優先（WordPress からの投稿日）、なければ publishedAt（新規記事）
+const sourceDate = article.wpDate || article.publishedAt;
+const displayDate = new Date(sourceDate).toLocaleDateString('ja-JP', {
   year: 'numeric',
   month: 'long',
   day: 'numeric',
 });
 
-const date = new Date(article.publishedAt);
+const date = new Date(sourceDate);
 const year = date.getFullYear();
 const month = String(date.getMonth() + 1).padStart(2, '0');
 const canonicalPath = `/${year}/${month}/${article.slug}`;
@@ -55,7 +57,7 @@ const siteUrl = 'https://pitwu.com';
         )}
         <h1 class="article-title">{article.title}</h1>
         <div class="article-meta">
-          <time class="article-date" datetime={article.publishedAt}>{displayDate}</time>
+          <time class="article-date" datetime={sourceDate}>{displayDate}</time>
           {article.tags && article.tags.length > 0 && (
             <ul class="article-tags" aria-label="タグ">
               {article.tags.map((tag) => (

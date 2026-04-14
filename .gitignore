@@ -21,3 +21,12 @@ scripts/data/
 # OS
 .DS_Store
 Thumbs.db
+
+# Build artifacts / generated
+public/pagefind/
+
+# microCMS移行用（ローカルにDLした WP 画像群。microCMS CDNへアップ済みのためgit追跡不要）
+public/wp-content/
+
+# 実行ログ
+logs/
