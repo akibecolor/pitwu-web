@@ -23,5 +23,6 @@ export type Article = {
   };
   category?: Category;
   tags?: Tag[];
+  wpDate?: string;
   wpPostId?: number;
 };

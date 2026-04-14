@@ -1,0 +1,186 @@
+---
+import PageLayout from '../layouts/PageLayout.astro';
+---
+
+<PageLayout
+  title="メンバー募集 | 夢源風人"
+  description="夢源風人では年間活動をともにするメンバーを募集しています。踊り子・スタッフ、未経験者歓迎！"
+  pageTitle="メンバー募集"
+  pageSubtitle="Join Us"
+>
+  <div class="recruit-content">
+    <div class="lead-block">
+      <h2>夢源風人のメンバーになりませんか</h2>
+      <p>
+        夢源風人では一緒に年間活動をしてくれるメンバーを募集しています！<br />
+        あなたの手が、みんなの笑顔と演舞を作り出す！<br />
+        興味がある方、未経験でもOK！初心者だけど・・・なんて関係ありません！<br />
+        一緒に楽しく活動しませんか？
+      </p>
+      <p>
+        ぜひ<a href="/contact/">フォーム</a>よりお問い合わせください！<br />
+        あっつい夏をご用意して、お待ちしてます！
+      </p>
+      <p>
+        <a class="doc-link" href="https://pitwu.com/wp-content/uploads/2025/04/kiyaku_2_6.pdf" target="_blank" rel="noopener noreferrer">
+          📄 メンバー規約（PDF）
+        </a>
+      </p>
+    </div>
+
+    <div class="section-grid">
+      <div class="section-card">
+        <h3>踊り子</h3>
+        <p>高知のよさこい祭りに出たい！こいや祭りに出たい！地元のお祭りで踊りたい！体を動かしながら新しい趣味をはじめてみたい！などなど、理由は様々ですが私達と一緒に踊りませんか？</p>
+        <ul>
+          <li><strong>年齢構成：</strong>年齢制限なし。5歳から60代まで幅広い踊り子がいます。中高生以下の参加については一度ご相談ください</li>
+          <li><strong>活動場所：</strong>大阪 / 東海（各地にメンバーがいます）</li>
+          <li><strong>登録費：</strong>20,000円（高校生・学生は15,000円 / 小中学生は10,000円）</li>
+        </ul>
+      </div>
+
+      <div class="section-card">
+        <h3>スタッフ</h3>
+        <p>運営・撮影・会計・衣装・事務など、演舞をつくるためのスタッフも募集しています。踊れなくてもチームに貢献できます！</p>
+        <ul>
+          <li><strong>登録費：</strong>10,000円</li>
+          <li>演舞を見て楽しみたい方や特定のお祭りのみ参加もご相談可能です</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="cta-block">
+      <p>まずはお気軽にお問い合わせください</p>
+      <a href="/contact/" class="cta-btn">お問合せはこちら</a>
+    </div>
+  </div>
+</PageLayout>
+
+<style>
+  .recruit-content {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+  }
+
+  .lead-block {
+    max-width: 720px;
+  }
+
+  .lead-block h2 {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-deep, #1B3F8B);
+    margin-bottom: 1.25rem;
+  }
+
+  .lead-block p {
+    line-height: 2;
+    margin-bottom: 0.75rem;
+    color: var(--color-ink, #1A1F2E);
+  }
+
+  .lead-block a {
+    color: var(--color-deep, #1B3F8B);
+    text-decoration: underline;
+  }
+
+  .doc-link {
+    display: inline-block;
+    margin-top: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--color-base, #F0F6FF);
+    border-radius: 4px;
+    text-decoration: none !important;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border: 1px solid rgba(27, 63, 139, 0.15);
+    transition: background 0.2s;
+  }
+
+  .doc-link:hover {
+    background: #ddeeff;
+  }
+
+  .section-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  @media (max-width: 680px) {
+    .section-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .section-card {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 1.75rem;
+    box-shadow: 0 2px 12px rgba(27, 63, 139, 0.08);
+    border-top: 3px solid var(--color-sky, #6EC6F0);
+  }
+
+  .section-card h3 {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-deep, #1B3F8B);
+    margin-bottom: 0.75rem;
+  }
+
+  .section-card p {
+    font-size: 0.9375rem;
+    line-height: 1.8;
+    color: rgba(26, 31, 46, 0.8);
+    margin-bottom: 0.75rem;
+  }
+
+  .section-card ul {
+    padding-left: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .section-card li {
+    font-size: 0.875rem;
+    line-height: 1.7;
+    color: rgba(26, 31, 46, 0.75);
+  }
+
+  .cta-block {
+    text-align: center;
+    padding: 2.5rem 1.5rem;
+    background: linear-gradient(135deg, var(--color-deep, #1B3F8B) 0%, #2a5298 100%);
+    border-radius: 12px;
+    color: #ffffff;
+  }
+
+  .cta-block p {
+    font-size: 1rem;
+    margin-bottom: 1.25rem;
+    opacity: 0.9;
+    letter-spacing: 0.05em;
+  }
+
+  .cta-btn {
+    display: inline-block;
+    padding: 0.875rem 2.5rem;
+    background-color: var(--color-sky, #6EC6F0);
+    color: var(--color-deep, #1B3F8B);
+    font-weight: 700;
+    font-size: 0.9375rem;
+    letter-spacing: 0.08em;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: background-color 0.25s ease, transform 0.2s ease;
+  }
+
+  .cta-btn:hover {
+    background-color: #ffffff;
+    transform: translateY(-2px);
+  }
+</style>

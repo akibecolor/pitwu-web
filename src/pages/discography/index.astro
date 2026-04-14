@@ -1,0 +1,79 @@
+---
+import PageLayout from '../../layouts/PageLayout.astro';
+import pagesData from '../../data/wp-pages.json';
+
+const songs = pagesData.songs;
+---
+
+<PageLayout
+  title="演舞 | 夢源風人"
+  description="夢源風人の演舞楽曲一覧。それぞれの演舞に込めた思いをご覧ください。"
+  pageTitle="演舞"
+  pageSubtitle="Discography"
+>
+  <ul class="song-list">
+    {songs.map((song) => (
+      <li class="song-item">
+        <a href={`/discography/${song.slug}/`} class="song-link">
+          <span class="song-name">{song.title}</span>
+          <span class="song-arrow">→</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+</PageLayout>
+
+<style>
+  .song-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+
+  .song-item {
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(27, 63, 139, 0.08);
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .song-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(27, 63, 139, 0.14);
+  }
+
+  .song-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    text-decoration: none;
+    color: var(--color-ink, #1A1F2E);
+    border-left: 4px solid var(--color-sky, #6EC6F0);
+    transition: border-color 0.2s;
+  }
+
+  .song-item:hover .song-link {
+    border-color: var(--color-deep, #1B3F8B);
+  }
+
+  .song-name {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+
+  .song-arrow {
+    color: var(--color-sky, #6EC6F0);
+    font-size: 1.125rem;
+    transition: color 0.2s, transform 0.2s;
+  }
+
+  .song-item:hover .song-arrow {
+    color: var(--color-deep, #1B3F8B);
+    transform: translateX(4px);
+  }
+</style>
