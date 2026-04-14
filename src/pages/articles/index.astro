@@ -1,0 +1,120 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ArticleCard from '../../components/ArticleCard.astro';
+import { getAllArticles } from '../../lib/microcms.js';
+
+const allArticles = await getAllArticles();
+const [featuredArticle, ...restArticles] = allArticles;
+---
+
+<BaseLayout
+  title="記事一覧 | 夢源風人"
+  description="夢源風人の活動報告・コラムなど、すべての記事を掲載しています。"
+>
+  <div class="articles-page">
+    <div class="page-inner">
+      <header class="page-header">
+        <h1 class="page-title">
+          <span class="page-title-en">Articles</span>
+          記事一覧
+        </h1>
+      </header>
+
+      {allArticles.length === 0 ? (
+        <p class="no-articles">記事はまだありません。</p>
+      ) : (
+        <div class="magazine-layout">
+          <!-- 最初の1件を大きく表示 -->
+          {featuredArticle && (
+            <div class="featured-wrap">
+              <ArticleCard article={featuredArticle} featured={true} />
+            </div>
+          )}
+
+          <!-- 残りの記事グリッド -->
+          {restArticles.length > 0 && (
+            <div class="articles-grid">
+              {restArticles.map((article) => (
+                <ArticleCard article={article} />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .articles-page {
+    padding-top: 64px; /* header height */
+    min-height: 80vh;
+  }
+
+  .page-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 5rem;
+  }
+
+  .page-header {
+    margin-bottom: 3rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(110, 198, 240, 0.3);
+  }
+
+  .page-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-deep, #1B3F8B);
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .page-title-en {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.875rem;
+    font-weight: 300;
+    letter-spacing: 0.35em;
+    color: var(--color-sky, #6EC6F0);
+    text-transform: uppercase;
+  }
+
+  .no-articles {
+    text-align: center;
+    color: rgba(26, 31, 46, 0.5);
+    padding: 4rem 0;
+    font-size: 1rem;
+  }
+
+  /* マガジン型レイアウト */
+  .magazine-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+  }
+
+  .featured-wrap {
+    /* featured article takes full width */
+  }
+
+  .articles-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+
+  @media (max-width: 900px) {
+    .articles-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 560px) {
+    .articles-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

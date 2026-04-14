@@ -1,0 +1,105 @@
+---
+interface Comment {
+  author: string;
+  date: string;
+  content: string;
+}
+
+interface Props {
+  comments: Comment[];
+}
+
+const { comments } = Astro.props;
+---
+
+{comments.length > 0 && (
+  <section class="comment-section" aria-labelledby="comments-heading">
+    <h2 class="comment-heading" id="comments-heading">
+      コメント <span class="comment-count">({comments.length})</span>
+    </h2>
+    <ol class="comment-list">
+      {comments.map((comment) => {
+        const displayDate = new Date(comment.date).toLocaleDateString('ja-JP', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        });
+        return (
+          <li class="comment-item">
+            <div class="comment-meta">
+              <span class="comment-author">{comment.author}</span>
+              <time class="comment-date" datetime={comment.date}>{displayDate}</time>
+            </div>
+            <p class="comment-content">{comment.content}</p>
+          </li>
+        );
+      })}
+    </ol>
+  </section>
+)}
+
+<style>
+  .comment-section {
+    background-color: #E8F4FD;
+    border-radius: 8px;
+    padding: 2rem;
+    margin-top: 3rem;
+  }
+
+  .comment-heading {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-deep, #1B3F8B);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid rgba(110, 198, 240, 0.4);
+  }
+
+  .comment-count {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.9rem;
+    color: rgba(26, 31, 46, 0.5);
+    font-weight: 400;
+  }
+
+  .comment-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .comment-item {
+    background: #ffffff;
+    border-radius: 6px;
+    padding: 1.25rem 1.5rem;
+    border-left: 3px solid var(--color-sky, #6EC6F0);
+  }
+
+  .comment-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .comment-author {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--color-deep, #1B3F8B);
+  }
+
+  .comment-date {
+    font-size: 0.75rem;
+    color: rgba(26, 31, 46, 0.45);
+    letter-spacing: 0.03em;
+  }
+
+  .comment-content {
+    font-size: 0.9375rem;
+    line-height: 1.8;
+    color: var(--color-ink, #1A1F2E);
+    white-space: pre-wrap;
+  }
+</style>

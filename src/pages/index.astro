@@ -1,17 +1,263 @@
 ---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ArticleCard from '../components/ArticleCard.astro';
+import { getAllArticles } from '../lib/microcms.js';
+import { Image } from 'astro:assets';
+import topimage from '../assets/topimage.jpg';
 
+const allArticles = await getAllArticles();
+const latestArticles = allArticles.slice(0, 6);
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<BaseLayout
+  title="夢源風人 — 人と自然は風でつながる"
+  description="よさこいチーム「夢源風人」の公式ウェブサイト。活動報告・メンバー情報をお届けします。"
+>
+  <!-- ヒーローセクション -->
+  <section class="hero" aria-label="ヒーロー">
+    <div class="hero-image-wrap">
+      <Image
+        src={topimage}
+        alt="夢源風人 舞踊の様子"
+        width={1920}
+        height={1080}
+        loading="eager"
+        class="hero-image"
+      />
+      <div class="hero-overlay" aria-hidden="true"></div>
+      <!-- 流線装飾 -->
+      <div class="hero-lines" aria-hidden="true">
+        <svg class="lines-svg" viewBox="0 0 1200 600" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+          <path d="M-100 400 Q300 200 700 350 Q1000 480 1400 250" stroke="rgba(110,198,240,0.15)" stroke-width="2" fill="none"/>
+          <path d="M-100 500 Q400 300 800 420 Q1100 520 1400 350" stroke="rgba(110,198,240,0.1)" stroke-width="1.5" fill="none"/>
+          <path d="M-100 300 Q200 150 600 280 Q900 390 1400 180" stroke="rgba(255,255,255,0.06)" stroke-width="1" fill="none"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="hero-content">
+      <h1 class="hero-title">夢源風人</h1>
+      <p class="hero-catchcopy">
+        人と自然は風でつながる<br />
+        人と人は思いでつながる
+      </p>
+      <a href="/articles/" class="hero-cta">記事一覧を見る</a>
+    </div>
+  </section>
+
+  <!-- 最新記事セクション -->
+  <section class="latest-section" aria-labelledby="latest-heading">
+    <div class="section-inner">
+      <h2 class="section-heading" id="latest-heading">
+        <span class="section-heading-en">Latest</span>
+        最新の記事
+      </h2>
+
+      {latestArticles.length > 0 ? (
+        <div class="articles-grid">
+          {latestArticles.map((article) => (
+            <ArticleCard article={article} />
+          ))}
+        </div>
+      ) : (
+        <p class="no-articles">記事はまだありません。</p>
+      )}
+
+      <div class="section-more">
+        <a href="/articles/" class="more-link">すべての記事を見る →</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* ヒーロー */
+  .hero {
+    position: relative;
+    width: 100%;
+    height: 100dvh;
+    min-height: 500px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .hero-image-wrap {
+    position: absolute;
+    inset: 0;
+  }
+
+  .hero-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+  }
+
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      135deg,
+      rgba(27, 63, 139, 0.72) 0%,
+      rgba(27, 63, 139, 0.45) 50%,
+      rgba(110, 198, 240, 0.2) 100%
+    );
+  }
+
+  .hero-lines {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .lines-svg {
+    width: 100%;
+    height: 100%;
+    animation: drift 12s ease-in-out infinite alternate;
+  }
+
+  @keyframes drift {
+    from { transform: translateX(-2%) translateY(0); }
+    to   { transform: translateX(2%) translateY(-1%); }
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    color: #ffffff;
+    padding: 0 1.5rem;
+    animation: fadeInUp 1s ease 0.2s both;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .hero-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: clamp(2.5rem, 8vw, 5rem);
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    line-height: 1.2;
+    margin-bottom: 1.25rem;
+    text-shadow: 0 2px 16px rgba(0, 0, 0, 0.3);
+  }
+
+  .hero-catchcopy {
+    font-family: 'Noto Serif JP', serif;
+    font-size: clamp(0.9rem, 2.5vw, 1.25rem);
+    font-weight: 400;
+    line-height: 2;
+    letter-spacing: 0.1em;
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
+    margin-bottom: 2.5rem;
+    color: rgba(255, 255, 255, 0.92);
+  }
+
+  .hero-cta {
+    display: inline-block;
+    padding: 0.875rem 2.25rem;
+    background-color: var(--color-sky, #6EC6F0);
+    color: var(--color-deep, #1B3F8B);
+    font-weight: 700;
+    font-size: 0.9375rem;
+    letter-spacing: 0.08em;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: background-color 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease;
+    box-shadow: 0 4px 16px rgba(110, 198, 240, 0.4);
+  }
+
+  .hero-cta:hover {
+    background-color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(110, 198, 240, 0.5);
+  }
+
+  /* 最新記事セクション */
+  .latest-section {
+    padding: 5rem 0;
+  }
+
+  .section-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+
+  .section-heading {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--color-deep, #1B3F8B);
+    margin-bottom: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .section-heading-en {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.875rem;
+    font-weight: 300;
+    letter-spacing: 0.3em;
+    color: var(--color-sky, #6EC6F0);
+    text-transform: uppercase;
+  }
+
+  .articles-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+
+  .no-articles {
+    text-align: center;
+    color: rgba(26, 31, 46, 0.5);
+    padding: 3rem 0;
+  }
+
+  .section-more {
+    margin-top: 3rem;
+    text-align: center;
+  }
+
+  .more-link {
+    display: inline-block;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--color-deep, #1B3F8B);
+    text-decoration: none;
+    border-bottom: 2px solid var(--color-gold, #D4A84B);
+    padding-bottom: 0.25rem;
+    transition: color 0.2s ease;
+    letter-spacing: 0.05em;
+  }
+
+  .more-link:hover {
+    color: var(--color-sky, #6EC6F0);
+  }
+
+  @media (max-width: 900px) {
+    .articles-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 560px) {
+    .articles-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
