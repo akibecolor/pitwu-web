@@ -1,0 +1,65 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Search from '../components/Search.astro';
+---
+
+<BaseLayout
+  title="検索 | 夢源風人"
+  description="夢源風人サイト内の記事を検索できます。"
+>
+  <div class="search-page">
+    <div class="page-inner">
+      <header class="page-header">
+        <h1 class="page-title">
+          <span class="page-title-en">Search</span>
+          記事を検索
+        </h1>
+        <p class="page-description">キーワードで記事を検索できます。</p>
+      </header>
+
+      <Search />
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .search-page {
+    padding-top: 64px; /* header height */
+    min-height: 80vh;
+  }
+
+  .page-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 5rem;
+  }
+
+  .page-header {
+    margin-bottom: 3rem;
+  }
+
+  .page-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-deep, #1B3F8B);
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .page-title-en {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.875rem;
+    font-weight: 300;
+    letter-spacing: 0.35em;
+    color: var(--color-sky, #6EC6F0);
+    text-transform: uppercase;
+  }
+
+  .page-description {
+    font-size: 0.9375rem;
+    color: rgba(26, 31, 46, 0.6);
+  }
+</style>

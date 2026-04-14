@@ -1,0 +1,310 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import CommentList from '../components/CommentList.astro';
+import type { Article } from '../types/index.js';
+
+interface Props {
+  article: Article;
+  comments?: Array<{ author: string; date: string; content: string }>;
+}
+
+const { article, comments = [] } = Astro.props;
+
+const displayDate = new Date(article.publishedAt).toLocaleDateString('ja-JP', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+
+const date = new Date(article.publishedAt);
+const year = date.getFullYear();
+const month = String(date.getMonth() + 1).padStart(2, '0');
+const canonicalPath = `/${year}/${month}/${article.slug}`;
+const siteUrl = 'https://pitwu.com';
+---
+
+<BaseLayout
+  title={`${article.title} | 夢源風人`}
+  description={article.title}
+  ogImage={article.eyecatch?.url}
+>
+  <article class="article-page">
+    <!-- アイキャッチ -->
+    {article.eyecatch && (
+      <div class="article-eyecatch">
+        <img
+          src={article.eyecatch.url}
+          alt={article.title}
+          width={article.eyecatch.width}
+          height={article.eyecatch.height}
+          loading="eager"
+          decoding="async"
+          class="eyecatch-image"
+        />
+        <div class="eyecatch-overlay" aria-hidden="true"></div>
+      </div>
+    )}
+
+    <div class="article-container">
+      <!-- 記事ヘッダー -->
+      <header class="article-header">
+        {article.category && (
+          <a href={`/category/${article.category.slug}/`} class="article-category">
+            {article.category.name}
+          </a>
+        )}
+        <h1 class="article-title">{article.title}</h1>
+        <div class="article-meta">
+          <time class="article-date" datetime={article.publishedAt}>{displayDate}</time>
+          {article.tags && article.tags.length > 0 && (
+            <ul class="article-tags" aria-label="タグ">
+              {article.tags.map((tag) => (
+                <li>
+                  <a href={`/tag/${tag.slug}/`} class="article-tag">{tag.name}</a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </header>
+
+      <!-- 本文 -->
+      <div
+        class="article-body"
+        data-pagefind-body
+        set:html={article.content}
+      />
+
+      <!-- 記事フッター -->
+      <footer class="article-footer">
+        <p class="article-url">
+          <a href={`${siteUrl}${canonicalPath}`}>{siteUrl}{canonicalPath}</a>
+        </p>
+      </footer>
+
+      <!-- コメント -->
+      <CommentList comments={comments} />
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .article-page {
+    padding-top: 64px; /* header height */
+  }
+
+  .article-eyecatch {
+    position: relative;
+    width: 100%;
+    max-height: 480px;
+    overflow: hidden;
+  }
+
+  .eyecatch-image {
+    width: 100%;
+    height: 480px;
+    object-fit: cover;
+    display: block;
+  }
+
+  .eyecatch-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      transparent 40%,
+      rgba(27, 63, 139, 0.5) 100%
+    );
+  }
+
+  .article-container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 4rem;
+  }
+
+  .article-header {
+    margin-bottom: 2.5rem;
+  }
+
+  .article-category {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    color: #ffffff;
+    background-color: var(--color-deep, #1B3F8B);
+    padding: 0.25rem 0.75rem;
+    border-radius: 2px;
+    text-decoration: none;
+    margin-bottom: 1rem;
+    transition: background-color 0.2s ease;
+  }
+
+  .article-category:hover {
+    background-color: var(--color-sky, #6EC6F0);
+  }
+
+  .article-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: clamp(1.5rem, 4vw, 2.25rem);
+    font-weight: 700;
+    line-height: 1.4;
+    color: var(--color-ink, #1A1F2E);
+    letter-spacing: 0.02em;
+    margin-bottom: 1rem;
+  }
+
+  .article-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(110, 198, 240, 0.3);
+  }
+
+  .article-date {
+    font-size: 0.8125rem;
+    color: rgba(26, 31, 46, 0.5);
+    letter-spacing: 0.04em;
+  }
+
+  .article-tags {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+  }
+
+  .article-tag {
+    font-size: 0.6875rem;
+    color: var(--color-sky, #6EC6F0);
+    border: 1px solid var(--color-sky, #6EC6F0);
+    border-radius: 999px;
+    padding: 0.125rem 0.625rem;
+    text-decoration: none;
+    letter-spacing: 0.04em;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .article-tag:hover {
+    background-color: var(--color-sky, #6EC6F0);
+    color: #ffffff;
+  }
+
+  /* 本文スタイル */
+  .article-body {
+    font-size: 1rem;
+    line-height: 1.9;
+    color: var(--color-ink, #1A1F2E);
+  }
+
+  .article-body :global(h2) {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 2.5rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--color-sky, #6EC6F0);
+    color: var(--color-deep, #1B3F8B);
+  }
+
+  .article-body :global(h3) {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 2rem 0 0.75rem;
+    color: var(--color-deep, #1B3F8B);
+    padding-left: 0.75rem;
+    border-left: 3px solid var(--color-gold, #D4A84B);
+  }
+
+  .article-body :global(p) {
+    margin-bottom: 1.5rem;
+  }
+
+  .article-body :global(img) {
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+    margin: 1.5rem 0;
+  }
+
+  .article-body :global(a) {
+    color: var(--color-sky, #6EC6F0);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    transition: color 0.2s ease;
+  }
+
+  .article-body :global(a:hover) {
+    color: var(--color-deep, #1B3F8B);
+  }
+
+  .article-body :global(ul),
+  .article-body :global(ol) {
+    margin: 1rem 0 1.5rem 1.5rem;
+  }
+
+  .article-body :global(li) {
+    margin-bottom: 0.375rem;
+  }
+
+  .article-body :global(blockquote) {
+    border-left: 4px solid var(--color-sky, #6EC6F0);
+    margin: 1.5rem 0;
+    padding: 1rem 1.5rem;
+    background-color: rgba(110, 198, 240, 0.06);
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+    color: rgba(26, 31, 46, 0.75);
+  }
+
+  .article-body :global(pre) {
+    background: var(--color-ink, #1A1F2E);
+    color: #e8f4fd;
+    border-radius: 6px;
+    padding: 1.25rem 1.5rem;
+    overflow-x: auto;
+    margin: 1.5rem 0;
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+
+  .article-body :global(code) {
+    font-family: 'Cascadia Code', 'Fira Code', monospace;
+    font-size: 0.875em;
+  }
+
+  .article-body :global(p code) {
+    background: rgba(110, 198, 240, 0.12);
+    padding: 0.1em 0.4em;
+    border-radius: 3px;
+    color: var(--color-deep, #1B3F8B);
+  }
+
+  .article-footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(26, 31, 46, 0.1);
+  }
+
+  .article-url {
+    font-size: 0.75rem;
+    color: rgba(26, 31, 46, 0.4);
+    word-break: break-all;
+  }
+
+  .article-url a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  @media (max-width: 640px) {
+    .eyecatch-image {
+      height: 240px;
+    }
+  }
+</style>

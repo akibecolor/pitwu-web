@@ -1,0 +1,22 @@
+---
+// Pagefind UI is loaded at runtime from /pagefind/ (generated after build)
+---
+
+<div class="search-wrapper">
+  <link href="/pagefind/pagefind-ui.css" rel="stylesheet" />
+  <script src="/pagefind/pagefind-ui.js"></script>
+  <div id="search"></div>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      // @ts-ignore – PagefindUI is injected by pagefind-ui.js at runtime
+      new PagefindUI({ element: '#search', showSubResults: true });
+    });
+  </script>
+</div>
+
+<style>
+  .search-wrapper {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+</style>
