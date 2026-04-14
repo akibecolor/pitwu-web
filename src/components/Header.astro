@@ -13,10 +13,6 @@ import logo from '../assets/logo-yoko.png';
         height={40}
         class="logo-image"
       />
-      <span class="logo-text">
-        <span class="logo-ja">夢源風人</span>
-        <span class="logo-en">Mugenkajipitwu</span>
-      </span>
     </a>
 
     <nav class="header-nav" aria-label="メインナビゲーション">
@@ -131,27 +127,6 @@ import logo from '../assets/logo-yoko.png';
     filter: brightness(0) invert(1);
   }
 
-  .logo-text {
-    display: flex;
-    flex-direction: column;
-    line-height: 1.2;
-  }
-
-  .logo-ja {
-    font-family: 'Noto Serif JP', serif;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #ffffff;
-    letter-spacing: 0.05em;
-  }
-
-  .logo-en {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 0.75rem;
-    font-weight: 300;
-    color: rgba(255, 255, 255, 0.8);
-    letter-spacing: 0.2em;
-  }
 
   .header-nav {
     display: flex;
@@ -300,9 +275,4 @@ import logo from '../assets/logo-yoko.png';
     }
   }
 
-  @media (max-width: 640px) {
-    .logo-text {
-      display: none;
-    }
-  }
 </style>
