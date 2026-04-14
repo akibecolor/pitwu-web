@@ -1,0 +1,37 @@
+---
+import ArticleLayout from '../../../layouts/ArticleLayout.astro';
+import { getAllArticles, getArticleBySlug } from '../../../lib/microcms.js';
+import type { GetStaticPaths } from 'astro';
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const articles = await getAllArticles();
+
+  return articles.map((article) => {
+    const date = new Date(article.publishedAt);
+    const year = String(date.getFullYear());
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+
+    return {
+      params: {
+        year,
+        month,
+        slug: article.slug,
+      },
+      props: { articleId: article.slug },
+    };
+  });
+};
+
+interface Props {
+  articleId: string;
+}
+
+const { articleId } = Astro.props;
+const article = await getArticleBySlug(articleId);
+
+if (!article) {
+  return Astro.redirect('/404');
+}
+---
+
+<ArticleLayout article={article} comments={[]} />
