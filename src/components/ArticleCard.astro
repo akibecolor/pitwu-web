@@ -9,10 +9,12 @@ interface Props {
 const { article, featured = false } = Astro.props;
 
 // Build URL from publishedAt: /YYYY/MM/slug
+// slugはWordPress由来でURLエンコード済みの場合があるためデコードして使用
 const date = new Date(article.publishedAt);
 const year = date.getFullYear();
 const month = String(date.getMonth() + 1).padStart(2, '0');
-const href = `/${year}/${month}/${article.slug}`;
+const slug = decodeURIComponent(article.slug);
+const href = `/${year}/${month}/${slug}`;
 
 // Format display date
 const displayDate = date.toLocaleDateString('ja-JP', {

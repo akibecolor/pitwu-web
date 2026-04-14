@@ -4,11 +4,10 @@
 
 <div class="search-wrapper">
   <link href="/pagefind/pagefind-ui.css" rel="stylesheet" />
-  <script src="/pagefind/pagefind-ui.js"></script>
+  <script is:inline src="/pagefind/pagefind-ui.js"></script>
   <div id="search"></div>
-  <script>
-    window.addEventListener('DOMContentLoaded', () => {
-      // @ts-ignore – PagefindUI is injected by pagefind-ui.js at runtime
+  <script is:inline>
+    window.addEventListener('DOMContentLoaded', function () {
       new PagefindUI({ element: '#search', showSubResults: true });
     });
   </script>

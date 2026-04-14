@@ -11,12 +11,10 @@ export const getStaticPaths: GetStaticPaths = async () => {
     const year = String(date.getFullYear());
     const month = String(date.getMonth() + 1).padStart(2, '0');
 
+    // slugはWordPress由来でURLエンコード済みの場合があるためデコードして統一
+    const slug = decodeURIComponent(article.slug);
     return {
-      params: {
-        year,
-        month,
-        slug: article.slug,
-      },
+      params: { year, month, slug },
       props: { articleId: article.slug },
     };
   });
@@ -27,6 +25,9 @@ interface Props {
 }
 
 const { articleId } = Astro.props;
+// 設計上の意図: getAllArticles は content を除いた軽量データで全件取得。
+// 各ページのレンダリング時に getArticleBySlug で content を含む全フィールドを取得する。
+// 2,000件分の本文をビルド時メモリに一括ロードするコストを避けるためのトレードオフ。
 const article = await getArticleBySlug(articleId);
 
 if (!article) {
