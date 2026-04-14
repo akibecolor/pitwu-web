@@ -128,10 +128,11 @@ for (let i = 0; i < wpPosts.length; i++) {
 
   // カテゴリ・タグを microCMS IDに変換
   const category = post.categories[0] ? categoryMap[post.categories[0]] : undefined;
-  const tags = post.tags
+  // microCMS の複数コンテンツ参照はカンマ区切り文字列で指定
+  const tagIds = post.tags
     .map(id => tagMap[id])
-    .filter(Boolean)
-    .map(id => ({ fieldId: 'tags', id }));
+    .filter((id): id is string => Boolean(id))
+    .join(',');
 
   const body: Record<string, unknown> = {
     title: post.title.rendered,
@@ -141,7 +142,7 @@ for (let i = 0; i < wpPosts.length; i++) {
   };
 
   if (category) body.category = category;
-  if (tags.length) body.tags = tags;
+  if (tagIds) body.tags = tagIds;
 
   try {
     const id = await createContent('articles', body);
