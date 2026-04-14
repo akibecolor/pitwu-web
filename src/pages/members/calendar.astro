@@ -1,0 +1,708 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const CLIENT_ID = '665247473362-4hg81uohdg2vmm3uja2ordpqpq5o82cf.apps.googleusercontent.com';
+const CALENDARS = [
+  { id: '80s4qcc8jd7hisb0k03vkist6g@group.calendar.google.com', name: 'イベント', color: '#1B3F8B' },
+  { id: 'slfifr2ssskd7c6e343jla5i00@group.calendar.google.com', name: '練習', color: '#6EC6F0' },
+];
+---
+
+<BaseLayout
+  title="カレンダー管理 | メンバー | 夢源風人"
+  description="夢源風人メンバー専用カレンダー管理ページです。"
+>
+  <div class="cal-page">
+    <!-- ヘッダー -->
+    <div class="cal-header">
+      <div class="cal-header-inner">
+        <div class="cal-header-left">
+          <a href="/members/" class="back-link">← メンバートップ</a>
+          <h1 class="cal-title">カレンダー管理</h1>
+        </div>
+        <div id="auth-area">
+          <button id="btn-login" class="btn btn--primary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+            Google でログイン
+          </button>
+          <button id="btn-logout" class="btn btn--ghost" hidden>
+            <span id="user-name"></span>
+            <span class="logout-label">（ログアウト）</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- メインコンテンツ -->
+    <div class="cal-body">
+      <!-- ログイン前 -->
+      <div id="state-login" class="state-panel">
+        <div class="state-icon" aria-hidden="true">📅</div>
+        <p>Googleアカウントでログインすると<br />カレンダーの予定を追加・編集できます。</p>
+      </div>
+
+      <!-- 読み込み中 -->
+      <div id="state-loading" class="state-panel" hidden>
+        <div class="spinner" aria-label="読み込み中"></div>
+        <p>予定を読み込んでいます…</p>
+      </div>
+
+      <!-- イベント一覧 -->
+      <div id="state-main" hidden>
+        <div class="toolbar">
+          <button id="btn-add" class="btn btn--primary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            予定を追加
+          </button>
+          <div class="cal-tabs" role="tablist">
+            {CALENDARS.map((cal, i) => (
+              <button
+                class="cal-tab"
+                role="tab"
+                data-cal-id={cal.id}
+                data-active={i === 0 ? 'true' : 'false'}
+                style={`--tab-color: ${cal.color}`}
+              >{cal.name}</button>
+            ))}
+          </div>
+        </div>
+
+        <div id="events-list" class="events-list"></div>
+      </div>
+    </div>
+
+    <!-- 追加・編集モーダル -->
+    <div id="modal" class="modal-backdrop" hidden aria-modal="true" role="dialog" aria-labelledby="modal-title">
+      <div class="modal">
+        <div class="modal-header">
+          <h2 class="modal-title" id="modal-title">予定を追加</h2>
+          <button id="modal-close" class="modal-close" aria-label="閉じる">✕</button>
+        </div>
+        <form id="event-form" class="modal-body">
+          <input type="hidden" id="f-event-id" />
+          <input type="hidden" id="f-cal-id" />
+
+          <div class="form-group">
+            <label class="form-label" for="f-title">タイトル <span class="required">必須</span></label>
+            <input class="form-input" type="text" id="f-title" required placeholder="例：よさこい祭り前夜祭" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="f-cal">カレンダー <span class="required">必須</span></label>
+            <div class="select-wrap">
+              <select class="form-input form-select" id="f-cal" required>
+                {CALENDARS.map(cal => (
+                  <option value={cal.id}>{cal.name}</option>
+                ))}
+              </select>
+              <span class="select-arrow" aria-hidden="true">▾</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="f-start">開始日時 <span class="required">必須</span></label>
+              <input class="form-input" type="datetime-local" id="f-start" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="f-end">終了日時</label>
+              <input class="form-input" type="datetime-local" id="f-end" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="f-location">場所</label>
+            <input class="form-input" type="text" id="f-location" placeholder="例：高知市中央公園" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="f-desc">説明</label>
+            <textarea class="form-input form-textarea" id="f-desc" rows="3" placeholder="詳細・備考など"></textarea>
+          </div>
+
+          <div id="form-error" class="form-error" hidden></div>
+
+          <div class="modal-footer">
+            <button type="button" id="btn-delete" class="btn btn--danger" hidden>削除</button>
+            <div class="modal-footer-right">
+              <button type="button" id="modal-cancel" class="btn btn--ghost">キャンセル</button>
+              <button type="submit" class="btn btn--primary" id="btn-save">保存</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script define:vars={{ CLIENT_ID, CALENDARS }}>
+  const API = 'https://www.googleapis.com/calendar/v3/calendars';
+  let accessToken = null;
+  let currentCalId = CALENDARS[0].id;
+
+  // ---- DOM refs ----
+  const btnLogin    = document.getElementById('btn-login');
+  const btnLogout   = document.getElementById('btn-logout');
+  const userName    = document.getElementById('user-name');
+  const stateLogin  = document.getElementById('state-login');
+  const stateLoad   = document.getElementById('state-loading');
+  const stateMain   = document.getElementById('state-main');
+  const eventsList  = document.getElementById('events-list');
+  const btnAdd      = document.getElementById('btn-add');
+  const modal       = document.getElementById('modal');
+  const modalTitle  = document.getElementById('modal-title');
+  const modalClose  = document.getElementById('modal-close');
+  const modalCancel = document.getElementById('modal-cancel');
+  const eventForm   = document.getElementById('event-form');
+  const btnDelete   = document.getElementById('btn-delete');
+  const btnSave     = document.getElementById('btn-save');
+  const formError   = document.getElementById('form-error');
+
+  // ---- Google Identity Services ----
+  let tokenClient;
+  window.onGoogleLibraryLoad = () => {
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: CLIENT_ID,
+      scope: 'https://www.googleapis.com/auth/calendar',
+      callback: async (resp) => {
+        if (resp.error) { console.error(resp); return; }
+        accessToken = resp.access_token;
+
+        // ユーザー情報を取得
+        const info = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }).then(r => r.json());
+        userName.textContent = info.name ?? info.email ?? 'ログイン中';
+
+        btnLogin.hidden = true;
+        btnLogout.hidden = false;
+        await showMain();
+      },
+    });
+  };
+
+  btnLogin.addEventListener('click', () => tokenClient.requestAccessToken());
+
+  btnLogout.addEventListener('click', () => {
+    google.accounts.oauth2.revoke(accessToken, () => {
+      accessToken = null;
+      btnLogin.hidden = false;
+      btnLogout.hidden = true;
+      stateMain.hidden = true;
+      stateLogin.hidden = false;
+    });
+  });
+
+  // ---- カレンダータブ ----
+  document.querySelectorAll('.cal-tab').forEach(tab => {
+    tab.addEventListener('click', async () => {
+      document.querySelectorAll('.cal-tab').forEach(t => t.dataset.active = 'false');
+      tab.dataset.active = 'true';
+      currentCalId = tab.dataset.calId;
+      await loadEvents();
+    });
+  });
+
+  // ---- イベント一覧 ----
+  async function showMain() {
+    stateLogin.hidden = true;
+    stateLoad.hidden = false;
+    stateMain.hidden = true;
+    await loadEvents();
+    stateLoad.hidden = true;
+    stateMain.hidden = false;
+  }
+
+  async function loadEvents() {
+    eventsList.innerHTML = '<p class="loading-text">読み込み中…</p>';
+    const now = new Date().toISOString();
+    const url = `${API}/${encodeURIComponent(currentCalId)}/events?timeMin=${now}&maxResults=30&singleEvents=true&orderBy=startTime`;
+    const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
+    const data = await res.json();
+
+    if (!data.items || data.items.length === 0) {
+      eventsList.innerHTML = '<p class="empty-text">直近の予定はありません。</p>';
+      return;
+    }
+
+    eventsList.innerHTML = data.items.map(ev => {
+      const start = ev.start?.dateTime ?? ev.start?.date ?? '';
+      const isAllDay = !ev.start?.dateTime;
+      const d = new Date(start);
+      const dateStr = isAllDay
+        ? d.toLocaleDateString('ja-JP', { month: 'long', day: 'numeric', weekday: 'short' })
+        : d.toLocaleString('ja-JP', { month: 'long', day: 'numeric', weekday: 'short', hour: '2-digit', minute: '2-digit' });
+
+      return `<div class="event-item" data-event-id="${ev.id}">
+        <div class="event-date">${dateStr}</div>
+        <div class="event-title">${ev.summary ?? '（タイトルなし）'}</div>
+        ${ev.location ? `<div class="event-location">📍 ${ev.location}</div>` : ''}
+        <button class="event-edit-btn" data-event='${JSON.stringify(ev).replace(/'/g, '&#39;')}'>編集</button>
+      </div>`;
+    }).join('');
+
+    document.querySelectorAll('.event-edit-btn').forEach(btn => {
+      btn.addEventListener('click', () => openEdit(JSON.parse(btn.dataset.event.replace(/&#39;/g, "'"))));
+    });
+  }
+
+  // ---- モーダル ----
+  function toLocalDatetime(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    const pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
+  function openAdd() {
+    modalTitle.textContent = '予定を追加';
+    eventForm.reset();
+    document.getElementById('f-event-id').value = '';
+    document.getElementById('f-cal-id').value = '';
+    document.getElementById('f-cal').value = currentCalId;
+    // 開始を1時間後に
+    const start = new Date(Date.now() + 3600000);
+    document.getElementById('f-start').value = toLocalDatetime(start.toISOString());
+    btnDelete.hidden = true;
+    btnSave.textContent = '追加';
+    formError.hidden = true;
+    modal.hidden = false;
+  }
+
+  function openEdit(ev) {
+    modalTitle.textContent = '予定を編集';
+    document.getElementById('f-event-id').value = ev.id;
+    document.getElementById('f-cal-id').value = currentCalId;
+    document.getElementById('f-cal').value = currentCalId;
+    document.getElementById('f-title').value = ev.summary ?? '';
+    document.getElementById('f-start').value = toLocalDatetime(ev.start?.dateTime ?? ev.start?.date);
+    document.getElementById('f-end').value = toLocalDatetime(ev.end?.dateTime ?? ev.end?.date);
+    document.getElementById('f-location').value = ev.location ?? '';
+    document.getElementById('f-desc').value = ev.description ?? '';
+    btnDelete.hidden = false;
+    btnSave.textContent = '保存';
+    formError.hidden = true;
+    modal.hidden = false;
+  }
+
+  function closeModal() { modal.hidden = true; }
+  btnAdd.addEventListener('click', openAdd);
+  modalClose.addEventListener('click', closeModal);
+  modalCancel.addEventListener('click', closeModal);
+  modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+
+  // ---- 保存 ----
+  eventForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    formError.hidden = true;
+    btnSave.disabled = true;
+    btnSave.textContent = '保存中…';
+
+    const eventId  = document.getElementById('f-event-id').value;
+    const calId    = document.getElementById('f-cal').value;
+    const startVal = document.getElementById('f-start').value;
+    const endVal   = document.getElementById('f-end').value;
+
+    const body = {
+      summary:     document.getElementById('f-title').value,
+      location:    document.getElementById('f-location').value,
+      description: document.getElementById('f-desc').value,
+      start: { dateTime: new Date(startVal).toISOString(), timeZone: 'Asia/Tokyo' },
+      end:   { dateTime: new Date(endVal || startVal).toISOString(), timeZone: 'Asia/Tokyo' },
+    };
+
+    const url    = eventId ? `${API}/${encodeURIComponent(calId)}/events/${eventId}` : `${API}/${encodeURIComponent(calId)}/events`;
+    const method = eventId ? 'PUT' : 'POST';
+
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      closeModal();
+      await loadEvents();
+    } catch (err) {
+      formError.textContent = `エラーが発生しました: ${err.message}`;
+      formError.hidden = false;
+    } finally {
+      btnSave.disabled = false;
+      btnSave.textContent = '保存';
+    }
+  });
+
+  // ---- 削除 ----
+  btnDelete.addEventListener('click', async () => {
+    if (!confirm('この予定を削除しますか？')) return;
+    const eventId = document.getElementById('f-event-id').value;
+    const calId   = document.getElementById('f-cal-id').value;
+    try {
+      const res = await fetch(`${API}/${encodeURIComponent(calId)}/events/${eventId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      if (!res.ok && res.status !== 204) throw new Error(await res.text());
+      closeModal();
+      await loadEvents();
+    } catch (err) {
+      alert(`削除に失敗しました: ${err.message}`);
+    }
+  });
+</script>
+
+<!-- Google Identity Services -->
+<script src="https://accounts.google.com/gsi/client" async onload="onGoogleLibraryLoad()" is:inline></script>
+
+<style>
+  .cal-page {
+    padding-top: 64px;
+    min-height: 100vh;
+    background: var(--color-base, #F0F6FF);
+  }
+
+  /* ヘッダー */
+  .cal-header {
+    background: var(--color-deep, #1B3F8B);
+    padding: 0 1.5rem;
+  }
+
+  .cal-header-inner {
+    max-width: var(--container-width);
+    margin: 0 auto;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .cal-header-left {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+  }
+
+  .back-link {
+    font-size: 0.8125rem;
+    color: rgba(255,255,255,0.7);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .back-link:hover { color: #fff; }
+
+  .cal-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.05em;
+  }
+
+  /* ボタン */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1.125rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    border: none;
+    transition: background 0.2s, transform 0.15s, opacity 0.2s;
+  }
+
+  .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+  .btn--primary {
+    background: var(--color-sky, #6EC6F0);
+    color: var(--color-deep, #1B3F8B);
+  }
+
+  .btn--primary:hover:not(:disabled) { background: #8dd4f5; }
+
+  .btn--ghost {
+    background: rgba(255,255,255,0.15);
+    color: #ffffff;
+  }
+
+  .btn--ghost:hover { background: rgba(255,255,255,0.25); }
+
+  .btn--danger {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+
+  .btn--danger:hover { background: #fecaca; }
+
+  .logout-label {
+    font-size: 0.75rem;
+    opacity: 0.7;
+  }
+
+  /* ボディ */
+  .cal-body {
+    max-width: var(--container-width);
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  /* 状態パネル */
+  .state-panel {
+    text-align: center;
+    padding: 5rem 1rem;
+    color: rgba(26, 31, 46, 0.6);
+    font-size: 0.9375rem;
+    line-height: 2;
+  }
+
+  .state-icon { font-size: 3rem; margin-bottom: 1rem; }
+
+  .spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid rgba(27, 63, 139, 0.15);
+    border-top-color: var(--color-deep, #1B3F8B);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 1rem;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ツールバー */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .cal-tabs {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .cal-tab {
+    padding: 0.4rem 1rem;
+    border-radius: 999px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 2px solid var(--tab-color);
+    background: transparent;
+    color: var(--tab-color);
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .cal-tab[data-active="true"] {
+    background: var(--tab-color);
+    color: #ffffff;
+  }
+
+  /* イベント一覧 */
+  .events-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .loading-text, .empty-text {
+    text-align: center;
+    color: rgba(26, 31, 46, 0.5);
+    padding: 3rem 0;
+    font-size: 0.9375rem;
+  }
+
+  .event-item {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    box-shadow: 0 1px 6px rgba(27, 63, 139, 0.08);
+  }
+
+  .event-date {
+    font-size: 0.8125rem;
+    color: var(--color-deep, #1B3F8B);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .event-title {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-ink, #1A1F2E);
+  }
+
+  .event-location {
+    font-size: 0.8125rem;
+    color: rgba(26, 31, 46, 0.55);
+    grid-column: 2;
+  }
+
+  .event-edit-btn {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-deep, #1B3F8B);
+    background: var(--color-base, #F0F6FF);
+    border: 1px solid rgba(27, 63, 139, 0.2);
+    border-radius: 4px;
+    padding: 0.3rem 0.75rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    grid-row: 1;
+    grid-column: 3;
+    align-self: start;
+  }
+
+  .event-edit-btn:hover { background: #ddeeff; }
+
+  /* モーダル */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+
+  .modal {
+    background: #ffffff;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid rgba(27, 63, 139, 0.1);
+  }
+
+  .modal-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--color-deep, #1B3F8B);
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 1.125rem;
+    cursor: pointer;
+    color: rgba(26, 31, 46, 0.4);
+    padding: 0.25rem;
+    line-height: 1;
+    transition: color 0.2s;
+  }
+
+  .modal-close:hover { color: var(--color-ink, #1A1F2E); }
+
+  .modal-body {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .form-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-ink, #1A1F2E);
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+  }
+
+  .required {
+    font-size: 0.625rem;
+    font-weight: 700;
+    color: #fff;
+    background: #e53e3e;
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+  }
+
+  .form-input {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.9rem;
+    color: var(--color-ink, #1A1F2E);
+    background: #ffffff;
+    border: 1.5px solid rgba(27, 63, 139, 0.2);
+    border-radius: 6px;
+    padding: 0.625rem 0.875rem;
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+
+  .form-input:focus {
+    border-color: var(--color-deep, #1B3F8B);
+    box-shadow: 0 0 0 3px rgba(27, 63, 139, 0.12);
+  }
+
+  .form-textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
+
+  .select-wrap { position: relative; }
+  .form-select { appearance: none; cursor: pointer; padding-right: 2.25rem; }
+  .select-arrow {
+    position: absolute; right: 0.875rem; top: 50%; transform: translateY(-50%);
+    pointer-events: none; color: var(--color-deep, #1B3F8B); font-size: 0.8rem;
+  }
+
+  .form-error {
+    background: #fff5f5;
+    border: 1.5px solid #fc8181;
+    border-radius: 6px;
+    padding: 0.625rem 0.875rem;
+    font-size: 0.8125rem;
+    color: #c53030;
+    line-height: 1.6;
+  }
+
+  .modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 0.5rem;
+  }
+
+  .modal-footer-right { display: flex; gap: 0.75rem; }
+
+  @media (max-width: 560px) {
+    .form-row { grid-template-columns: 1fr; }
+    .event-item { grid-template-columns: 1fr auto; }
+    .event-location { grid-column: 1; }
+  }
+</style>
