@@ -1,0 +1,463 @@
+---
+import PageLayout from '../layouts/PageLayout.astro';
+
+const FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLSdQNB3ZJfhKVE21mrWs9uJeF8ZQjO13gSZDpLgjKCJdGNlXow/formResponse';
+---
+
+<PageLayout
+  title="お問合せ | 夢源風人"
+  description="夢源風人へのお問い合わせはこちらから。"
+  pageTitle="お問合せ"
+  pageSubtitle="Contact"
+>
+  <div class="contact-wrap">
+    <p class="contact-lead">
+      ご見学・メンバー募集・演舞依頼など、お気軽にお問い合わせください。<br />
+      入力いただいたメールアドレスに受付確認メールをお送りします。
+    </p>
+
+    <form id="contact-form" class="contact-form" novalidate>
+      <!-- メールアドレス（Google Forms 組み込み） -->
+      <div class="form-group">
+        <label class="form-label" for="f-email">
+          メールアドレス <span class="required">必須</span>
+        </label>
+        <input
+          class="form-input"
+          type="email"
+          id="f-email"
+          name="emailAddress"
+          required
+          autocomplete="email"
+          placeholder="your@email.com"
+        />
+      </div>
+
+      <!-- お名前 -->
+      <div class="form-group">
+        <label class="form-label" for="f-name">
+          お名前 <span class="required">必須</span>
+        </label>
+        <input
+          class="form-input"
+          type="text"
+          id="f-name"
+          name="entry.1000000"
+          required
+          autocomplete="name"
+          placeholder="例：山田 太郎"
+        />
+      </div>
+
+      <!-- LINE -->
+      <div class="form-group">
+        <label class="form-label" for="f-line">
+          LINE <span class="optional">任意</span>
+        </label>
+        <p class="form-hint">メールでの連絡に自信がない場合にご入力ください。</p>
+        <input
+          class="form-input"
+          type="text"
+          id="f-line"
+          name="entry.1293547663"
+          placeholder="LINE ID または表示名"
+        />
+      </div>
+
+      <!-- X（旧Twitter） -->
+      <div class="form-group">
+        <label class="form-label" for="f-twitter">
+          X（旧Twitter） <span class="optional">任意</span>
+        </label>
+        <p class="form-hint">メールでの連絡に自信がない場合にご入力ください。@mugenkajipitwu からDMします。</p>
+        <input
+          class="form-input"
+          type="text"
+          id="f-twitter"
+          name="entry.1635986243"
+          placeholder="@username"
+        />
+      </div>
+
+      <!-- 年代 -->
+      <fieldset class="form-group form-fieldset">
+        <legend class="form-label">
+          年代 <span class="required">必須</span>
+        </legend>
+        <div class="radio-grid">
+          {['社会人-10代','社会人-20代','社会人-30代','社会人-40代以上','高校・大学・専門学生','小・中学生'].map((v) => (
+            <label class="radio-label">
+              <input type="radio" name="entry.1000002" value={v} required />
+              <span>{v}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      <!-- 性別 -->
+      <fieldset class="form-group form-fieldset">
+        <legend class="form-label">
+          性別 <span class="required">必須</span>
+        </legend>
+        <div class="radio-row">
+          {['男性','女性'].map((v) => (
+            <label class="radio-label">
+              <input type="radio" name="entry.1000003" value={v} required />
+              <span>{v}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      <!-- 投稿種別 -->
+      <fieldset class="form-group form-fieldset">
+        <legend class="form-label">
+          投稿種別 <span class="required">必須</span>
+        </legend>
+        <div class="radio-list">
+          {['高知よさこい祭りに参加したい','練習会を見学したい','チームについて','ご依頼','その他'].map((v) => (
+            <label class="radio-label">
+              <input type="radio" name="entry.1000004" value={v} required />
+              <span>{v}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      <!-- 質問内容 -->
+      <div class="form-group">
+        <label class="form-label" for="f-body">
+          質問内容 <span class="required">必須</span>
+        </label>
+        <p class="form-hint">わからないこと、相談したいこと、確認したいことを教えてください。「その他」を選択された方は具体的な内容をお知らせください。</p>
+        <textarea
+          class="form-input form-textarea"
+          id="f-body"
+          name="entry.1000005"
+          required
+          rows="6"
+          placeholder="お問い合わせ内容をご記入ください"
+        ></textarea>
+      </div>
+
+      <div id="form-error" class="form-error" hidden></div>
+
+      <button type="submit" class="submit-btn" id="submit-btn">
+        <span id="btn-text">送信する</span>
+        <span id="btn-loading" hidden>送信中...</span>
+      </button>
+    </form>
+
+    <!-- 送信完了メッセージ -->
+    <div id="form-success" class="form-success" hidden>
+      <div class="success-icon" aria-hidden="true">✓</div>
+      <h2>お問い合わせを受け付けました</h2>
+      <p>ご入力いただいたメールアドレスに確認メールをお送りします。<br />
+      しばらくしても届かない場合は、迷惑メールフォルダをご確認ください。</p>
+    </div>
+
+    <div class="line-block">
+      <p>連絡がうまくできない場合はLINEでも承ります</p>
+      <a href="https://line.me/ti/p/%40cca1992y" target="_blank" rel="noopener noreferrer" class="line-btn">
+        LINE で友だち追加
+      </a>
+    </div>
+  </div>
+</PageLayout>
+
+<script define:vars={{ FORM_ACTION }}>
+  const form = document.getElementById('contact-form');
+  const successEl = document.getElementById('form-success');
+  const errorEl = document.getElementById('form-error');
+  const submitBtn = document.getElementById('submit-btn');
+  const btnText = document.getElementById('btn-text');
+  const btnLoading = document.getElementById('btn-loading');
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    // バリデーション
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    // 送信中表示
+    submitBtn.disabled = true;
+    btnText.hidden = true;
+    btnLoading.hidden = false;
+    errorEl.hidden = true;
+
+    const data = new FormData(form);
+
+    try {
+      // Google Forms は CORS を返さないため no-cors で送信
+      await fetch(FORM_ACTION, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: data,
+      });
+
+      // no-cors では成功/失敗を区別できないため、送信完了として扱う
+      form.hidden = true;
+      successEl.hidden = false;
+    } catch {
+      errorEl.textContent = '送信に失敗しました。しばらく経ってから再度お試しいただくか、LINEよりご連絡ください。';
+      errorEl.hidden = false;
+      submitBtn.disabled = false;
+      btnText.hidden = false;
+      btnLoading.hidden = true;
+    }
+  });
+</script>
+
+<style>
+  .contact-wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+  }
+
+  .contact-lead {
+    font-size: 0.9375rem;
+    line-height: 2;
+    color: rgba(26, 31, 46, 0.75);
+  }
+
+  /* フォーム全体 */
+  .contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .form-fieldset {
+    border: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .form-label {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-ink, #1A1F2E);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .required {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: #ffffff;
+    background: #e53e3e;
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+    letter-spacing: 0.05em;
+  }
+
+  .optional {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: rgba(26, 31, 46, 0.45);
+    border: 1px solid rgba(26, 31, 46, 0.2);
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+    letter-spacing: 0.05em;
+  }
+
+  .form-hint {
+    font-size: 0.8125rem;
+    line-height: 1.7;
+    color: rgba(26, 31, 46, 0.55);
+    margin: 0;
+  }
+
+  .form-input {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.9375rem;
+    color: var(--color-ink, #1A1F2E);
+    background: #ffffff;
+    border: 1.5px solid rgba(27, 63, 139, 0.2);
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+
+  .form-input:focus {
+    border-color: var(--color-deep, #1B3F8B);
+    box-shadow: 0 0 0 3px rgba(27, 63, 139, 0.12);
+  }
+
+  .form-input::placeholder {
+    color: rgba(26, 31, 46, 0.3);
+  }
+
+  .form-textarea {
+    resize: vertical;
+    min-height: 140px;
+    line-height: 1.7;
+  }
+
+  /* ラジオボタン */
+  .radio-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.5rem;
+  }
+
+  .radio-row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .radio-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .radio-label {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    cursor: pointer;
+    font-size: 0.9375rem;
+    color: var(--color-ink, #1A1F2E);
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    border: 1.5px solid rgba(27, 63, 139, 0.15);
+    background: #ffffff;
+    transition: border-color 0.2s, background 0.2s;
+    user-select: none;
+  }
+
+  .radio-label:has(input:checked) {
+    border-color: var(--color-deep, #1B3F8B);
+    background: var(--color-base, #F0F6FF);
+  }
+
+  .radio-label input[type="radio"] {
+    accent-color: var(--color-deep, #1B3F8B);
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+
+  /* エラー */
+  .form-error {
+    background: #fff5f5;
+    border: 1.5px solid #fc8181;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    color: #c53030;
+    line-height: 1.6;
+  }
+
+  /* 送信ボタン */
+  .submit-btn {
+    align-self: flex-start;
+    padding: 0.9rem 2.5rem;
+    background: var(--color-deep, #1B3F8B);
+    color: #ffffff;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s, opacity 0.2s;
+  }
+
+  .submit-btn:hover:not(:disabled) {
+    background: #2a5298;
+    transform: translateY(-1px);
+  }
+
+  .submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  /* 送信完了 */
+  .form-success {
+    background: #f0fff4;
+    border: 1.5px solid #68d391;
+    border-radius: 12px;
+    padding: 3rem 2rem;
+    text-align: center;
+  }
+
+  .success-icon {
+    font-size: 3rem;
+    color: #38a169;
+    margin-bottom: 1rem;
+    font-weight: 700;
+  }
+
+  .form-success h2 {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: var(--color-deep, #1B3F8B);
+    margin-bottom: 0.75rem;
+  }
+
+  .form-success p {
+    font-size: 0.9375rem;
+    line-height: 2;
+    color: rgba(26, 31, 46, 0.7);
+  }
+
+  /* LINE ブロック */
+  .line-block {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+    background: var(--color-base, #F0F6FF);
+    border-radius: 8px;
+    padding: 1.25rem 1.5rem;
+  }
+
+  .line-block p {
+    font-size: 0.875rem;
+    color: rgba(26, 31, 46, 0.65);
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .line-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    background: #06C755;
+    color: #ffffff;
+    font-size: 0.875rem;
+    font-weight: 700;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: background 0.2s;
+    white-space: nowrap;
+  }
+
+  .line-btn:hover {
+    background: #05a847;
+  }
+</style>

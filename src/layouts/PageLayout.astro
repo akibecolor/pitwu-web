@@ -1,0 +1,73 @@
+---
+import BaseLayout from './BaseLayout.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  pageTitle?: string;
+  pageSubtitle?: string;
+}
+
+const { title, description, pageTitle, pageSubtitle } = Astro.props;
+---
+
+<BaseLayout title={title} description={description}>
+  <div class="page-wrap">
+    <header class="page-header">
+      <div class="page-header-inner">
+        {pageSubtitle && <p class="page-subtitle">{pageSubtitle}</p>}
+        <h1 class="page-title">{pageTitle ?? title}</h1>
+      </div>
+    </header>
+
+    <div class="page-body">
+      <div class="page-body-inner">
+        <slot />
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .page-wrap {
+    padding-top: 64px; /* header height */
+  }
+
+  .page-header {
+    background: linear-gradient(135deg, var(--color-deep, #1B3F8B) 0%, #2a5298 100%);
+    padding: 4rem 1.5rem 3rem;
+    text-align: center;
+  }
+
+  .page-header-inner {
+    max-width: var(--container-width);
+    margin: 0 auto;
+  }
+
+  .page-subtitle {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.875rem;
+    font-weight: 300;
+    letter-spacing: 0.3em;
+    color: var(--color-sky, #6EC6F0);
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+
+  .page-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: clamp(1.75rem, 5vw, 2.75rem);
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.1em;
+  }
+
+  .page-body {
+    padding: 4rem 1.5rem 6rem;
+  }
+
+  .page-body-inner {
+    max-width: var(--container-width);
+    margin: 0 auto;
+  }
+</style>

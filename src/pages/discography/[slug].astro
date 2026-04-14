@@ -1,0 +1,132 @@
+---
+import PageLayout from '../../layouts/PageLayout.astro';
+import pagesData from '../../data/wp-pages.json';
+import type { GetStaticPaths } from 'astro';
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  return pagesData.songs.map((song) => ({
+    params: { slug: song.slug },
+    props: { song },
+  }));
+};
+
+interface Props {
+  song: { slug: string; title: string; content: string };
+}
+
+const { song } = Astro.props;
+---
+
+<PageLayout
+  title={`${song.title} | 演舞 | 夢源風人`}
+  description={`夢源風人の演舞「${song.title}」の紹介ページです。`}
+  pageTitle={song.title}
+  pageSubtitle="Discography"
+>
+  <nav class="breadcrumb">
+    <a href="/discography/">演舞一覧</a>
+    <span aria-hidden="true">›</span>
+    <span>{song.title}</span>
+  </nav>
+
+  <div class="song-content wp-content" set:html={song.content} />
+
+  <div class="back-link">
+    <a href="/discography/">← 演舞一覧に戻る</a>
+  </div>
+</PageLayout>
+
+<style>
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: rgba(26, 31, 46, 0.55);
+    margin-bottom: 2rem;
+  }
+
+  .breadcrumb a {
+    color: var(--color-deep, #1B3F8B);
+    text-decoration: none;
+  }
+
+  .breadcrumb a:hover {
+    text-decoration: underline;
+  }
+
+  /* WordPress content normalization */
+  .wp-content :global(h2),
+  .wp-content :global(h3) {
+    font-family: 'Noto Serif JP', serif;
+    font-weight: 700;
+    color: var(--color-deep, #1B3F8B);
+    margin: 2rem 0 0.75rem;
+  }
+
+  .wp-content :global(h2) { font-size: 1.375rem; }
+  .wp-content :global(h3) { font-size: 1.125rem; }
+
+  .wp-content :global(p) {
+    line-height: 2;
+    margin-bottom: 1rem;
+    color: var(--color-ink, #1A1F2E);
+  }
+
+  .wp-content :global(iframe) {
+    max-width: 100%;
+    border-radius: 8px;
+  }
+
+  .wp-content :global(.youtube) {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+  }
+
+  .wp-content :global(.youtube iframe),
+  .wp-content :global(.embed-youtube iframe) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .wp-content :global(.embed-youtube) {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+  }
+
+  .wp-content :global(.home-text) {
+    line-height: 2;
+    white-space: pre-line;
+    margin-bottom: 1rem;
+  }
+
+  .back-link {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(27, 63, 139, 0.1);
+  }
+
+  .back-link a {
+    font-size: 0.9375rem;
+    color: var(--color-deep, #1B3F8B);
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .back-link a:hover {
+    text-decoration: underline;
+  }
+</style>

@@ -20,29 +20,66 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           Cloudflare Zero Trust で保護されています。
         </p>
       </div>
+
+      <nav class="members-nav" aria-label="メンバーコンテンツ">
+        <h2 class="members-nav-title">コンテンツ</h2>
+        <ul class="members-nav-list">
+          <li>
+            <a href="/members/mitepitwu/" class="members-nav-link">
+              <span class="nav-icon" aria-hidden="true">📖</span>
+              <div>
+                <span class="nav-title">みてぴとぅ</span>
+                <span class="nav-desc">チーム広報誌 創刊号〜第肆号</span>
+              </div>
+              <span class="nav-arrow">→</span>
+            </a>
+          </li>
+          <li>
+            <a href="/members/secret/" class="members-nav-link">
+              <span class="nav-icon" aria-hidden="true">🔒</span>
+              <div>
+                <span class="nav-title">ぴとぅ専用</span>
+                <span class="nav-desc">メンバー限定コンテンツ</span>
+              </div>
+              <span class="nav-arrow">→</span>
+            </a>
+          </li>
+          <li>
+            <a href="/members/topsecret/" class="members-nav-link">
+              <span class="nav-icon" aria-hidden="true">㊙</span>
+              <div>
+                <span class="nav-title">㊙</span>
+                <span class="nav-desc">最高機密コンテンツ</span>
+              </div>
+              <span class="nav-arrow">→</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
     </div>
   </div>
 </BaseLayout>
 
 <style>
   .members-page {
-    padding-top: 64px; /* header height */
+    padding-top: 64px;
     min-height: 80vh;
-    display: flex;
-    align-items: center;
   }
 
   .page-inner {
-    max-width: 600px;
+    max-width: 680px;
     margin: 0 auto;
     padding: 3rem 1.5rem;
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
   }
 
   .protected-notice {
     background: #ffffff;
     border-radius: 12px;
-    padding: 3rem 2.5rem;
+    padding: 2.5rem 2rem;
     text-align: center;
     box-shadow: 0 4px 24px rgba(27, 63, 139, 0.1);
     border-top: 4px solid var(--color-gold, #D4A84B);
@@ -50,24 +87,104 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   .notice-icon {
     color: var(--color-deep, #1B3F8B);
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
     display: flex;
     justify-content: center;
   }
 
   .notice-title {
     font-family: 'Noto Serif JP', serif;
-    font-size: 1.75rem;
+    font-size: 1.5rem;
     font-weight: 700;
     color: var(--color-deep, #1B3F8B);
-    margin-bottom: 1.25rem;
+    margin-bottom: 0.75rem;
     letter-spacing: 0.05em;
   }
 
   .notice-body {
-    font-size: 1rem;
+    font-size: 0.9375rem;
     line-height: 2;
     color: rgba(26, 31, 46, 0.65);
     letter-spacing: 0.03em;
+  }
+
+  .members-nav {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 1.75rem;
+    box-shadow: 0 2px 12px rgba(27, 63, 139, 0.08);
+  }
+
+  .members-nav-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-deep, #1B3F8B);
+    margin-bottom: 1rem;
+    letter-spacing: 0.05em;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(27, 63, 139, 0.1);
+  }
+
+  .members-nav-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .members-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--color-ink, #1A1F2E);
+    transition: background 0.2s;
+    border: 1px solid transparent;
+  }
+
+  .members-nav-link:hover {
+    background: var(--color-base, #F0F6FF);
+    border-color: rgba(27, 63, 139, 0.1);
+  }
+
+  .nav-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    width: 2rem;
+    text-align: center;
+  }
+
+  .members-nav-link > div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    flex: 1;
+  }
+
+  .nav-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+
+  .nav-desc {
+    font-size: 0.8125rem;
+    color: rgba(26, 31, 46, 0.5);
+    letter-spacing: 0.02em;
+  }
+
+  .nav-arrow {
+    color: var(--color-gold, #D4A84B);
+    font-size: 1rem;
+    flex-shrink: 0;
+    transition: transform 0.2s;
+  }
+
+  .members-nav-link:hover .nav-arrow {
+    transform: translateX(3px);
   }
 </style>

@@ -1,0 +1,118 @@
+---
+import PageLayout from '../../../layouts/PageLayout.astro';
+import pagesData from '../../../data/wp-pages.json';
+import type { GetStaticPaths } from 'astro';
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  return pagesData.mitepitwu.map((vol) => ({
+    params: { vol: vol.slug },
+    props: { vol },
+  }));
+};
+
+interface Props {
+  vol: { slug: string; title: string; content: string };
+}
+
+const { vol } = Astro.props;
+---
+
+<PageLayout
+  title={`みてぴとぅ ${vol.title} | メンバー | 夢源風人`}
+  description={`みてぴとぅ ${vol.title}。夢源風人メンバー向け広報誌です。`}
+  pageTitle={`みてぴとぅ ${vol.title}`}
+  pageSubtitle="Members Magazine"
+>
+  <nav class="breadcrumb">
+    <a href="/members/">メンバー</a>
+    <span aria-hidden="true">›</span>
+    <a href="/members/mitepitwu/">みてぴとぅ</a>
+    <span aria-hidden="true">›</span>
+    <span>{vol.title}</span>
+  </nav>
+
+  {vol.content ? (
+    <div class="mite-content wp-content" set:html={vol.content} />
+  ) : (
+    <p class="empty-notice">コンテンツを準備中です。</p>
+  )}
+
+  <div class="back-link">
+    <a href="/members/mitepitwu/">← みてぴとぅ一覧に戻る</a>
+  </div>
+</PageLayout>
+
+<style>
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: rgba(26, 31, 46, 0.55);
+    margin-bottom: 2rem;
+  }
+
+  .breadcrumb a {
+    color: var(--color-deep, #1B3F8B);
+    text-decoration: none;
+  }
+
+  .breadcrumb a:hover {
+    text-decoration: underline;
+  }
+
+  .empty-notice {
+    text-align: center;
+    color: rgba(26, 31, 46, 0.5);
+    padding: 4rem 0;
+    font-size: 0.9375rem;
+  }
+
+  /* WordPress content */
+  .wp-content :global(h2) {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: var(--color-deep, #1B3F8B);
+    margin: 2rem 0 0.75rem;
+  }
+
+  .wp-content :global(p) {
+    line-height: 2;
+    margin-bottom: 1rem;
+  }
+
+  .wp-content :global(img) {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+  }
+
+  .wp-content :global(ul.mitepitwu) {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+
+  .wp-content :global(a) {
+    color: var(--color-deep, #1B3F8B);
+  }
+
+  .back-link {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(27, 63, 139, 0.1);
+  }
+
+  .back-link a {
+    font-size: 0.9375rem;
+    color: var(--color-deep, #1B3F8B);
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .back-link a:hover {
+    text-decoration: underline;
+  }
+</style>

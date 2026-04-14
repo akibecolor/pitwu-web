@@ -1,0 +1,113 @@
+---
+import PageLayout from '../../../layouts/PageLayout.astro';
+import pagesData from '../../../data/wp-pages.json';
+
+const volumes = pagesData.mitepitwu.map((vol) => ({
+  slug: vol.slug,
+  title: vol.title,
+  label: vol.slug === 'mitepitwu01' ? '創刊号'
+       : vol.slug === 'mitepitwu02' ? '第弐号'
+       : vol.slug === 'mitepitwu03-3' ? '第参号'
+       : vol.slug === 'mitepitwu03-2' ? '最新号（第参号 更新版）'
+       : vol.slug === 'mitepitwu04' ? '第肆号'
+       : vol.title,
+}));
+---
+
+<PageLayout
+  title="みてぴとぅ | メンバー | 夢源風人"
+  description="夢源風人メンバー向け広報誌「みてぴとぅ」のバックナンバーです。"
+  pageTitle="みてぴとぅ"
+  pageSubtitle="Members Magazine"
+>
+  <p class="mite-lead">
+    チーム内広報誌「みてぴとぅ」のバックナンバーです。<br />
+    各号をクリックして読んでね。
+  </p>
+
+  <ul class="vol-list">
+    {volumes.map((vol) => (
+      <li class="vol-item">
+        <a href={`/members/mitepitwu/${vol.slug}/`} class="vol-link">
+          <span class="vol-icon" aria-hidden="true">📖</span>
+          <div>
+            <span class="vol-label">{vol.label}</span>
+          </div>
+          <span class="vol-arrow">→</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+
+  <div class="back-link">
+    <a href="/members/">← メンバートップに戻る</a>
+  </div>
+</PageLayout>
+
+<style>
+  .mite-lead {
+    font-size: 0.9375rem;
+    line-height: 2;
+    color: rgba(26, 31, 46, 0.7);
+    margin-bottom: 2rem;
+  }
+
+  .vol-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 3rem;
+  }
+
+  .vol-item {
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(27, 63, 139, 0.08);
+    overflow: hidden;
+    transition: transform 0.2s ease;
+  }
+
+  .vol-item:hover {
+    transform: translateX(4px);
+  }
+
+  .vol-link {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    text-decoration: none;
+    color: var(--color-ink, #1A1F2E);
+    border-left: 4px solid var(--color-gold, #D4A84B);
+  }
+
+  .vol-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .vol-label {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.0625rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+
+  .vol-arrow {
+    margin-left: auto;
+    color: var(--color-gold, #D4A84B);
+    font-size: 1.125rem;
+  }
+
+  .back-link a {
+    font-size: 0.9375rem;
+    color: var(--color-deep, #1B3F8B);
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .back-link a:hover {
+    text-decoration: underline;
+  }
+</style>
