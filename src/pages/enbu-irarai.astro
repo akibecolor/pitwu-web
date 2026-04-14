@@ -45,9 +45,9 @@ import PageLayout from '../layouts/PageLayout.astro';
 
     <section class="photo-section">
       <div class="photo-grid">
-        <img src="https://pitwu.com/wp-content/uploads/2015/01/385A5979.jpg" alt="演舞の様子" loading="lazy" />
-        <img src="https://pitwu.com/wp-content/uploads/2015/01/385A6061.jpg" alt="演舞の様子" loading="lazy" />
-        <img src="https://pitwu.com/wp-content/uploads/2015/04/385A6151.jpg" alt="演舞の様子" loading="lazy" />
+        <img src="/wp-content/uploads/2015/01/385A5979.jpg" alt="演舞の様子" loading="lazy" />
+        <img src="/wp-content/uploads/2015/01/385A6061.jpg" alt="演舞の様子" loading="lazy" />
+        <img src="/wp-content/uploads/2015/04/385A6151.jpg" alt="演舞の様子" loading="lazy" />
       </div>
     </section>
   </div>
@@ -122,6 +122,11 @@ import PageLayout from '../layouts/PageLayout.astro';
     border-radius: 6px;
     text-decoration: none !important;
     transition: background 0.2s, transform 0.2s;
+  }
+
+  /* .section a より優先してボタン文字色のコントラストを確保 */
+  .section .cta-btn {
+    color: #ffffff;
   }
 
   .cta-btn:hover {

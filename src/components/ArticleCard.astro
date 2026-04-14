@@ -8,15 +8,14 @@ interface Props {
 
 const { article, featured = false } = Astro.props;
 
-// Build URL from publishedAt: /YYYY/MM/slug
-// slugはWordPress由来でURLエンコード済みの場合があるためデコードして使用
-const date = new Date(article.publishedAt);
+// 表示日: wpDate があれば優先（WordPress からの投稿日）、なければ publishedAt（新規記事）
+const sourceDate = article.wpDate || article.publishedAt;
+const date = new Date(sourceDate);
 const year = date.getFullYear();
 const month = String(date.getMonth() + 1).padStart(2, '0');
 const slug = decodeURIComponent(article.slug);
 const href = `/${year}/${month}/${slug}`;
 
-// Format display date
 const displayDate = date.toLocaleDateString('ja-JP', {
   year: 'numeric',
   month: 'long',
@@ -53,7 +52,7 @@ const displayDate = date.toLocaleDateString('ja-JP', {
 
     <div class="card-body">
       <h2 class="card-title">{article.title}</h2>
-      <time class="card-date" datetime={article.publishedAt}>{displayDate}</time>
+      <time class="card-date" datetime={sourceDate}>{displayDate}</time>
       {article.tags && article.tags.length > 0 && (
         <ul class="card-tags" aria-label="タグ">
           {article.tags.map((tag) => (

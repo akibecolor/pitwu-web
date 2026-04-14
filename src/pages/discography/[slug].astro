@@ -1,7 +1,8 @@
 ---
-import PageLayout from '../../layouts/PageLayout.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
 import pagesData from '../../data/wp-pages.json';
 import type { GetStaticPaths } from 'astro';
+// v2: structured layout for 2019+ songs
 
 export const getStaticPaths: GetStaticPaths = async () => {
   return pagesData.songs.map((song) => ({
@@ -10,33 +11,249 @@ export const getStaticPaths: GetStaticPaths = async () => {
   }));
 };
 
+interface Credits {
+  composer?: string | null;
+  choreographer?: string | null;
+  costumeBy?: string | null;
+  narukoBy?: string | null;
+  floatBy?: string | null;
+}
+
 interface Props {
-  song: { slug: string; title: string; content: string };
+  song: {
+    slug: string;
+    title: string;
+    content: string;
+    year: number | string;
+    romaji?: string;
+    youtubeId?: string | null;
+    lyrics?: string | null;
+    credits?: Credits | null;
+  };
 }
 
 const { song } = Astro.props;
+const yearLabel = typeof song.year === 'string' ? song.year : String(song.year);
+const subtitle = song.romaji ? `${yearLabel} — ${song.romaji}` : `${yearLabel} — Discography`;
+
+const hasYoutube = Boolean(song.youtubeId);
+const hasLyrics  = Boolean(song.lyrics);
+const hasCredits = song.credits && Object.values(song.credits).some(Boolean);
+// credits オブジェクト自体が存在すれば 2019年以降の構造化ページ
+const isStructured = song.credits !== undefined;
+
+const creditLabels: [keyof Credits, string][] = [
+  ['composer',      '楽曲'],
+  ['choreographer', '振付'],
+  ['costumeBy',     '衣装制作'],
+  ['narukoBy',      '鳴子制作'],
+  ['floatBy',       '地方車製作'],
+];
 ---
 
-<PageLayout
+<BaseLayout
   title={`${song.title} | 演舞 | 夢源風人`}
   description={`夢源風人の演舞「${song.title}」の紹介ページです。`}
-  pageTitle={song.title}
-  pageSubtitle="Discography"
 >
-  <nav class="breadcrumb">
-    <a href="/discography/">演舞一覧</a>
-    <span aria-hidden="true">›</span>
-    <span>{song.title}</span>
-  </nav>
+  <div class="song-page">
 
-  <div class="song-content wp-content" set:html={song.content} />
+    <!-- テキストアートヘッダー -->
+    <header class="song-header">
+      <div class="song-header-bg" aria-hidden="true">
+        <span class="ghost-title">{song.title}</span>
+      </div>
+      <div class="song-header-content">
+        <p class="song-year-label">{subtitle}</p>
+        <h1 class="song-title">{song.title}</h1>
+      </div>
+    </header>
 
-  <div class="back-link">
-    <a href="/discography/">← 演舞一覧に戻る</a>
+    <!-- 本文 -->
+    <div class="song-body">
+      <div class="song-body-inner">
+        <nav class="breadcrumb" aria-label="パンくずリスト">
+          <a href="/discography/">演舞一覧</a>
+          <span aria-hidden="true">›</span>
+          <span>{song.title}</span>
+        </nav>
+
+        {isStructured ? (
+          <div class="structured-sections">
+
+            <section class="section section--lyrics">
+              <h2 class="section-title">
+                <span class="section-title-en">Lyrics</span>
+                <span class="section-title-ja">歌詞</span>
+              </h2>
+              {hasLyrics ? (
+                <div class="lyrics-text" set:html={song.lyrics} />
+              ) : (
+                <div class="coming-soon">
+                  <span class="coming-soon-label">Coming Soon</span>
+                  <p class="coming-soon-note">歌詞を準備中です</p>
+                </div>
+              )}
+            </section>
+
+            <section class="section section--costume">
+              <h2 class="section-title">
+                <span class="section-title-en">Costume</span>
+                <span class="section-title-ja">衣装</span>
+              </h2>
+              <div class="coming-soon">
+                <span class="coming-soon-label">Coming Soon</span>
+                <p class="coming-soon-note">衣装写真を準備中です</p>
+              </div>
+            </section>
+
+            <section class="section section--float">
+              <h2 class="section-title">
+                <span class="section-title-en">Yatai</span>
+                <span class="section-title-ja">地方車</span>
+              </h2>
+              <div class="coming-soon">
+                <span class="coming-soon-label">Coming Soon</span>
+                <p class="coming-soon-note">地方車写真を準備中です</p>
+              </div>
+            </section>
+
+            <section class="section section--credits">
+              <h2 class="section-title">
+                <span class="section-title-en">Credits</span>
+                <span class="section-title-ja">作品情報</span>
+              </h2>
+              {hasCredits ? (
+                <dl class="credits-list">
+                  {creditLabels.map(([key, label]) =>
+                    song.credits?.[key] ? (
+                      <div class="credits-row">
+                        <dt class="credits-label">{label}</dt>
+                        <dd class="credits-value">{song.credits?.[key]}</dd>
+                      </div>
+                    ) : null
+                  )}
+                </dl>
+              ) : (
+                <div class="coming-soon">
+                  <span class="coming-soon-label">Coming Soon</span>
+                  <p class="coming-soon-note">クレジット情報を準備中です</p>
+                </div>
+              )}
+            </section>
+
+            <section class="section section--video">
+              <h2 class="section-title">
+                <span class="section-title-en">Video</span>
+                <span class="section-title-ja">演舞動画</span>
+              </h2>
+              {hasYoutube ? (
+                <div class="video-wrapper">
+                  <iframe
+                    src={`https://www.youtube.com/embed/${song.youtubeId}`}
+                    title={`${song.title} 演舞動画`}
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen
+                    loading="lazy"
+                  />
+                </div>
+              ) : (
+                <div class="coming-soon">
+                  <span class="coming-soon-label">Coming Soon</span>
+                  <p class="coming-soon-note">動画を準備中です</p>
+                </div>
+              )}
+            </section>
+
+          </div>
+        ) : (
+          <div class="song-content wp-content" set:html={song.content} />
+        )}
+
+        <div class="back-link">
+          <a href="/discography/">← 演舞一覧に戻る</a>
+        </div>
+      </div>
+    </div>
+
   </div>
-</PageLayout>
+</BaseLayout>
 
 <style>
+  .song-page {
+    padding-top: 64px; /* header height */
+  }
+
+  /* ── テキストアートヘッダー ── */
+  .song-header {
+    position: relative;
+    background: linear-gradient(135deg, var(--color-deep, #1B3F8B) 0%, #1a3580 60%, #0f2460 100%);
+    padding: 4rem 1.5rem 3.5rem;
+    text-align: center;
+    overflow: hidden;
+  }
+
+  /* ゴーストテキスト（背景装飾） */
+  .song-header-bg {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .ghost-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: clamp(5rem, 18vw, 14rem);
+    font-weight: 900;
+    color: #ffffff;
+    opacity: 0.055;
+    white-space: nowrap;
+    line-height: 1;
+    letter-spacing: 0.05em;
+    user-select: none;
+    transform: translateX(3%) rotate(-1deg);
+  }
+
+  /* 前面コンテンツ */
+  .song-header-content {
+    position: relative;
+    z-index: 1;
+    max-width: var(--container-width);
+    margin: 0 auto;
+  }
+
+  .song-year-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.875rem;
+    font-weight: 300;
+    letter-spacing: 0.35em;
+    color: var(--color-sky, #6EC6F0);
+    text-transform: uppercase;
+    margin-bottom: 0.875rem;
+  }
+
+  .song-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: clamp(1.75rem, 5vw, 2.75rem);
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.1em;
+    line-height: 1.3;
+  }
+
+  /* ── 本文 ── */
+  .song-body {
+    padding: 4rem 1.5rem 6rem;
+  }
+
+  .song-body-inner {
+    max-width: var(--container-width);
+    margin: 0 auto;
+  }
+
   .breadcrumb {
     display: flex;
     align-items: center;
@@ -51,11 +268,138 @@ const { song } = Astro.props;
     text-decoration: none;
   }
 
-  .breadcrumb a:hover {
-    text-decoration: underline;
+  .breadcrumb a:hover { text-decoration: underline; }
+
+  /* ── 構造化セクション ── */
+  .structured-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 3.5rem;
   }
 
-  /* WordPress content normalization */
+  .section {
+    border-top: 2px solid rgba(27, 63, 139, 0.12);
+    padding-top: 2.5rem;
+  }
+
+  .section-title {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    margin-bottom: 1.75rem;
+  }
+
+  .section-title-en {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.75rem;
+    font-weight: 400;
+    letter-spacing: 0.35em;
+    color: var(--color-sky, #6EC6F0);
+    text-transform: uppercase;
+  }
+
+  .section-title-ja {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-deep, #1B3F8B);
+    letter-spacing: 0.08em;
+  }
+
+  /* Coming Soon カード */
+  .coming-soon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 2.5rem 2rem;
+    border: 2px dashed rgba(27, 63, 139, 0.18);
+    border-radius: 10px;
+    background: rgba(27, 63, 139, 0.025);
+    max-width: 480px;
+    text-align: center;
+  }
+
+  .coming-soon-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.125rem;
+    font-weight: 600;
+    letter-spacing: 0.25em;
+    color: var(--color-sky, #6EC6F0);
+    text-transform: uppercase;
+  }
+
+  .coming-soon-note {
+    font-size: 0.8125rem;
+    color: rgba(26, 31, 46, 0.4);
+    letter-spacing: 0.05em;
+  }
+
+  /* 演舞動画 */
+  .video-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 720px;
+    padding-bottom: min(56.25%, 405px);
+    height: 0;
+    overflow: hidden;
+    border-radius: 10px;
+    box-shadow: 0 4px 24px rgba(27, 63, 139, 0.18);
+  }
+
+  .video-wrapper iframe {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    border: none;
+  }
+
+  /* 歌詞 */
+  .lyrics-text {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1rem;
+    line-height: 2.2;
+    color: var(--color-ink, #1A1F2E);
+    white-space: pre-line;
+    max-width: 600px;
+  }
+
+  /* クレジット */
+  .credits-list {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.875rem 1.5rem;
+    max-width: 480px;
+  }
+
+  .credits-row {
+    display: contents;
+  }
+
+  .credits-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--color-sky, #6EC6F0);
+    text-transform: uppercase;
+    white-space: nowrap;
+    padding-top: 0.1em;
+  }
+
+  .credits-value {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 0.9375rem;
+    color: var(--color-ink, #1A1F2E);
+    line-height: 1.6;
+  }
+
+  /* ── WordPress コンテンツ (旧形式) ── */
+  .wp-content :global(img.banner),
+  .wp-content :global(img[class*="banner"]) {
+    display: none;
+  }
+
   .wp-content :global(h2),
   .wp-content :global(h3) {
     font-family: 'Noto Serif JP', serif;
@@ -73,12 +417,19 @@ const { song } = Astro.props;
     color: var(--color-ink, #1A1F2E);
   }
 
+  .wp-content :global(img) {
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+  }
+
   .wp-content :global(iframe) {
     max-width: 100%;
     border-radius: 8px;
   }
 
-  .wp-content :global(.youtube) {
+  .wp-content :global(.youtube),
+  .wp-content :global(.embed-youtube) {
     position: relative;
     width: 100%;
     padding-bottom: 56.25%;
@@ -91,20 +442,8 @@ const { song } = Astro.props;
   .wp-content :global(.youtube iframe),
   .wp-content :global(.embed-youtube iframe) {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-  }
-
-  .wp-content :global(.embed-youtube) {
-    position: relative;
-    width: 100%;
-    padding-bottom: 56.25%;
-    height: 0;
-    overflow: hidden;
-    border-radius: 8px;
-    margin-bottom: 2rem;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
   }
 
   .wp-content :global(.home-text) {
@@ -126,7 +465,5 @@ const { song } = Astro.props;
     font-weight: 500;
   }
 
-  .back-link a:hover {
-    text-decoration: underline;
-  }
+  .back-link a:hover { text-decoration: underline; }
 </style>

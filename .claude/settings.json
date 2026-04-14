@@ -1,0 +1,40 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e ':*)",
+      "Bash(npx astro:*)",
+      "WebFetch(domain:docs.google.com)",
+      "Read(//tmp/**)",
+      "Bash(grep -o '\"[0-9]\\\\{7,10\\\\}\"')",
+      "WebFetch(domain:www.youtube.com)",
+      "WebSearch",
+      "WebFetch(domain:pitwu.com)",
+      "WebFetch(domain:www.kojyanto.net)",
+      "WebFetch(domain:www.kochinews.co.jp)",
+      "WebFetch(domain:yosakoi-festival.com)",
+      "WebFetch(domain:www.facebook.com)",
+      "WebFetch(domain:x.com)",
+      "WebFetch(domain:dokoiko.tosanonatsu.com)",
+      "WebFetch(domain:www.sakuyosa.com)",
+      "WebFetch(domain:united-studio.com)",
+      "WebFetch(domain:nigiwai-square.localinfo.jp)",
+      "WebFetch(domain:linkco.re)",
+      "Bash(node -e \"const d=require\\('./src/data/wp-pages.json'\\); const songs2019=d.songs.filter\\(s=>typeof s.year==='number'&&s.year>=2019\\); console.log\\(JSON.stringify\\(songs2019.map\\(s=>\\({slug:s.slug,title:s.title,year:s.year}\\)\\),null,2\\)\\)\")",
+      "Bash(node -e \"const d=require\\('./src/data/wp-pages.json'\\); const songs2019=d.songs.filter\\(s=>typeof s.year==='number'&&s.year>=2019\\); console.log\\(JSON.stringify\\(songs2019.map\\(s=>\\({slug:s.slug,title:s.title,year:s.year,romaji:s.romaji}\\)\\),null,2\\)\\)\")",
+      "Bash(node -e \"const d=require\\('./src/data/wp-pages.json'\\); const songs2019=d.songs.filter\\(s=>['sato','marumanten','monokuro','soleil','tattobu','gunjohyururi'].includes\\(s.slug\\)\\); console.log\\(JSON.stringify\\(songs2019,null,2\\)\\)\")",
+      "Bash(node -e \"const d=require\\('./src/data/wp-pages.json'\\); const s=d.songs.find\\(x=>x.slug==='gunjohyururi'\\); console.log\\(JSON.stringify\\(s,null,2\\)\\)\")",
+      "Bash(npx tsc:*)",
+      "Bash(node_modules/.bin/tsc --noEmit)",
+      "Read(//c/Users/akico/AppData/Local/Temp/claude/c--Users-akico-Documents-pitwu-web/92bef917-7d47-4d16-a67f-0655b78e80c6/tasks/**)",
+      "Bash(curl -s http://localhost:4322/discography/gunjohyururi/)",
+      "Bash(netstat -ano)",
+      "Bash(tasklist /fi \"PID eq 45368\")",
+      "Bash(kill 1243)",
+      "Bash(grep -oE \"\\(section--video|演舞動画|Gunjō Hyururi|2026 — [A-Za-z]{1,8}|video-wrapper\\)\")",
+      "Bash(curl -s http://localhost:4322/discography/kaze/)",
+      "Bash(curl -s http://localhost:4322/discography/tattobu/)",
+      "Bash(curl -s https://pitwu.com/)",
+      "Bash(curl -s https://pitwu.com/contact/)"
+    ]
+  }
+}
