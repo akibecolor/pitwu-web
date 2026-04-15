@@ -1,4 +1,5 @@
 ---
+// ArticleLayout.astro — 記事詳細ページのレイアウト（SEO・本文・コメント）
 import BaseLayout from './BaseLayout.astro';
 import CommentList from '../components/CommentList.astro';
 import type { Article } from '../types/index.js';
@@ -9,6 +10,27 @@ interface Props {
 }
 
 const { article, comments = [] } = Astro.props;
+
+/**
+ * 記事本文から meta description 用の抜粋を組み立てる（最大長を超えないよう省略）。
+ * @param title 記事タイトル
+ * @param html 記事本文 HTML
+ * @returns meta description 文字列
+ */
+function buildArticleMetaDescription(title: string, html: string): string {
+  const maxLen = 155;
+  const lead = `夢源風人の活動記事「${title}」。`;
+  if (lead.length >= maxLen) {
+    return `${lead.slice(0, maxLen - 1)}…`;
+  }
+  const plain = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  const room = maxLen - lead.length;
+  if (!plain || room < 5) return lead;
+  const body = plain.length > room ? `${plain.slice(0, room - 1)}…` : plain;
+  return `${lead}${body}`;
+}
+
+const articleMetaDescription = buildArticleMetaDescription(article.title, article.content);
 
 // 表示日: wpDate があれば優先（WordPress からの投稿日）、なければ publishedAt（新規記事）
 const sourceDate = article.wpDate || article.publishedAt;
@@ -26,8 +48,8 @@ const siteUrl = 'https://pitwu.com';
 ---
 
 <BaseLayout
-  title={`${article.title} | 夢源風人`}
-  description={article.title}
+  title={`${article.title} | 活動記事 | 夢源風人`}
+  description={articleMetaDescription}
   ogImage={article.eyecatch?.url}
 >
   <article class="article-page">

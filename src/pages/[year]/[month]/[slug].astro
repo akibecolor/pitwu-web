@@ -7,7 +7,9 @@ export const getStaticPaths: GetStaticPaths = async () => {
   const articles = await getAllArticles();
 
   return articles.map((article) => {
-    const date = new Date(article.publishedAt);
+    // ArticleCard と同じロジック: wpDate 優先（WordPress 投稿日）、無ければ publishedAt
+    const sourceDate = article.wpDate || article.publishedAt;
+    const date = new Date(sourceDate);
     const year = String(date.getFullYear());
     const month = String(date.getMonth() + 1).padStart(2, '0');
 

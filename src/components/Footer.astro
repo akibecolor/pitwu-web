@@ -1,4 +1,5 @@
 ---
+// Footer.astro — サイト共通フッター（ブランド・SNS・サイトマップ）
 const currentYear = new Date().getFullYear();
 ---
 
@@ -45,13 +46,19 @@ const currentYear = new Date().getFullYear();
       </ul>
     </div>
 
-    <div class="footer-nav">
+    <nav class="footer-nav" aria-label="サイトマップ">
+      <p class="footer-nav-heading">サイトマップ</p>
       <ul class="footer-nav-list">
         <li><a href="/" class="footer-nav-link">トップ</a></li>
-        <li><a href="/articles/" class="footer-nav-link">記事一覧</a></li>
+        <li><a href="/discography/" class="footer-nav-link">作品</a></li>
+        <li><a href="/enbu-irai/" class="footer-nav-link">演舞依頼</a></li>
+        <li><a href="/schedule/" class="footer-nav-link">スケジュール</a></li>
+        <li><a href="/recruit/" class="footer-nav-link">メンバー募集</a></li>
+        <li><a href="/articles/" class="footer-nav-link">ブログ</a></li>
+        <li><a href="/contact/" class="footer-nav-link">お問合せ</a></li>
         <li><a href="/search/" class="footer-nav-link">検索</a></li>
       </ul>
-    </div>
+    </nav>
   </div>
 
   <div class="footer-bottom">
@@ -87,8 +94,8 @@ const currentYear = new Date().getFullYear();
     margin: 0 auto;
     padding: 3rem 1.5rem 2rem;
     display: grid;
-    grid-template-columns: 1fr auto auto;
-    gap: 2rem 3rem;
+    grid-template-columns: 1fr auto minmax(14rem, 1fr);
+    gap: 2rem 2.5rem;
     align-items: start;
   }
 
@@ -147,11 +154,29 @@ const currentYear = new Date().getFullYear();
     background-color: rgba(110, 198, 240, 0.15);
   }
 
+  .footer-nav-heading {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.75rem;
+    font-weight: 400;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.45);
+    margin: 0 0 0.85rem;
+  }
+
   .footer-nav-list {
     list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.45rem 1.75rem;
+  }
+
+  @media (max-width: 480px) {
+    .footer-nav-list {
+      grid-template-columns: 1fr;
+    }
   }
 
   .footer-nav-link {

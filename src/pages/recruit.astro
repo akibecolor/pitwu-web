@@ -1,32 +1,33 @@
 ---
+// recruit.astro — メンバー募集（Join Us）
 import PageLayout from '../layouts/PageLayout.astro';
 ---
 
 <PageLayout
   title="メンバー募集 | 夢源風人"
-  description="夢源風人では年間活動をともにするメンバーを募集しています。踊り子・スタッフ、未経験者歓迎！"
+  description="大阪・東海で活動するよさこいチーム夢源風人のメンバー募集。踊り子・スタッフ（年間登録費）、未経験者歓迎。"
   pageTitle="メンバー募集"
   pageSubtitle="Join Us"
 >
   <div class="recruit-content">
-    <div class="lead-block">
-      <h2>夢源風人のメンバーになりませんか</h2>
-      <p>
-        夢源風人では一緒に年間活動をしてくれるメンバーを募集しています！<br />
-        あなたの手が、みんなの笑顔と演舞を作り出す！<br />
-        興味がある方、未経験でもOK！初心者だけど・・・なんて関係ありません！<br />
-        一緒に楽しく活動しませんか？
-      </p>
-      <p>
-        ぜひ<a href="/contact/">フォーム</a>よりお問い合わせください！<br />
-        あっつい夏をご用意して、お待ちしてます！
-      </p>
-      <p>
-        <a class="doc-link" href="/wp-content/uploads/2025/04/kiyaku_2_6.pdf" target="_blank" rel="noopener noreferrer">
-          📄 メンバー規約（PDF）
-        </a>
-      </p>
-    </div>
+    <section class="recruit-hero" aria-labelledby="recruit-lead-heading">
+      <div class="recruit-hero-inner">
+        <p class="recruit-hero-label">Join Us</p>
+        <h2 id="recruit-lead-heading" class="recruit-hero-title">夢源風人のメンバーになりませんか</h2>
+        <p class="recruit-hero-lead">
+          夢源風人では、一緒に年間を通して活動してくれる仲間を募集しています。
+          あなたの手が、みんなの笑顔と舞台をつくる——未経験でも、初心者でも、まずは気軽にどうぞ。
+        </p>
+        <p class="recruit-hero-sub">
+          お問い合わせは<a href="/contact/">フォーム</a>から。熱い季節を一緒に駆け抜けましょう。
+        </p>
+        <p class="recruit-hero-doc">
+          <a class="doc-link doc-link--on-dark" href="/wp-content/uploads/2025/04/kiyaku_2_6.pdf" target="_blank" rel="noopener noreferrer">
+            メンバー規約（PDF）
+          </a>
+        </p>
+      </div>
+    </section>
 
     <div class="section-grid">
       <div class="section-card">
@@ -35,16 +36,19 @@ import PageLayout from '../layouts/PageLayout.astro';
         <ul>
           <li><strong>年齢構成：</strong>年齢制限なし。5歳から60代まで幅広い踊り子がいます。中高生以下の参加については一度ご相談ください</li>
           <li><strong>活動場所：</strong>大阪 / 東海（各地にメンバーがいます）</li>
-          <li><strong>登録費：</strong>20,000円（高校生・学生は15,000円 / 小中学生は10,000円）</li>
+          <li><strong>年間登録費（踊り子）：</strong>20,000円（高校生・学生は15,000円 / 小中学生は10,000円）</li>
         </ul>
       </div>
 
       <div class="section-card">
         <h3>スタッフ</h3>
-        <p>運営・撮影・会計・衣装・事務など、演舞をつくるためのスタッフも募集しています。踊れなくてもチームに貢献できます！</p>
+        <p>
+          「なにかお手伝いをしたい」「祭りの雰囲気が好き」——そんな気持ちからでも大丈夫です。
+          当日の祭りサポートなど、できることから一緒に始められます。踊り子と同じく、チームの一員として活動を支えてください。
+        </p>
         <ul>
-          <li><strong>登録費：</strong>10,000円</li>
-          <li>演舞を見て楽しみたい方や特定のお祭りのみ参加もご相談可能です</li>
+          <li><strong>年間登録費（スタッフ）：</strong>1,000円</li>
+          <li>見学や特定のお祭りのみの参加なども、まずはご相談ください</li>
         </ul>
       </div>
     </div>
@@ -63,50 +67,154 @@ import PageLayout from '../layouts/PageLayout.astro';
     gap: 3rem;
   }
 
-  .lead-block {
-    max-width: 720px;
+  /* リード：カードではなくメッセージ性の高いヒーローバンド */
+  .recruit-hero {
+    position: relative;
+    margin: 0;
+    padding: 1.2rem 0 0;
   }
 
-  .lead-block h2 {
+  .recruit-hero-inner {
+    position: relative;
+    max-width: 100%;
+    padding: 2.75rem 2rem 3rem;
+    border-radius: 6px;
+    text-align: center;
+    background: linear-gradient(
+      145deg,
+      var(--color-deep, #1b3f8b) 0%,
+      #1a3d7a 45%,
+      #152a66 100%
+    );
+    box-shadow:
+      0 10px 40px rgba(27, 63, 139, 0.25),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+  }
+
+  .recruit-hero-inner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(120% 70% at 50% -20%, rgba(110, 198, 240, 0.16), transparent 55%),
+      radial-gradient(80% 50% at 100% 100%, rgba(212, 168, 75, 0.12), transparent 50%);
+    pointer-events: none;
+  }
+
+  .recruit-hero-label {
+    position: relative;
+    z-index: 1;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.8rem;
+    font-weight: 400;
+    letter-spacing: 0.45em;
+    color: var(--color-sky, #6ec6f0);
+    text-transform: uppercase;
+    margin: 0 0 0.75rem;
+  }
+
+  .recruit-hero-title {
+    position: relative;
+    z-index: 1;
     font-family: 'Noto Serif JP', serif;
-    font-size: 1.5rem;
+    font-size: clamp(1.35rem, 1.1rem + 1.5vw, 1.85rem);
     font-weight: 700;
-    color: var(--color-deep, #1B3F8B);
-    margin-bottom: 1.25rem;
+    color: #ffffff;
+    letter-spacing: 0.1em;
+    line-height: 1.55;
+    margin: 0 0 1.5rem;
+    padding: 0 0.25rem 1.1rem;
+    text-align: center;
+    text-shadow: 0 1px 18px rgba(0, 0, 0, 0.35);
   }
 
-  .lead-block p {
+  .recruit-hero-title::after {
+    content: '';
+    display: block;
+    width: min(10rem, 50%);
+    height: 4px;
+    margin: 1rem auto 0;
+    border-radius: 999px;
+    background: linear-gradient(
+      90deg,
+      rgba(212, 168, 75, 0.65),
+      rgba(110, 198, 240, 0.85)
+    );
+  }
+
+  .recruit-hero-lead,
+  .recruit-hero-sub {
+    position: relative;
+    z-index: 1;
+    max-width: 36rem;
+    margin-left: auto;
+    margin-right: auto;
     line-height: 2;
-    margin-bottom: 0.75rem;
-    color: var(--color-ink, #1A1F2E);
+    color: rgba(255, 255, 255, 0.92);
+    font-size: 0.9375rem;
+    text-align: left;
   }
 
-  .lead-block a {
-    color: var(--color-deep, #1B3F8B);
+  .recruit-hero-lead {
+    margin-bottom: 1rem;
+  }
+
+  .recruit-hero-sub {
+    margin-bottom: 0;
+  }
+
+  .recruit-hero-sub a {
+    color: var(--color-sky, #6ec6f0);
+    font-weight: 600;
     text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .recruit-hero-sub a:hover {
+    color: #ffffff;
+  }
+
+  .recruit-hero-doc {
+    position: relative;
+    z-index: 1;
+    margin: 1.5rem 0 0;
   }
 
   .doc-link {
     display: inline-block;
-    margin-top: 0.5rem;
-    padding: 0.5rem 1rem;
-    background: var(--color-base, #F0F6FF);
-    border-radius: 4px;
+    padding: 0.55rem 1.1rem;
+    background: rgba(255, 255, 255, 0.92);
+    border-radius: 8px;
     text-decoration: none !important;
     font-size: 0.9rem;
-    font-weight: 500;
-    border: 1px solid rgba(27, 63, 139, 0.15);
-    transition: background 0.2s;
+    font-weight: 600;
+    border: 1px solid rgba(27, 63, 139, 0.14);
+    box-shadow: 0 1px 4px rgba(27, 63, 139, 0.06);
+    transition: background 0.2s ease, border-color 0.2s ease;
   }
 
   .doc-link:hover {
-    background: #ddeeff;
+    background: #ffffff;
+    border-color: rgba(212, 168, 75, 0.45);
+  }
+
+  .doc-link--on-dark {
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    box-shadow: none;
+  }
+
+  .doc-link--on-dark:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(212, 168, 75, 0.45);
   }
 
   .section-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
+    gap: 1.25rem;
   }
 
   @media (max-width: 680px) {
@@ -116,71 +224,101 @@ import PageLayout from '../layouts/PageLayout.astro';
   }
 
   .section-card {
-    background: #ffffff;
-    border-radius: 8px;
-    padding: 1.75rem;
-    box-shadow: 0 2px 12px rgba(27, 63, 139, 0.08);
-    border-top: 3px solid var(--color-sky, #6EC6F0);
+    --card-r: 12px;
+    position: relative;
+    padding: 1.65rem 1.5rem 1.75rem;
+    border-radius: var(--card-r);
+    background: linear-gradient(165deg, rgba(240, 246, 255, 0.55), rgba(255, 255, 255, 0.98));
+    border: 1px solid rgba(110, 198, 240, 0.2);
+    box-shadow:
+      0 8px 22px rgba(27, 63, 139, 0.07),
+      0 2px 8px rgba(26, 31, 46, 0.04);
+    overflow: hidden;
+  }
+
+  .section-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    border-radius: var(--card-r) 0 0 var(--card-r);
+    background: linear-gradient(
+      180deg,
+      rgba(212, 168, 75, 0.55),
+      rgba(110, 198, 240, 0.75)
+    );
+  }
+
+  .section-card > * {
+    position: relative;
+    z-index: 1;
   }
 
   .section-card h3 {
     font-family: 'Noto Serif JP', serif;
-    font-size: 1.25rem;
+    font-size: 1.2rem;
     font-weight: 700;
-    color: var(--color-deep, #1B3F8B);
+    color: var(--color-deep, #1b3f8b);
     margin-bottom: 0.75rem;
+    letter-spacing: 0.04em;
   }
 
   .section-card p {
     font-size: 0.9375rem;
-    line-height: 1.8;
-    color: rgba(26, 31, 46, 0.8);
+    line-height: 1.85;
+    color: rgba(26, 31, 46, 0.82);
     margin-bottom: 0.75rem;
   }
 
   .section-card ul {
-    padding-left: 1.25rem;
+    padding-left: 1.2rem;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    margin: 0;
   }
 
   .section-card li {
     font-size: 0.875rem;
-    line-height: 1.7;
-    color: rgba(26, 31, 46, 0.75);
+    line-height: 1.75;
+    color: rgba(26, 31, 46, 0.78);
   }
 
   .cta-block {
     text-align: center;
     padding: 2.5rem 1.5rem;
-    background: linear-gradient(135deg, var(--color-deep, #1B3F8B) 0%, #2a5298 100%);
+    background: linear-gradient(135deg, var(--color-deep, #1b3f8b) 0%, #2a5298 100%);
     border-radius: 12px;
     color: #ffffff;
+    box-shadow: 0 12px 40px rgba(27, 63, 139, 0.25);
   }
 
   .cta-block p {
     font-size: 1rem;
     margin-bottom: 1.25rem;
-    opacity: 0.9;
+    opacity: 0.92;
     letter-spacing: 0.05em;
   }
 
   .cta-btn {
     display: inline-block;
-    padding: 0.875rem 2.5rem;
-    background-color: var(--color-sky, #6EC6F0);
-    color: var(--color-deep, #1B3F8B);
+    padding: 0.9rem 2.5rem;
+    background-color: var(--color-sky, #6ec6f0);
+    color: var(--color-deep, #1b3f8b);
     font-weight: 700;
     font-size: 0.9375rem;
     letter-spacing: 0.08em;
-    border-radius: 4px;
+    border-radius: 999px;
     text-decoration: none;
-    transition: background-color 0.25s ease, transform 0.2s ease;
+    transition: background-color 0.25s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
   }
 
   .cta-btn:hover {
     background-color: #ffffff;
     transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.15);
   }
 </style>

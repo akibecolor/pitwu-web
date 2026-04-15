@@ -1,8 +1,8 @@
 # 要件定義書 — pitwu.com リニューアル
 
-**バージョン**: 0.2
+**バージョン**: 0.3
 **作成日**: 2026-04-14
-**ステータス**: 承認済み（2026-04-14）— v0.2 追記中
+**ステータス**: 承認済み（2026-04-14）— v0.3 追記（sitemap・ナビ文書化）
 
 ---
 
@@ -69,10 +69,16 @@ pitwu.com を WordPress（さくらサーバー）から **Astro + microCMS + Cl
 | 項目 | 要件 |
 |------|------|
 | パフォーマンス | Core Web Vitals でGood判定（Pagespeed Insights）を目標 |
-| SEO | 既存URLのパーマリンク維持、またはリダイレクトによる評価引き継ぎ |
+| SEO | 既存URLのパーマリンク維持、またはリダイレクトによる評価引き継ぎ。`<title>` / `description` のパターンは `docs/design.md` を参照。ビルド時に XML サイトマップ（`@astrojs/sitemap`）を生成し、`public/robots.txt` で sitemap の URL を宣言する（詳細は `docs/design.md`） |
 | コスト | ホスティング費用を現在のさくらサーバー費用以下（できれば無料枠内）に抑える |
 | 保守性 | DBやサーバーの保守作業をなくす（フルマネージド環境） |
 | Git親和性 | コードはすべてGitで管理し、LLMによる補助開発が可能な構成とする |
+
+### 表記・メタ情報
+
+- **用語**: 年度ごとの楽曲・振付・紹介のまとまり（`/discography/`）はサイト上 **「作品」** と表記する。企業・施設への訪問出演など **依頼・出演の文脈** では **「演舞」** を用いる（例: 演舞依頼ページ、訪問演舞）。
+- **SEO**: `<title>` は短くブランド・ページ種別を示し、補足・情緒は `meta description` に載せる。具体パターン・例は `docs/design.md` の「SEO・表記・メタ情報」を参照する。
+- **XML サイトマップ**: 本番の絶対 URL（`astro.config.mjs` の `site`）を前提に、`npm run build` で `sitemap-index.xml` 等を `dist/` に出力する。`robots.txt` の `Sitemap:` は本番ドメインと一致させる。
 
 ---
 
@@ -125,4 +131,5 @@ pitwu.com を WordPress（さくらサーバー）から **Astro + microCMS + Cl
 - [ ] GitHubプッシュでCloudflare Pagesへの自動デプロイが動作する
 - [ ] デザインレビューを経た承認済みデザインで実装されている
 - [ ] ドメイン切り替え後、URLが旧URLと完全一致する（`/YYYY/MM/<title>`）
+- [ ] 本番デプロイ成果物に XML サイトマップが含まれ、`robots.txt` から参照できる
 - [ ] さくらサーバーを停止できる状態になる

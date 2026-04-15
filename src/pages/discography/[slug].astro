@@ -1,4 +1,5 @@
 ---
+// discography/[slug].astro — 作品詳細（長い作品名の折り返し・装飾見出し対応）
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import pagesData from '../../data/wp-pages.json';
 import type { GetStaticPaths } from 'astro';
@@ -34,7 +35,7 @@ interface Props {
 
 const { song } = Astro.props;
 const yearLabel = typeof song.year === 'string' ? song.year : String(song.year);
-const subtitle = song.romaji ? `${yearLabel} — ${song.romaji}` : `${yearLabel} — Discography`;
+const subtitle = song.romaji ? `${yearLabel} — ${song.romaji}` : `${yearLabel} — Works`;
 
 const hasYoutube = Boolean(song.youtubeId);
 const hasLyrics  = Boolean(song.lyrics);
@@ -49,11 +50,23 @@ const creditLabels: [keyof Credits, string][] = [
   ['narukoBy',      '鳴子制作'],
   ['floatBy',       '地方車製作'],
 ];
+
+/**
+ * WordPress 移行 HTML 内の「歌詞」ブロックをラップし、歌詞専用スタイルを当てる。
+ * @param html 記事本文 HTML
+ * @returns ラップ後の HTML
+ */
+function wrapLyricsSection(html: string): string {
+  const re = /(<h3[^>]*>\s*歌詞\s*<\/h3>)([\s\S]*?)(?=<h3\b|$)/i;
+  return html.replace(re, '<div class="wp-lyrics">$1$2</div>');
+}
+
+const legacyContent = wrapLyricsSection(song.content);
 ---
 
 <BaseLayout
-  title={`${song.title} | 演舞 | 夢源風人`}
-  description={`夢源風人の演舞「${song.title}」の紹介ページです。`}
+  title={`${song.title} | 作品 | 夢源風人`}
+  description={`夢源風人の作品「${song.title}」（${yearLabel}）の紹介。歌詞・クレジット・動画を掲載しています。`}
 >
   <div class="song-page">
 
@@ -72,9 +85,9 @@ const creditLabels: [keyof Credits, string][] = [
     <div class="song-body">
       <div class="song-body-inner">
         <nav class="breadcrumb" aria-label="パンくずリスト">
-          <a href="/discography/">演舞一覧</a>
+          <a href="/discography/">作品一覧</a>
           <span aria-hidden="true">›</span>
-          <span>{song.title}</span>
+          <span class="breadcrumb-current">{song.title}</span>
         </nav>
 
         {isStructured ? (
@@ -86,7 +99,9 @@ const creditLabels: [keyof Credits, string][] = [
                 <span class="section-title-ja">歌詞</span>
               </h2>
               {hasLyrics ? (
-                <div class="lyrics-text" set:html={song.lyrics} />
+                <div class="lyrics-card">
+                  <div class="lyrics-text" set:html={song.lyrics} />
+                </div>
               ) : (
                 <div class="coming-soon">
                   <span class="coming-soon-label">Coming Soon</span>
@@ -144,13 +159,13 @@ const creditLabels: [keyof Credits, string][] = [
             <section class="section section--video">
               <h2 class="section-title">
                 <span class="section-title-en">Video</span>
-                <span class="section-title-ja">演舞動画</span>
+                <span class="section-title-ja">作品動画</span>
               </h2>
               {hasYoutube ? (
                 <div class="video-wrapper">
                   <iframe
                     src={`https://www.youtube.com/embed/${song.youtubeId}`}
-                    title={`${song.title} 演舞動画`}
+                    title={`${song.title} 作品動画`}
                     frameborder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowfullscreen
@@ -167,11 +182,11 @@ const creditLabels: [keyof Credits, string][] = [
 
           </div>
         ) : (
-          <div class="song-content wp-content" set:html={song.content} />
+          <div class="song-content wp-content" set:html={legacyContent} />
         )}
 
         <div class="back-link">
-          <a href="/discography/">← 演舞一覧に戻る</a>
+          <a href="/discography/">← 作品一覧に戻る</a>
         </div>
       </div>
     </div>
@@ -193,7 +208,7 @@ const creditLabels: [keyof Credits, string][] = [
     overflow: hidden;
   }
 
-  /* ゴーストテキスト（背景装飾） */
+  /* ゴーストテキスト（背景装飾）— 中央に収めず XY ずらし＋大きめでクリップし、装飾感を出す */
   .song-header-bg {
     position: absolute;
     inset: 0;
@@ -204,17 +219,27 @@ const creditLabels: [keyof Credits, string][] = [
     overflow: hidden;
   }
 
+  /* 長いタイトルは折り返し。nowrap だと装飾テキストが横に無限に伸びる */
   .ghost-title {
     font-family: 'Noto Serif JP', serif;
-    font-size: clamp(5rem, 18vw, 14rem);
+    box-sizing: border-box;
+    width: 100%;
+    max-width: min(96vw, 52rem);
+    margin: 0 auto;
+    padding: 0 clamp(0.5rem, 3vw, 1.5rem);
+    font-size: clamp(2.5rem, 11vw, 10rem);
     font-weight: 900;
     color: #ffffff;
-    opacity: 0.055;
-    white-space: nowrap;
-    line-height: 1;
-    letter-spacing: 0.05em;
+    opacity: 0.05;
+    white-space: normal;
+    line-height: 1.02;
+    letter-spacing: 0.03em;
     user-select: none;
-    transform: translateX(3%) rotate(-1deg);
+    text-align: center;
+    overflow-wrap: anywhere;
+    word-break: keep-all;
+    transform: translate(4%, -10%) rotate(-2deg);
+    transform-origin: 50% 40%;
   }
 
   /* 前面コンテンツ */
@@ -241,7 +266,13 @@ const creditLabels: [keyof Credits, string][] = [
     font-weight: 700;
     color: #ffffff;
     letter-spacing: 0.1em;
-    line-height: 1.3;
+    line-height: 1.35;
+    max-width: 100%;
+    margin-inline: auto;
+    padding: 0 0.25rem;
+    overflow-wrap: anywhere;
+    word-break: keep-all;
+    text-wrap: balance;
   }
 
   /* ── 本文 ── */
@@ -256,11 +287,21 @@ const creditLabels: [keyof Credits, string][] = [
 
   .breadcrumb {
     display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.5rem;
     font-size: 0.875rem;
     color: rgba(26, 31, 46, 0.55);
     margin-bottom: 2rem;
+  }
+
+  .breadcrumb-current {
+    min-width: 0;
+    flex: 1 1 12rem;
+    color: var(--color-ink, #1a1f2e);
+    overflow-wrap: anywhere;
+    word-break: keep-all;
+    line-height: 1.5;
   }
 
   .breadcrumb a {
@@ -336,7 +377,7 @@ const creditLabels: [keyof Credits, string][] = [
     letter-spacing: 0.05em;
   }
 
-  /* 演舞動画 */
+  /* 作品動画 */
   .video-wrapper {
     position: relative;
     width: 100%;
@@ -355,14 +396,79 @@ const creditLabels: [keyof Credits, string][] = [
     border: none;
   }
 
-  /* 歌詞 */
+  /*
+   * 歌詞カード（募集・演舞依頼の section-card と同一トーン）
+   * structured（microCMS）と WordPress 移行（.wp-lyrics）の両方に適用
+   */
+  .lyrics-card,
+  .wp-content :global(.wp-lyrics) {
+    --card-r: 12px;
+    position: relative;
+    padding: 1.65rem 1.5rem 1.75rem;
+    border-radius: var(--card-r);
+    background: linear-gradient(165deg, rgba(240, 246, 255, 0.55), rgba(255, 255, 255, 0.98));
+    border: 1px solid rgba(110, 198, 240, 0.2);
+    box-shadow:
+      0 8px 22px rgba(27, 63, 139, 0.07),
+      0 2px 8px rgba(26, 31, 46, 0.04);
+    overflow: hidden;
+    max-width: 42rem;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 0.9375rem;
+    line-height: 2;
+    color: rgba(26, 31, 46, 0.88);
+    overflow-wrap: break-word;
+    word-break: keep-all;
+  }
+
+  .wp-content :global(.wp-lyrics) {
+    margin: 0 0 2.5rem;
+  }
+
+  .lyrics-card::before,
+  .wp-content :global(.wp-lyrics)::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    border-radius: var(--card-r) 0 0 var(--card-r);
+    background: linear-gradient(
+      180deg,
+      rgba(212, 168, 75, 0.55),
+      rgba(110, 198, 240, 0.75)
+    );
+  }
+
+  .lyrics-card .lyrics-text {
+    position: relative;
+    z-index: 1;
+  }
+
+  .wp-content :global(.wp-lyrics > *) {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* 歌詞本文（2019年以降の structured / microCMS） */
   .lyrics-text {
     font-family: 'Noto Serif JP', serif;
     font-size: 1rem;
-    line-height: 2.2;
-    color: var(--color-ink, #1A1F2E);
-    white-space: pre-line;
-    max-width: 600px;
+    line-height: 2;
+    color: rgba(26, 31, 46, 0.88);
+    max-width: none;
+    overflow-wrap: break-word;
+    word-break: keep-all;
+  }
+
+  .lyrics-text :global(p) {
+    margin: 0 0 0.65em;
+    line-height: 2;
+  }
+
+  .lyrics-text :global(p:last-child) {
+    margin-bottom: 0;
   }
 
   /* クレジット */
@@ -395,6 +501,11 @@ const creditLabels: [keyof Credits, string][] = [
   }
 
   /* ── WordPress コンテンツ (旧形式) ── */
+  .wp-content {
+    --wp-block-gap: 1.25rem;
+    --wp-heading-gap: 1.5rem;
+  }
+
   .wp-content :global(img.banner),
   .wp-content :global(img[class*="banner"]) {
     display: none;
@@ -405,7 +516,30 @@ const creditLabels: [keyof Credits, string][] = [
     font-family: 'Noto Serif JP', serif;
     font-weight: 700;
     color: var(--color-deep, #1B3F8B);
-    margin: 2rem 0 0.75rem;
+    margin: var(--wp-heading-gap) 0 0.65rem;
+  }
+
+  .wp-content :global(h2:first-child),
+  .wp-content :global(h3:first-child) {
+    margin-top: 0;
+  }
+
+  /* 動画ブロック直後の見出しは上余白を詰める（二重マージン防止） */
+  .wp-content :global(.youtube + h2),
+  .wp-content :global(.youtube + h3),
+  .wp-content :global(.embed-youtube + h2),
+  .wp-content :global(.embed-youtube + h3) {
+    margin-top: 1rem;
+  }
+
+  /* 画像・段落の直後の見出し */
+  .wp-content :global(p + h2),
+  .wp-content :global(p + h3),
+  .wp-content :global(a:has(> img) + h2),
+  .wp-content :global(a:has(> img) + h3),
+  .wp-content :global(figure + h2),
+  .wp-content :global(figure + h3) {
+    margin-top: 1rem;
   }
 
   .wp-content :global(h2) { font-size: 1.375rem; }
@@ -413,14 +547,100 @@ const creditLabels: [keyof Credits, string][] = [
 
   .wp-content :global(p) {
     line-height: 2;
-    margin-bottom: 1rem;
+    margin: 0 0 var(--wp-block-gap);
     color: var(--color-ink, #1A1F2E);
   }
 
+  /* WordPress 移行: 歌詞ブロック（上記 .lyrics-card と共通のカード装飾） */
+  .wp-content :global(.wp-lyrics > div:empty) {
+    display: none;
+  }
+
+  .wp-content :global(.wp-lyrics h3) {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--color-deep, #1b3f8b);
+    margin: 0 0 0.9rem;
+    padding-bottom: 0.45rem;
+    border-bottom: 1px solid rgba(27, 63, 139, 0.12);
+    letter-spacing: 0.04em;
+  }
+
+  .wp-content :global(.wp-lyrics p) {
+    margin-bottom: 0.5em;
+    line-height: 2;
+    min-height: 0;
+  }
+
+  .wp-content :global(.wp-lyrics p:last-child) {
+    margin-bottom: 0;
+  }
+
+  .wp-content :global(.wp-lyrics .home-text) {
+    white-space: normal;
+    margin: 0;
+    line-height: 2;
+  }
+
+  .wp-content :global(.wp-lyrics .home-text p) {
+    margin-bottom: 0.5em;
+  }
+
+  .wp-content :global(.wp-lyrics .home-text p:last-child) {
+    margin-bottom: 0;
+  }
+
   .wp-content :global(img) {
+    display: block;
     max-width: 100%;
     height: auto;
     border-radius: 6px;
+  }
+
+  /* 画像だけの段落：行ボックスの余分な下隙間を抑える */
+  .wp-content :global(p:has(> img:only-child)),
+  .wp-content :global(p:has(> a:only-child > img)) {
+    line-height: 0;
+    margin-bottom: var(--wp-block-gap);
+  }
+
+  .wp-content :global(p:has(> img:only-child) img),
+  .wp-content :global(p:has(> a:only-child > img) img) {
+    margin: 0;
+  }
+
+  .wp-content :global(p > a:only-child:has(> img)) {
+    display: block;
+    width: fit-content;
+    max-width: 100%;
+  }
+
+  /* p 外の画像リンク（先頭バナー・見出し直後の単体 a など）。p 内は段落 margin のみ */
+  .wp-content :global(a:has(> img):not(p *)) {
+    display: block;
+    width: fit-content;
+    max-width: 100%;
+    margin: 0 0 var(--wp-block-gap);
+  }
+
+  .wp-content :global(p a:has(> img)) {
+    margin-bottom: 0;
+  }
+
+  .wp-content :global(figure) {
+    margin: 0 0 var(--wp-block-gap);
+    padding: 0;
+  }
+
+  .wp-content :global(figure img) {
+    width: 100%;
+  }
+
+  .wp-content :global(ul.home-list) {
+    margin: 0 0 var(--wp-block-gap);
+    padding-left: 1.25rem;
+    line-height: 1.75;
   }
 
   .wp-content :global(iframe) {
@@ -436,7 +656,7 @@ const creditLabels: [keyof Credits, string][] = [
     height: 0;
     overflow: hidden;
     border-radius: 8px;
-    margin-bottom: 2rem;
+    margin: 0 0 1.5rem;
   }
 
   .wp-content :global(.youtube iframe),
@@ -448,8 +668,8 @@ const creditLabels: [keyof Credits, string][] = [
 
   .wp-content :global(.home-text) {
     line-height: 2;
-    white-space: pre-line;
-    margin-bottom: 1rem;
+    white-space: normal;
+    margin: 0 0 var(--wp-block-gap);
   }
 
   .back-link {
