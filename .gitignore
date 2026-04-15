@@ -26,8 +26,8 @@ Thumbs.db
 # Build artifacts / generated
 public/pagefind/
 
-# microCMS移行用（ローカルにDLした WP 画像群。microCMS CDNへアップ済みのためgit追跡不要）
-public/wp-content/
-
 # 実行ログ
 logs/
+
+# 移行アーカイブ（古いWP画像のzip等）
+*.zip

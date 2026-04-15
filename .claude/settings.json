@@ -39,7 +39,8 @@
       "Bash(node -e \"const f=require\\('./logs/tag-delete-failed.json'\\); const s={}; f.forEach\\(x=>{const k=x.status||'exception'; s[k]=\\(s[k]||0\\)+1;}\\); console.log\\(s\\); console.log\\('例:', f[0]\\);\")",
       "Bash(kill 1789)",
       "Bash(git show:*)",
-      "Bash(cp -r dist/pagefind public/)"
+      "Bash(cp -r dist/pagefind public/)",
+      "Bash(git checkout:*)"
     ]
   }
 }
