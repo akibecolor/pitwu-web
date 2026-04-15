@@ -1,10 +1,18 @@
 import { createClient } from 'microcms-js-sdk';
 import type { Article, Category, Tag } from '../types/index.js';
 
-const client = createClient({
-  serviceDomain: import.meta.env.MICROCMS_SERVICE_DOMAIN,
-  apiKey: import.meta.env.MICROCMS_API_KEY,
-});
+// 環境変数の取得: import.meta.env (Vite/Astro) が空なら process.env (Cloudflare Pages 等)
+// ビルド環境によって優先順位が異なるため両方フォールバック
+const serviceDomain = import.meta.env.MICROCMS_SERVICE_DOMAIN || process.env.MICROCMS_SERVICE_DOMAIN;
+const apiKey       = import.meta.env.MICROCMS_API_KEY        || process.env.MICROCMS_API_KEY;
+
+if (!serviceDomain || !apiKey) {
+  throw new Error(
+    `microCMS env vars が未設定: MICROCMS_SERVICE_DOMAIN=${serviceDomain ? 'set' : 'EMPTY'}, MICROCMS_API_KEY=${apiKey ? 'set' : 'EMPTY'}`
+  );
+}
+
+const client = createClient({ serviceDomain, apiKey });
 
 const LIMIT = 100;
 
