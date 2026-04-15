@@ -1,4 +1,5 @@
 ---
+// BaseLayout.astro — サイト共通 HTML シェルとデフォルト SEO（title / OGP）
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import '../styles/global.css';
@@ -11,7 +12,7 @@ interface Props {
 
 const {
   title,
-  description = '夢源風人（むげんかじ）は高知のよさこいチームです。',
+  description = '大阪・東海を拠点に活動するよさこいチーム「夢源風人（むげんかじぴとぅ）」の公式サイトです。',
   ogImage,
 } = Astro.props;
 
@@ -88,8 +89,16 @@ const ogImageUrl = ogImage ?? `${siteUrl}/favicon.png`;
     height: auto;
   }
 
-  a {
-    color: inherit;
-    text-decoration: none;
+  /* ヘッダー／フッターは各コンポーネントで色指定。本文リンクは区別しやすくする */
+  main a {
+    color: var(--color-deep, #1B3F8B);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    text-decoration-color: rgba(27, 63, 139, 0.35);
+  }
+
+  main a:hover {
+    color: var(--color-sky, #6EC6F0);
+    text-decoration-color: rgba(110, 198, 240, 0.7);
   }
 </style>

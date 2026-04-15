@@ -1,4 +1,5 @@
 ---
+// discography/index.astro — 作品一覧（長い作品名でも折り返し・カード崩れを防ぐ）
 import PageLayout from '../../layouts/PageLayout.astro';
 import pagesData from '../../data/wp-pages.json';
 
@@ -6,18 +7,20 @@ const songs = pagesData.songs;
 ---
 
 <PageLayout
-  title="演舞 | 夢源風人"
-  description="夢源風人の演舞楽曲一覧。それぞれの演舞に込めた思いをご覧ください。"
-  pageTitle="演舞"
-  pageSubtitle="Discography"
+  title="作品 | 夢源風人"
+  description="大阪・東海を拠点に活動する夢源風人の作品一覧。年度ごとの楽曲・紹介・歌詞への導線です。"
+  pageTitle="作品"
+  pageSubtitle="Works"
 >
   <ul class="song-list">
     {songs.map((song) => (
       <li class="song-item">
         <a href={`/discography/${song.slug}/`} class="song-link">
-          <span class="song-year">{song.year}</span>
+          <div class="song-link-top">
+            <span class="song-year">{song.year}</span>
+            <span class="song-arrow" aria-hidden="true">→</span>
+          </div>
           <span class="song-name">{song.title}</span>
-          <span class="song-arrow">→</span>
         </a>
       </li>
     ))}
@@ -28,66 +31,88 @@ const songs = pagesData.songs;
   .song-list {
     list-style: none;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+    gap: 1.25rem;
   }
 
   .song-item {
-    background: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(27, 63, 139, 0.08);
+    --song-card-r: 12px;
+    min-width: 0;
+    border-radius: var(--song-card-r);
     overflow: hidden;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow:
+      0 8px 24px rgba(27, 63, 139, 0.08),
+      0 2px 8px rgba(26, 31, 46, 0.04);
   }
 
   .song-item:hover {
     transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(27, 63, 139, 0.14);
+    box-shadow:
+      0 14px 36px rgba(27, 63, 139, 0.12),
+      0 4px 12px rgba(26, 31, 46, 0.06);
   }
 
   .song-link {
+    position: relative;
     display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 1.1rem 1.25rem;
+    flex-direction: column;
+    gap: 0.65rem;
+    min-height: 100%;
+    min-width: 0;
+    padding: 1.2rem 1.35rem 1.35rem;
     text-decoration: none;
     color: var(--color-ink, #1A1F2E);
-    border-left: 4px solid var(--color-sky, #6EC6F0);
-    transition: border-color 0.2s;
+    background: linear-gradient(155deg, rgba(240, 246, 255, 0.95), rgba(255, 255, 255, 0.98));
+    border: 1px solid rgba(110, 198, 240, 0.22);
+    border-left: 4px solid var(--color-sky, #6ec6f0);
+    transition: border-left-color 0.2s ease, background 0.2s ease;
   }
 
   .song-item:hover .song-link {
-    border-color: var(--color-deep, #1B3F8B);
+    border-left-color: var(--color-deep, #1b3f8b);
+    background: linear-gradient(155deg, rgba(255, 255, 255, 0.98), rgba(240, 246, 255, 0.88));
+  }
+
+  .song-link-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-shrink: 0;
   }
 
   .song-year {
     font-family: 'Cormorant Garamond', serif;
-    font-size: 0.8rem;
-    font-weight: 400;
-    letter-spacing: 0.05em;
-    color: var(--color-sky, #6EC6F0);
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    color: var(--color-sky, #6ec6f0);
     white-space: nowrap;
-    flex-shrink: 0;
-    min-width: 4.5rem;
   }
 
   .song-name {
     font-family: 'Noto Serif JP', serif;
-    font-size: 1rem;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    flex: 1;
+    font-size: 1.0625rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1.55;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: normal;
+    line-break: strict;
   }
 
   .song-arrow {
-    color: var(--color-sky, #6EC6F0);
-    font-size: 1.125rem;
-    transition: color 0.2s, transform 0.2s;
+    color: rgba(110, 198, 240, 0.85);
+    font-size: 1.25rem;
+    line-height: 1;
+    transition: color 0.2s ease, transform 0.2s ease;
     flex-shrink: 0;
   }
 
   .song-item:hover .song-arrow {
-    color: var(--color-deep, #1B3F8B);
-    transform: translateX(4px);
+    color: var(--color-deep, #1b3f8b);
+    transform: translateX(5px);
   }
 </style>

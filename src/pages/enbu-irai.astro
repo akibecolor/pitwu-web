@@ -1,57 +1,67 @@
 ---
-// recruit.astro — メンバー募集（Join Us）
+// enbu-irai.astro — 演舞依頼（訪問出演のご相談）固定ページ。URL は /enbu-irai/（旧 /enbu-irarai/ はリダイレクト）。
 import PageLayout from '../layouts/PageLayout.astro';
 ---
 
 <PageLayout
-  title="メンバー募集 | 夢源風人"
-  description="大阪・東海で活動するよさこいチーム夢源風人のメンバー募集。踊り子・スタッフ（年間登録費）、未経験者歓迎。"
-  pageTitle="メンバー募集"
-  pageSubtitle="Join Us"
+  title="演舞依頼 | 夢源風人"
+  description="大阪・東海を拠点とする夢源風人への訪問演舞のご依頼・お問い合わせ。企業・福祉施設などに対応します。"
+  pageTitle="演舞依頼"
+  pageSubtitle="Performance Request"
 >
   <div class="recruit-content">
-    <section class="recruit-hero" aria-labelledby="recruit-lead-heading">
+    <section class="recruit-hero" aria-labelledby="enbu-lead-heading">
       <div class="recruit-hero-inner">
-        <p class="recruit-hero-label">Join Us</p>
-        <h2 id="recruit-lead-heading" class="recruit-hero-title">夢源風人のメンバーになりませんか</h2>
+        <p class="recruit-hero-label">Performance Request</p>
+        <h2 id="enbu-lead-heading" class="recruit-hero-title">訪問演舞のご依頼・ご相談</h2>
         <p class="recruit-hero-lead">
-          夢源風人では、一緒に年間を通して活動してくれる仲間を募集しています。
-          あなたの手が、みんなの笑顔と舞台をつくる——未経験でも、初心者でも、まずは気軽にどうぞ。
+          企業・福祉施設・各種イベントなど、訪問演舞のご依頼を承っています。
+          お客様の場に合わせて、華やかな演舞をお届けできるようご相談ください。
         </p>
         <p class="recruit-hero-sub">
-          お問い合わせは<a href="/contact/">フォーム</a>から。熱い季節を一緒に駆け抜けましょう。
-        </p>
-        <p class="recruit-hero-doc">
-          <a class="doc-link doc-link--on-dark" href="/wp-content/uploads/2025/04/kiyaku_2_6.pdf" target="_blank" rel="noopener noreferrer">
-            メンバー規約（PDF）
-          </a>
+          ご興味をお持ちいただけましたら、<a href="/contact/">お問合せフォーム</a>よりご連絡ください。
         </p>
       </div>
     </section>
 
     <div class="section-grid">
       <div class="section-card">
-        <h3>踊り子</h3>
-        <p>高知のよさこい祭りに出たい！こいや祭りに出たい！地元のお祭りで踊りたい！体を動かしながら新しい趣味をはじめてみたい！などなど、理由は様々ですが私達と一緒に踊りませんか？</p>
-        <ul>
-          <li><strong>年齢構成：</strong>年齢制限なし。5歳から60代まで幅広い踊り子がいます。中高生以下の参加については一度ご相談ください</li>
-          <li><strong>活動場所：</strong>大阪 / 東海（各地にメンバーがいます）</li>
-          <li><strong>年間登録費（踊り子）：</strong>20,000円（高校生・学生は15,000円 / 小中学生は10,000円）</li>
-        </ul>
+        <h3>演舞依頼について</h3>
+        <p>
+          当チーム、夢源風人（むげんかじぴとぅ）は企業・福祉施設等からの訪問演舞を承っています。<br />
+          記念セレモニーに華を添えたい、施設内イベントに活気を出したいなどとお考えのご担当者様、
+          ひょっとしたら夢源風人がお役に立てるかもしれません。
+        </p>
+        <p>ご依頼内容や規模に応じて、事前にご相談のうえ調整いたします。</p>
       </div>
 
       <div class="section-card">
-        <h3>スタッフ</h3>
-        <p>
-          「なにかお手伝いをしたい」「祭りの雰囲気が好き」——そんな気持ちからでも大丈夫です。
-          当日の祭りサポートなど、できることから一緒に始められます。踊り子と同じく、チームの一員として活動を支えてください。
-        </p>
-        <ul>
-          <li><strong>年間登録費（スタッフ）：</strong>1,000円</li>
-          <li>見学や特定のお祭りのみの参加なども、まずはご相談ください</li>
+        <h3>演舞実績</h3>
+        <p class="record-caption">掲載の許可をいただいた団体様のみ掲載しております。</p>
+        <ul class="record-list">
+          <li>「チャリティーフェスつながる2013」大阪商工信用金庫 商工さくら基金 様</li>
+          <li>「つながりまつり」いばらき自立センター 様</li>
+          <li>指定障がい者施設 愛生会 豊生園 様</li>
+          <li>たのしい家 よどがわ 様</li>
+          <li>たのしいデイ とよさと 様</li>
+          <li>福島ともしび苑デイサービスセンター 様</li>
+          <li>「YMCA ユースカンファレンス」YMCA 様</li>
+          <li>神戸ヤクルト販売株式会社 様</li>
+          <li>Christian Dior 様</li>
+          <li>上桂御霊神社 様</li>
+          <li>大阪高知県人会 様</li>
+          <li>ダイキン工業株式会社 様</li>
         </ul>
       </div>
     </div>
+
+    <section class="enbu-photo-section" aria-label="演舞の様子">
+      <div class="photo-grid">
+        <img src="/wp-content/uploads/2015/01/anotsu-yosakoi_20131013_07003.jpg" alt="演舞の様子" loading="lazy" />
+        <img src="/wp-content/uploads/2015/01/2010_10_17_omoide_03.jpg" alt="演舞の様子" loading="lazy" />
+        <img src="/wp-content/uploads/2015/01/festival_2008-11-30_1.jpg" alt="演舞の様子" loading="lazy" />
+      </div>
+    </section>
 
     <div class="cta-block">
       <p>まずはお気軽にお問い合わせください</p>
@@ -61,13 +71,13 @@ import PageLayout from '../layouts/PageLayout.astro';
 </PageLayout>
 
 <style>
+  /* メンバー募集（recruit.astro）と同系のレイアウト・トーン */
   .recruit-content {
     display: flex;
     flex-direction: column;
     gap: 3rem;
   }
 
-  /* リード：カードではなくメッセージ性の高いヒーローバンド */
   .recruit-hero {
     position: relative;
     margin: 0;
@@ -175,45 +185,9 @@ import PageLayout from '../layouts/PageLayout.astro';
     color: #ffffff;
   }
 
-  .recruit-hero-doc {
-    position: relative;
-    z-index: 1;
-    margin: 1.5rem 0 0;
-  }
-
-  .doc-link {
-    display: inline-block;
-    padding: 0.55rem 1.1rem;
-    background: rgba(255, 255, 255, 0.92);
-    border-radius: 8px;
-    text-decoration: none !important;
-    font-size: 0.9rem;
-    font-weight: 600;
-    border: 1px solid rgba(27, 63, 139, 0.14);
-    box-shadow: 0 1px 4px rgba(27, 63, 139, 0.06);
-    transition: background 0.2s ease, border-color 0.2s ease;
-  }
-
-  .doc-link:hover {
-    background: #ffffff;
-    border-color: rgba(212, 168, 75, 0.45);
-  }
-
-  .doc-link--on-dark {
-    background: rgba(255, 255, 255, 0.12);
-    color: #ffffff !important;
-    border: 1px solid rgba(255, 255, 255, 0.28);
-    box-shadow: none;
-  }
-
-  .doc-link--on-dark:hover {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: rgba(212, 168, 75, 0.45);
-  }
-
   .section-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 1.25rem;
   }
 
@@ -272,18 +246,63 @@ import PageLayout from '../layouts/PageLayout.astro';
     margin-bottom: 0.75rem;
   }
 
-  .section-card ul {
-    padding-left: 1.2rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+  .record-caption {
+    font-size: 0.8125rem !important;
+    color: rgba(26, 31, 46, 0.55) !important;
+    margin-bottom: 0.75rem !important;
+  }
+
+  .record-list {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.45rem;
+  }
+
+  @media (max-width: 680px) {
+    .record-list {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .record-list li {
+    font-size: 0.8125rem;
+    line-height: 1.65;
+    color: rgba(26, 31, 46, 0.78);
+    padding: 0.5rem 0.65rem;
+    background: rgba(240, 246, 255, 0.65);
+    border-radius: 8px;
+    border: 1px solid rgba(110, 198, 240, 0.15);
+  }
+
+  .enbu-photo-section {
     margin: 0;
   }
 
-  .section-card li {
-    font-size: 0.875rem;
-    line-height: 1.75;
-    color: rgba(26, 31, 46, 0.78);
+  .photo-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.875rem;
+  }
+
+  .photo-grid img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: 12px;
+    display: block;
+    box-shadow:
+      0 8px 22px rgba(27, 63, 139, 0.08),
+      0 2px 8px rgba(26, 31, 46, 0.05);
+    border: 1px solid rgba(110, 198, 240, 0.15);
+  }
+
+  @media (max-width: 560px) {
+    .photo-grid {
+      grid-template-columns: 1fr;
+    }
   }
 
   .cta-block {

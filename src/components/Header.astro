@@ -1,4 +1,5 @@
 ---
+// Header.astro — サイト共通ヘッダー（ロゴ・メインナビ・モバイルメニュー）
 import { Image } from 'astro:assets';
 import logo from '../assets/logo-yoko.png';
 
@@ -20,8 +21,11 @@ const isHome = Astro.url.pathname === '/';
 
     <nav class="header-nav" aria-label="メインナビゲーション">
       <ul class="nav-list">
+        <li>
+          <a href="/" class="nav-link" aria-current={isHome ? 'page' : undefined}>トップ</a>
+        </li>
         <li><a href="/discography/" class="nav-link">作品</a></li>
-        <li><a href="/enbu-irarai/" class="nav-link">演舞依頼</a></li>
+        <li><a href="/enbu-irai/" class="nav-link">演舞依頼</a></li>
         <li><a href="/schedule/" class="nav-link">スケジュール</a></li>
         <li><a href="/recruit/" class="nav-link">メンバー募集</a></li>
         <li><a href="/articles/" class="nav-link">ブログ</a></li>
@@ -46,8 +50,9 @@ const isHome = Astro.url.pathname === '/';
 <!-- モバイルナビゲーション -->
 <nav id="mobile-nav" class="mobile-nav" aria-label="モバイルナビゲーション">
   <ul class="mobile-nav-list">
+    <li><a href="/" aria-current={isHome ? 'page' : undefined}>トップ</a></li>
     <li><a href="/discography/">作品</a></li>
-    <li><a href="/enbu-irarai/">演舞依頼</a></li>
+    <li><a href="/enbu-irai/">演舞依頼</a></li>
     <li><a href="/schedule/">スケジュール</a></li>
     <li><a href="/recruit/">メンバー募集</a></li>
     <li><a href="/articles/">ブログ</a></li>
@@ -160,6 +165,11 @@ const isHome = Astro.url.pathname === '/';
     color: var(--color-sky, #6EC6F0);
   }
 
+  .nav-link[aria-current='page'] {
+    color: var(--color-sky, #6EC6F0);
+    font-weight: 700;
+  }
+
   .nav-link--search {
     padding: 0.25rem;
   }
@@ -247,6 +257,11 @@ const isHome = Astro.url.pathname === '/';
 
   .mobile-nav-list a:hover {
     color: var(--color-sky, #6EC6F0);
+  }
+
+  .mobile-nav-list a[aria-current='page'] {
+    color: var(--color-sky, #6EC6F0);
+    font-weight: 700;
   }
 
   @media (max-width: 860px) {
