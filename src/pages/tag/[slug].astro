@@ -1,0 +1,86 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ArticleCard from '../../components/ArticleCard.astro';
+import { getAllArticles, getAllTags } from '../../lib/microcms.js';
+import type { GetStaticPaths } from 'astro';
+import type { Article, Tag } from '../../types/index.js';
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const [tags, articles] = await Promise.all([getAllTags(), getAllArticles()]);
+  return tags.map((tag) => ({
+    params: { slug: decodeURIComponent(tag.slug) },
+    props: {
+      tag,
+      articles: articles.filter((a) =>
+        Array.isArray(a.tags) ? a.tags.some((t) => t.id === tag.id) : a.tags?.id === tag.id
+      ),
+    },
+  }));
+};
+
+interface Props {
+  tag: Tag;
+  articles: Article[];
+}
+const { tag, articles } = Astro.props;
+---
+
+<BaseLayout
+  title={`${tag.name} | タグ | 夢源風人`}
+  description={`タグ「${tag.name}」の記事一覧。${articles.length}件。`}
+>
+  <div class="page">
+    <header class="page-header">
+      <p class="page-en">Tag</p>
+      <h1 class="page-title">#{tag.name}</h1>
+      <p class="page-meta">{articles.length}件の記事</p>
+    </header>
+
+    {articles.length > 0 ? (
+      <div class="grid">
+        {articles.map((a) => <ArticleCard article={a} />)}
+      </div>
+    ) : (
+      <p class="empty">記事がありません。</p>
+    )}
+  </div>
+</BaseLayout>
+
+<style>
+  .page {
+    max-width: var(--container-width);
+    margin: 0 auto;
+    padding: 6rem 1.5rem 5rem;
+  }
+  .page-header { margin-bottom: 3rem; text-align: center; }
+  .page-en {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.875rem;
+    letter-spacing: 0.35em;
+    color: var(--color-sky, #6EC6F0);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  .page-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: clamp(1.5rem, 4vw, 2.25rem);
+    font-weight: 700;
+    color: var(--color-deep, #1B3F8B);
+    letter-spacing: 0.06em;
+  }
+  .page-meta {
+    font-size: 0.875rem;
+    color: rgba(26, 31, 46, 0.55);
+    margin-top: 0.5rem;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+  .empty {
+    text-align: center;
+    color: rgba(26, 31, 46, 0.5);
+    padding: 3rem 0;
+  }
+</style>

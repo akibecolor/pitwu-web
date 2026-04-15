@@ -1,3 +1,20 @@
-# 演舞依頼ページの旧スラッグ（誤記 irarai）→ 正しい irai へ恒久的リダイレクト
+# ── ページのリダイレクト ──
+# 演舞依頼ページの旧スラッグ（誤記 irarai）→ 正しい irai
 /enbu-irarai /enbu-irai/ 301
 /enbu-irarai/ /enbu-irai/ 301
+
+# ── WordPress 互換 ──
+# RSSフィード（既存購読者）
+/feed /rss.xml 301
+/feed/ /rss.xml 301
+/atom.xml /rss.xml 301
+
+# WordPress 管理画面・サインイン → トップへ
+/wp-admin/* / 301
+/wp-login.php / 301
+/wp-cron.php / 301
+/xmlrpc.php / 301
+
+# WordPress 既定の静的ファイル → 404
+/wp-includes/* / 404
+/wp-json/* / 404
