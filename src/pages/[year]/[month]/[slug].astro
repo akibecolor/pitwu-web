@@ -1,15 +1,14 @@
 ---
 import ArticleLayout from '../../../layouts/ArticleLayout.astro';
 import { getAllArticles, getArticleBySlug } from '../../../lib/microcms.js';
+import { getSourceDate } from '../../../lib/articleHelpers.js';
 import type { GetStaticPaths } from 'astro';
 
 export const getStaticPaths: GetStaticPaths = async () => {
   const articles = await getAllArticles();
 
   return articles.map((article) => {
-    // ArticleCard と同じロジック: wpDate 優先（WordPress 投稿日）、無ければ publishedAt
-    const sourceDate = article.wpDate || article.publishedAt;
-    const date = new Date(sourceDate);
+    const date = new Date(getSourceDate(article));
     const year = String(date.getFullYear());
     const month = String(date.getMonth() + 1).padStart(2, '0');
 

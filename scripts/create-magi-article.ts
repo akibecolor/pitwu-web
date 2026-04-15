@@ -3,19 +3,10 @@
  * https://x.com/mugenkajipitwu/status/2039118090462744601
  */
 
-import { readFileSync } from 'fs';
-import { join } from 'path';
+import { requireMicroCmsEnv } from './lib/env.js';
+import { tsLog as log } from './lib/util.js';
 
-const raw = readFileSync(join(process.cwd(), '.env'), 'utf-8');
-const env: Record<string, string> = {};
-for (const line of raw.split('\n')) {
-  const t = line.trim(); if (!t || t.startsWith('#')) continue;
-  const i = t.indexOf('='); if (i === -1) continue;
-  env[t.slice(0, i).trim()] = t.slice(i + 1).trim().replace(/\s+#.*$/, '').replace(/^["']|["']$/g, '');
-}
-const D = env.MICROCMS_SERVICE_DOMAIN, K = env.MICROCMS_API_KEY;
-
-const log = (m: string) => console.log(`[${new Date().toISOString()}] ${m}`);
+const { domain: D, apiKey: K } = requireMicroCmsEnv();
 
 async function uploadImage(url: string, name: string): Promise<string | null> {
   const r = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });

@@ -10,18 +10,10 @@
 
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { join } from 'path';
+import { requireMicroCmsEnv } from './lib/env.js';
+import { delay, tsLog as log } from './lib/util.js';
 
-const raw = readFileSync(join(process.cwd(), '.env'), 'utf-8');
-const env: Record<string, string> = {};
-for (const line of raw.split('\n')) {
-  const t = line.trim(); if (!t || t.startsWith('#')) continue;
-  const i = t.indexOf('='); if (i === -1) continue;
-  env[t.slice(0, i).trim()] = t.slice(i + 1).trim().replace(/\s+#.*$/, '').replace(/^["']|["']$/g, '');
-}
-const D = env.MICROCMS_SERVICE_DOMAIN, K = env.MICROCMS_API_KEY;
-
-const log = (m: string) => console.log(`[${new Date().toISOString()}] ${m}`);
-const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
+const { domain: D, apiKey: K } = requireMicroCmsEnv();
 
 const SRCS_PATH = join(process.cwd(), 'logs', 'all-image-srcs.json');
 const MAP_PATH  = join(process.cwd(), 'logs', 'external-image-mapping.json');

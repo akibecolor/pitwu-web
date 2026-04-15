@@ -7,25 +7,15 @@
 
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { requireMicroCmsEnv } from './lib/env.js';
+import { delay as sleep } from './lib/util.js';
 
-const env = Object.fromEntries(
-  readFileSync(join(process.cwd(), '.env'), 'utf-8')
-    .trim()
-    .split('\n')
-    .map(l => l.split('='))
-);
-
-const SERVICE_DOMAIN = env.MICROCMS_SERVICE_DOMAIN;
-const API_KEY = env.MICROCMS_API_KEY;
+const { domain: SERVICE_DOMAIN, apiKey: API_KEY } = requireMicroCmsEnv();
 const BASE_URL = `https://${SERVICE_DOMAIN}.microcms.io/api/v1`;
 const DATA_DIR = join(process.cwd(), 'scripts/data');
 
 function load<T>(filename: string): T {
   return JSON.parse(readFileSync(join(DATA_DIR, filename), 'utf-8')) as T;
-}
-
-function sleep(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 type WpPost = { id: number; date: string };

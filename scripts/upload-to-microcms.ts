@@ -7,44 +7,16 @@
 
 import { readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
+import { requireMicroCmsEnv } from './lib/env.js';
+import { createMicroCmsClient } from './lib/microcms.js';
+import { delay as sleep } from './lib/util.js';
 
-// .env を手動で読み込む（Astro外での実行のため）
-const env = Object.fromEntries(
-  readFileSync(join(process.cwd(), '.env'), 'utf-8')
-    .trim()
-    .split('\n')
-    .map(l => l.split('='))
-);
-
-const SERVICE_DOMAIN = env.MICROCMS_SERVICE_DOMAIN;
-const API_KEY = env.MICROCMS_API_KEY;
-const BASE_URL = `https://${SERVICE_DOMAIN}.microcms.io/api/v1`;
+const env = requireMicroCmsEnv();
+const cms = createMicroCmsClient(env);
 const DATA_DIR = join(process.cwd(), 'scripts/data');
 
-// microCMS Management API でコンテンツを作成
-async function createContent(endpoint: string, body: Record<string, unknown>): Promise<string> {
-  const res = await fetch(`${BASE_URL}/${endpoint}`, {
-    method: 'POST',
-    headers: {
-      'X-MICROCMS-API-KEY': API_KEY,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body),
-  });
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`POST ${endpoint} failed: ${res.status} ${text}`);
-  }
-
-  const data = await res.json() as { id: string };
-  return data.id;
-}
-
-// レート制限対策（無料プランは低速）
-function sleep(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
+const createContent = (endpoint: string, body: Record<string, unknown>) =>
+  cms.create(endpoint, body);
 
 function load<T>(filename: string): T {
   return JSON.parse(readFileSync(join(DATA_DIR, filename), 'utf-8')) as T;

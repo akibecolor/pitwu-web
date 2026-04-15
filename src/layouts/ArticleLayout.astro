@@ -3,6 +3,18 @@
 import BaseLayout from './BaseLayout.astro';
 import CommentList from '../components/CommentList.astro';
 import type { Article } from '../types/index.js';
+import {
+  hasUsableEyecatch,
+  getSourceDate,
+  formatDateJa,
+  getArticlePath,
+} from '../lib/articleHelpers.js';
+import {
+  expandTweetEmbeds,
+  expandVideoEmbeds,
+  hasTweetEmbed,
+  buildArticleMetaDescription,
+} from '../lib/htmlTransform.js';
 
 interface Props {
   article: Article;
@@ -11,91 +23,27 @@ interface Props {
 
 const { article, comments = [] } = Astro.props;
 
-/**
- * 記事本文から meta description 用の抜粋を組み立てる（最大長を超えないよう省略）。
- * @param title 記事タイトル
- * @param html 記事本文 HTML
- * @returns meta description 文字列
- */
-function buildArticleMetaDescription(title: string, html: string): string {
-  const maxLen = 155;
-  const lead = `夢源風人の活動記事「${title}」。`;
-  if (lead.length >= maxLen) {
-    return `${lead.slice(0, maxLen - 1)}…`;
-  }
-  const plain = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-  const room = maxLen - lead.length;
-  if (!plain || room < 5) return lead;
-  const body = plain.length > room ? `${plain.slice(0, room - 1)}…` : plain;
-  return `${lead}${body}`;
-}
-
 const articleMetaDescription = buildArticleMetaDescription(article.title, article.content);
-
-/**
- * 記事内の X / Twitter 投稿リンクを公式 blockquote 埋め込みに展開する。
- * microCMS は <iframe>/<script> を保存時に削除するため、表示時に変換して
- * widgets.js でカード化する。
- */
-/**
- * 記事内の動画ファイルへのリンク（.mp4 / .webm）を <video> タグに展開する。
- * microCMS は <video>/<iframe> を保存時に削除するため、表示時に変換。
- * 対象: <p>...<a href="...mp4">...</a>...</p> 形式（pタグの中身が概ねリンクのみ）
- */
-function expandVideoEmbeds(html: string): string {
-  return html.replace(
-    /<p>\s*(?:[^<]{0,8})?<a [^>]*href="([^"]+\.(?:mp4|webm))"[^>]*>([^<]*)<\/a>\s*(?:[^<]{0,8})?<\/p>/g,
-    (_, src) =>
-      `<figure class="video-embed"><video controls preload="metadata" playsinline src="${src}">動画を再生できません: <a href="${src}">${src}</a></video></figure>`
-  );
-}
-
-function expandTweetEmbeds(html: string): string {
-  // <p>...任意装飾...<a href="https://x.com/<handle>/status/<id>">text</a>...</p>
-  // 形式（pタグの中身が概ねリンクのみ）を blockquote に変換
-  // widgets.js は href が twitter.com 形式を要求するため、x.com を twitter.com に正規化
-  return html.replace(
-    /<p>\s*(?:[^<]{0,8})?<a [^>]*href="https?:\/\/(?:x|twitter)\.com\/([^/"]+)\/status\/(\d+)[^"]*"[^>]*>([^<]*)<\/a>\s*(?:[^<]{0,8})?<\/p>/g,
-    (_, handle, id, text) => {
-      const canonical = `https://twitter.com/${handle}/status/${id}`;
-      return `<blockquote class="twitter-tweet" data-lang="ja"><a href="${canonical}">${text || `@${handle}の投稿`}</a></blockquote>`;
-    }
-  );
-}
-
 const renderedContent = expandTweetEmbeds(expandVideoEmbeds(article.content));
-const hasTweet = renderedContent.includes('twitter-tweet');
+const hasTweet = hasTweetEmbed(renderedContent);
+const usableEyecatch = hasUsableEyecatch(article);
 
-// 小さすぎる画像（昔の絵文字等）はアイキャッチとして扱わない
-const MIN_EYECATCH = 100;
-const hasUsableEyecatch =
-  article.eyecatch &&
-  article.eyecatch.width >= MIN_EYECATCH &&
-  article.eyecatch.height >= MIN_EYECATCH;
+const sourceDate = getSourceDate(article);
+const displayDate = formatDateJa(sourceDate);
 
-// 表示日: wpDate があれば優先（WordPress からの投稿日）、なければ publishedAt（新規記事）
-const sourceDate = article.wpDate || article.publishedAt;
-const displayDate = new Date(sourceDate).toLocaleDateString('ja-JP', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-});
-
-const date = new Date(sourceDate);
-const year = date.getFullYear();
-const month = String(date.getMonth() + 1).padStart(2, '0');
-const canonicalPath = `/${year}/${month}/${article.slug}`;
+// canonicalPath は ArticleCard と同じ getArticlePath() で生成（slug デコード一致のため）
+const canonicalPath = getArticlePath(article);
 const siteUrl = 'https://pitwu.com';
 ---
 
 <BaseLayout
   title={`${article.title} | 活動記事 | 夢源風人`}
   description={articleMetaDescription}
-  ogImage={hasUsableEyecatch ? article.eyecatch?.url : undefined}
+  ogImage={usableEyecatch ? article.eyecatch?.url : undefined}
 >
   <article class="article-page">
     <!-- アイキャッチ -->
-    {hasUsableEyecatch && (
+    {usableEyecatch && (
       <div class="article-eyecatch">
         <img
           src={article.eyecatch!.url}

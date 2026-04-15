@@ -16,42 +16,19 @@
  *   PHASE=patch   npx tsx scripts/upload-images-to-microcms.ts  (URL置換のみ)
  */
 
-import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'fs';
-import { join, relative, posix } from 'path';
-import { createReadStream } from 'fs';
+import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { join } from 'path';
+import { requireMicroCmsEnv } from './lib/env.js';
+import { delay, tsLog as log, scanFiles } from './lib/util.js';
+import { getMimeType } from './lib/microcms.js';
 
-// ---- .env パース ----
-const raw = readFileSync(join(process.cwd(), '.env'), 'utf-8');
-const env: Record<string, string> = {};
-for (const line of raw.split('\n')) {
-  const t = line.trim();
-  if (!t || t.startsWith('#')) continue;
-  const i = t.indexOf('=');
-  if (i === -1) continue;
-  env[t.slice(0, i).trim()] = t.slice(i + 1).trim().replace(/\s+#.*$/, '').replace(/^["']|["']$/g, '');
-}
-
-const DOMAIN  = env.MICROCMS_SERVICE_DOMAIN;
-const API_KEY = env.MICROCMS_API_KEY;
-
-if (!DOMAIN || !API_KEY) {
-  console.error('❌ MICROCMS_SERVICE_DOMAIN または MICROCMS_API_KEY が未設定');
-  process.exit(1);
-}
+const { domain: DOMAIN, apiKey: API_KEY } = requireMicroCmsEnv();
 
 const PHASE = process.env.PHASE ?? 'all'; // 'upload' | 'patch' | 'all'
 
 const UPLOADS_DIR    = join(process.cwd(), 'public', 'wp-content', 'uploads');
 const MAPPING_PATH   = join(process.cwd(), 'logs', 'image-mapping.json');
 const FAILED_PATH    = join(process.cwd(), 'logs', 'image-upload-failed.json');
-
-const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
-
-// ---- ログ ----
-function log(msg: string) {
-  const line = `[${new Date().toISOString()}] ${msg}`;
-  console.log(line);
-}
 
 // ---- マッピング読み込み/保存 ----
 function loadMapping(): Record<string, string> {
@@ -65,36 +42,10 @@ function saveMapping(mapping: Record<string, string>) {
   writeFileSync(MAPPING_PATH, JSON.stringify(mapping, null, 2), 'utf-8');
 }
 
-// ---- ファイル一覧を再帰取得 ----
-function scanFiles(dir: string): string[] {
-  const results: string[] = [];
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const fullPath = join(dir, entry.name);
-    if (entry.isDirectory()) {
-      results.push(...scanFiles(fullPath));
-    } else if (entry.isFile()) {
-      results.push(fullPath);
-    }
-  }
-  return results;
-}
-
-// ---- MIMEタイプ推定 ----
-function getMimeType(filename: string): string {
-  const ext = filename.split('.').pop()?.toLowerCase() ?? '';
-  const map: Record<string, string> = {
-    jpg: 'image/jpeg',
-    jpeg: 'image/jpeg',
-    png: 'image/png',
-    gif: 'image/gif',
-    webp: 'image/webp',
-    svg: 'image/svg+xml',
-    avif: 'image/avif',
-  };
-  return map[ext] ?? 'application/octet-stream';
-}
-
 // ---- microCMS メディアアップロード ----
+// 注: scripts/lib/microcms.ts の uploadMedia を使わず独自実装している理由
+//   - レートリミット(429)時に文字列 'rate-limit' を返す必要がある（呼び出し側で待機+リトライ判定）
+//   - 失敗時のエラーログを日本語の進捗ログに混ぜたい
 async function uploadImage(filePath: string): Promise<string | null> {
   try {
     const fileName = filePath.split(/[/\\]/).pop()!;

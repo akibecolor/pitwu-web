@@ -5,20 +5,10 @@
  * リンクテキストが URL（pitwu.com 自記事）の場合、リンク先記事のタイトルに差し替える
  */
 
-import { readFileSync } from 'fs';
-import { join } from 'path';
+import { requireMicroCmsEnv } from './lib/env.js';
+import { delay, tsLog as log } from './lib/util.js';
 
-const raw = readFileSync(join(process.cwd(), '.env'), 'utf-8');
-const env: Record<string, string> = {};
-for (const line of raw.split('\n')) {
-  const t = line.trim(); if (!t || t.startsWith('#')) continue;
-  const i = t.indexOf('='); if (i === -1) continue;
-  env[t.slice(0, i).trim()] = t.slice(i + 1).trim().replace(/\s+#.*$/, '').replace(/^["']|["']$/g, '');
-}
-const D = env.MICROCMS_SERVICE_DOMAIN, K = env.MICROCMS_API_KEY;
-
-const log = (m: string) => console.log(`[${new Date().toISOString()}] ${m}`);
-const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
+const { domain: D, apiKey: K } = requireMicroCmsEnv();
 
 async function fetchAll<T>(fields: string): Promise<T[]> {
   const all: T[] = [];
