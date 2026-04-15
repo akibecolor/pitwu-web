@@ -47,7 +47,10 @@ const isHome = Astro.url.pathname === '/';
   </div>
 </header>
 
-<!-- モバイルナビゲーション -->
+<!-- モバイルメニュー背面のスクリム（ドロワー外タップで閉じる） -->
+<div id="mobile-nav-backdrop" class="mobile-nav-backdrop" aria-hidden="true"></div>
+
+<!-- モバイルナビゲーション（右から約半分のドロワー） -->
 <nav id="mobile-nav" class="mobile-nav" aria-label="モバイルナビゲーション">
   <ul class="mobile-nav-list">
     <li><a href="/" aria-current={isHome ? 'page' : undefined}>トップ</a></li>
@@ -76,22 +79,43 @@ const isHome = Astro.url.pathname === '/';
     onScroll();
   }
 
-  // モバイルナビ開閉
+  /** モバイルメニューを開閉する（スクリム・body スクロール連動） */
+  function setMobileMenuOpen(open) {
+    const toggle = document.getElementById('nav-toggle');
+    const mobileNav = document.getElementById('mobile-nav');
+    const backdrop = document.getElementById('mobile-nav-backdrop');
+    toggle?.setAttribute('aria-expanded', String(open));
+    mobileNav?.classList.toggle('mobile-nav--open', open);
+    backdrop?.classList.toggle('mobile-nav-backdrop--visible', open);
+    backdrop?.setAttribute('aria-hidden', open ? 'false' : 'true');
+    toggle?.setAttribute('aria-label', open ? 'メニューを閉じる' : 'メニューを開く');
+    document.body.style.overflow = open ? 'hidden' : '';
+  }
+
   const toggle = document.getElementById('nav-toggle');
   const mobileNav = document.getElementById('mobile-nav');
+  const backdrop = document.getElementById('mobile-nav-backdrop');
+
   toggle?.addEventListener('click', () => {
     const isOpen = toggle.getAttribute('aria-expanded') === 'true';
-    toggle.setAttribute('aria-expanded', String(!isOpen));
-    mobileNav?.classList.toggle('mobile-nav--open', !isOpen);
-    document.body.style.overflow = isOpen ? '' : 'hidden';
+    setMobileMenuOpen(!isOpen);
   });
+
+  backdrop?.addEventListener('click', () => {
+    setMobileMenuOpen(false);
+  });
+
   // メニュー内リンクをクリックしたら閉じる
-  mobileNav?.querySelectorAll('a').forEach(a => {
+  mobileNav?.querySelectorAll('a').forEach((a) => {
     a.addEventListener('click', () => {
-      toggle?.setAttribute('aria-expanded', 'false');
-      mobileNav.classList.remove('mobile-nav--open');
-      document.body.style.overflow = '';
+      setMobileMenuOpen(false);
     });
+  });
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && toggle?.getAttribute('aria-expanded') === 'true') {
+      setMobileMenuOpen(false);
+    }
   });
 </script>
 
@@ -218,17 +242,49 @@ const isHome = Astro.url.pathname === '/';
     transform: translateY(-7px) rotate(-45deg);
   }
 
-  /* モバイルナビ */
+  /* モバイル：背面スクリム（ヘッダー下のコンテンツ領域を覆う） */
+  .mobile-nav-backdrop {
+    display: none;
+    position: fixed;
+    top: 64px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 98;
+    background: rgba(26, 31, 46, 0.48);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+
+  .mobile-nav-backdrop.mobile-nav-backdrop--visible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  /* モバイルナビ：右から約半分幅のドロワー */
   .mobile-nav {
     display: none;
     position: fixed;
-    inset: 0;
     top: 64px;
+    right: 0;
+    bottom: 0;
+    left: auto;
+    width: min(50vw, 20rem);
+    min-width: 11.5rem;
+    max-width: 100%;
     background: var(--color-deep, #1B3F8B);
     z-index: 99;
-    padding: 2rem 1.5rem;
+    padding: 1.75rem 1.25rem 2rem;
+    box-shadow: -6px 0 28px rgba(0, 0, 0, 0.22);
     transform: translateX(100%);
     transition: transform 0.3s ease;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .mobile-nav.mobile-nav--open {
@@ -273,8 +329,19 @@ const isHome = Astro.url.pathname === '/';
       display: flex;
     }
 
+    .mobile-nav-backdrop {
+      display: block;
+    }
+
     .mobile-nav {
       display: block;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mobile-nav,
+    .mobile-nav-backdrop {
+      transition: none;
     }
   }
 

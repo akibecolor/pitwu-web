@@ -947,10 +947,7 @@ p {
   pointer-events: none;
 }
 
-/* Pagefind UIの追加カスタマイズ */
-.pagefind-ui__search-input {
-  border-radius: 999px !important;
-}
+/* Pagefind UIの追加カスタマイズ（角丸は Search.astro の --pagefind-ui-border-radius に任せる） */
 
 .pagefind-ui__result-link {
   color: var(--color-deep) !important;

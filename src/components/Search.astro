@@ -1,5 +1,5 @@
 ---
-// Pagefind UI is loaded at runtime from /pagefind/ (generated after build)
+// Search.astro — Pagefind 検索 UI（ビルド後の /pagefind/ を参照。スタイルは wrapper でトークン上書き）
 ---
 
 <div class="search-wrapper">
@@ -14,8 +14,45 @@
 </div>
 
 <style>
+  /*
+   * pagefind-ui.css が :root の CSS 変数を後勝ちで上書きするため、
+   * .search-wrapper 配下で Pagefind 用トークンを再指定する（継承で子に効く）。
+   * また input に display:flex が当たるとブラウザでレイアウトが崩れるため block に矯正する。
+   */
   .search-wrapper {
     max-width: 720px;
     margin: 0 auto;
+    --pagefind-ui-scale: 1;
+    --pagefind-ui-primary: var(--color-sky, #6ec6f0);
+    --pagefind-ui-text: var(--color-ink, #1a1f2e);
+    --pagefind-ui-background: #ffffff;
+    --pagefind-ui-border: rgba(110, 198, 240, 0.45);
+    --pagefind-ui-tag: var(--color-base, #f0f6ff);
+    --pagefind-ui-border-width: 1px;
+    --pagefind-ui-border-radius: 10px;
+    --pagefind-ui-image-border-radius: 10px;
+    --pagefind-ui-font: var(--font-sans, 'Noto Sans JP', sans-serif);
+  }
+
+  .search-wrapper :global(.pagefind-ui__form) {
+    position: relative;
+    width: 100%;
+  }
+
+  .search-wrapper :global(.pagefind-ui__search-input) {
+    display: block;
+    width: 100%;
+    margin: 0;
+    box-sizing: border-box;
+  }
+
+  .search-wrapper :global(.pagefind-ui__search-clear) {
+    z-index: 2;
+    background-color: var(--pagefind-ui-background);
+  }
+
+  .search-wrapper :global(.pagefind-ui__search-input:focus-visible) {
+    outline: 2px solid var(--color-sky, #6ec6f0);
+    outline-offset: 2px;
   }
 </style>
