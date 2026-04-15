@@ -8,6 +8,13 @@ interface Props {
 
 const { article, featured = false } = Astro.props;
 
+// 小さすぎる画像（昔の絵文字等）はアイキャッチとして使わずプレースホルダー表示
+const MIN_EYECATCH = 100;
+const hasUsableEyecatch =
+  article.eyecatch &&
+  article.eyecatch.width >= MIN_EYECATCH &&
+  article.eyecatch.height >= MIN_EYECATCH;
+
 // 表示日: wpDate があれば優先（WordPress からの投稿日）、なければ publishedAt（新規記事）
 const sourceDate = article.wpDate || article.publishedAt;
 const date = new Date(sourceDate);
@@ -26,23 +33,20 @@ const displayDate = date.toLocaleDateString('ja-JP', {
 <article class:list={['article-card', { 'article-card--featured': featured }]}>
   <a href={href} class="card-link" aria-label={article.title}>
     <div class="card-image-wrap">
-      {article.eyecatch ? (
+      {hasUsableEyecatch ? (
         <img
-          src={article.eyecatch.url}
+          src={article.eyecatch!.url}
           alt={article.title}
-          width={article.eyecatch.width}
-          height={article.eyecatch.height}
+          width={article.eyecatch!.width}
+          height={article.eyecatch!.height}
           loading="lazy"
           decoding="async"
           class="card-image"
         />
       ) : (
         <div class="card-image card-image--placeholder" aria-hidden="true">
-          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <rect x="3" y="3" width="18" height="18" rx="2"/>
-            <circle cx="8.5" cy="8.5" r="1.5"/>
-            <polyline points="21 15 16 10 5 21"/>
-          </svg>
+          <span class="placeholder-mark">{article.title.slice(0, 5)}</span>
+          <span class="placeholder-brand">夢源風人</span>
         </div>
       )}
       {article.category && (
@@ -109,11 +113,45 @@ const displayDate = date.toLocaleDateString('ja-JP', {
   }
 
   .card-image--placeholder {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, var(--color-base, #F0F6FF) 0%, #d8eaf8 100%);
-    color: var(--color-sky, #6EC6F0);
+    background: linear-gradient(135deg, var(--color-deep, #1B3F8B) 0%, #1a3580 60%, #0f2460 100%);
+    overflow: hidden;
+  }
+
+  /* タイトル先頭5文字を大きく配置（カード右端からはみ出して装飾感） */
+  .placeholder-mark {
+    position: absolute;
+    top: 50%;
+    left: -5%;
+    width: 130%;
+    font-family: 'Noto Serif JP', serif;
+    font-size: clamp(2.75rem, 7.5vw, 4.5rem);
+    font-weight: 900;
+    color: #ffffff;
+    opacity: 0.22;
+    line-height: 1.05;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    user-select: none;
+    transform: translateY(-50%) rotate(-3deg);
+    text-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  }
+
+  /* ブランド名（控えめに右下） */
+  .placeholder-brand {
+    position: absolute;
+    bottom: 0.75rem;
+    right: 0.875rem;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.55);
+    letter-spacing: 0.18em;
+    user-select: none;
   }
 
   .card-category {
