@@ -2,6 +2,7 @@
 // discography/[slug].astro — 作品詳細（長い作品名の折り返し・装飾見出し対応）
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import pagesData from '../../data/wp-pages.json';
+import { wrapLyricsSection } from '../../lib/htmlTransform.js';
 import type { GetStaticPaths } from 'astro';
 // v2: structured layout for 2019+ songs
 
@@ -50,16 +51,6 @@ const creditLabels: [keyof Credits, string][] = [
   ['narukoBy',      '鳴子制作'],
   ['floatBy',       '地方車製作'],
 ];
-
-/**
- * WordPress 移行 HTML 内の「歌詞」ブロックをラップし、歌詞専用スタイルを当てる。
- * @param html 記事本文 HTML
- * @returns ラップ後の HTML
- */
-function wrapLyricsSection(html: string): string {
-  const re = /(<h3[^>]*>\s*歌詞\s*<\/h3>)([\s\S]*?)(?=<h3\b|$)/i;
-  return html.replace(re, '<div class="wp-lyrics">$1$2</div>');
-}
 
 const legacyContent = wrapLyricsSection(song.content);
 ---

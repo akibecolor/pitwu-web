@@ -1,5 +1,11 @@
 ---
 import type { Article } from '../types/index.js';
+import {
+  hasUsableEyecatch,
+  getSourceDate,
+  getArticlePath,
+  formatDateJa,
+} from '../lib/articleHelpers.js';
 
 interface Props {
   article: Article;
@@ -8,32 +14,16 @@ interface Props {
 
 const { article, featured = false } = Astro.props;
 
-// 小さすぎる画像（昔の絵文字等）はアイキャッチとして使わずプレースホルダー表示
-const MIN_EYECATCH = 100;
-const hasUsableEyecatch =
-  article.eyecatch &&
-  article.eyecatch.width >= MIN_EYECATCH &&
-  article.eyecatch.height >= MIN_EYECATCH;
-
-// 表示日: wpDate があれば優先（WordPress からの投稿日）、なければ publishedAt（新規記事）
-const sourceDate = article.wpDate || article.publishedAt;
-const date = new Date(sourceDate);
-const year = date.getFullYear();
-const month = String(date.getMonth() + 1).padStart(2, '0');
-const slug = decodeURIComponent(article.slug);
-const href = `/${year}/${month}/${slug}`;
-
-const displayDate = date.toLocaleDateString('ja-JP', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-});
+const usableEyecatch = hasUsableEyecatch(article);
+const sourceDate = getSourceDate(article);
+const href = getArticlePath(article);
+const displayDate = formatDateJa(sourceDate);
 ---
 
 <article class:list={['article-card', { 'article-card--featured': featured }]}>
   <a href={href} class="card-link" aria-label={article.title}>
     <div class="card-image-wrap">
-      {hasUsableEyecatch ? (
+      {usableEyecatch ? (
         <img
           src={article.eyecatch!.url}
           alt={article.title}

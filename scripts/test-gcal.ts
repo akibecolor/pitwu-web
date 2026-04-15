@@ -3,26 +3,10 @@
  * 実行: npx tsx scripts/test-gcal.ts
  */
 
-import { readFileSync } from 'fs';
-import { join } from 'path';
 import { createSign } from 'crypto';
+import { loadEnv } from './lib/env.js';
 
-// .env パース（クォート・インラインコメントを除去）
-const raw = readFileSync(join(process.cwd(), '.env'), 'utf-8');
-const env: Record<string, string> = {};
-for (const line of raw.split('\n')) {
-  const trimmed = line.trim();
-  if (!trimmed || trimmed.startsWith('#')) continue;
-  const idx = trimmed.indexOf('=');
-  if (idx === -1) continue;
-  const key = trimmed.slice(0, idx).trim();
-  let val = trimmed.slice(idx + 1).trim();
-  // インラインコメントを除去 (# の前にスペースがある場合)
-  val = val.replace(/\s+#.*$/, '');
-  // クォートを除去
-  val = val.replace(/^["']|["']$/g, '');
-  env[key] = val;
-}
+const env = loadEnv();
 
 const SERVICE_EMAIL = env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
 const PRIVATE_KEY   = env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n');

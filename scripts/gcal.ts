@@ -13,9 +13,8 @@
  * 複数日イベント: --start="YYYY-MM-DD" --end="YYYY-MM-DD"（最終日を含む）
  */
 
-import { readFileSync } from 'fs';
-import { join } from 'path';
 import { createSign } from 'crypto';
+import { loadEnv } from './lib/env.js';
 
 // ---- 設定 ----
 const CALENDARS = {
@@ -28,17 +27,7 @@ const CAL_API = 'https://www.googleapis.com/calendar/v3/calendars';
 const TZ = 'Asia/Tokyo';
 
 // ---- .env パース ----
-const raw = readFileSync(join(process.cwd(), '.env'), 'utf-8');
-const env: Record<string, string> = {};
-for (const line of raw.split('\n')) {
-  const t = line.trim();
-  if (!t || t.startsWith('#')) continue;
-  const i = t.indexOf('=');
-  if (i === -1) continue;
-  const key = t.slice(0, i).trim();
-  let val = t.slice(i + 1).trim().replace(/\s+#.*$/, '').replace(/^["']|["']$/g, '');
-  env[key] = val;
-}
+const env = loadEnv();
 
 const SERVICE_EMAIL = env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
 const PRIVATE_KEY   = env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n');

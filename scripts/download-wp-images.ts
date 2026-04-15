@@ -10,29 +10,12 @@
  * 実行: npx tsx scripts/download-wp-images.ts [--dry-run]
  */
 
-import { readFileSync, mkdirSync, existsSync, writeFileSync } from 'fs';
+import { mkdirSync, existsSync, writeFileSync } from 'fs';
 import { join, dirname } from 'path';
-import { createWriteStream } from 'fs';
+import { requireMicroCmsEnv } from './lib/env.js';
 
-// ---- .env パース ----
-const raw = readFileSync(join(process.cwd(), '.env'), 'utf-8');
-const env: Record<string, string> = {};
-for (const line of raw.split('\n')) {
-  const t = line.trim();
-  if (!t || t.startsWith('#')) continue;
-  const i = t.indexOf('=');
-  if (i === -1) continue;
-  env[t.slice(0, i).trim()] = t.slice(i + 1).trim().replace(/\s+#.*$/, '').replace(/^["']|["']$/g, '');
-}
-
-const DOMAIN  = env.MICROCMS_SERVICE_DOMAIN;
-const API_KEY = env.MICROCMS_API_KEY;
+const { domain: DOMAIN, apiKey: API_KEY } = requireMicroCmsEnv();
 const DRY_RUN = process.argv.includes('--dry-run');
-
-if (!DOMAIN || !API_KEY) {
-  console.error('❌ MICROCMS_SERVICE_DOMAIN または MICROCMS_API_KEY が未設定です');
-  process.exit(1);
-}
 
 // ---- microCMS から全記事取得（contentフィールド込み）----
 async function fetchAllArticles() {

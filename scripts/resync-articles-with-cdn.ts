@@ -14,28 +14,15 @@
 
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { join } from 'path';
+import { requireMicroCmsEnv } from './lib/env.js';
+import { delay, tsLog as log } from './lib/util.js';
 
-const raw = readFileSync(join(process.cwd(), '.env'), 'utf-8');
-const env: Record<string, string> = {};
-for (const line of raw.split('\n')) {
-  const t = line.trim();
-  if (!t || t.startsWith('#')) continue;
-  const i = t.indexOf('=');
-  if (i === -1) continue;
-  env[t.slice(0, i).trim()] = t.slice(i + 1).trim().replace(/\s+#.*$/, '').replace(/^["']|["']$/g, '');
-}
-
-const DOMAIN = env.MICROCMS_SERVICE_DOMAIN;
-const API_KEY = env.MICROCMS_API_KEY;
-if (!DOMAIN || !API_KEY) { console.error('❌ env missing'); process.exit(1); }
+const { domain: DOMAIN, apiKey: API_KEY } = requireMicroCmsEnv();
 
 const MAPPING_PATH       = join(process.cwd(), 'logs', 'image-mapping.json');           // pitwu.com 由来
 const EXT_MAPPING_PATH   = join(process.cwd(), 'logs', 'external-image-mapping.json');   // st-note.com 等
 const PROGRESS_PATH      = join(process.cwd(), 'logs', 'resync-progress.json');
 const FAILED_PATH        = join(process.cwd(), 'logs', 'resync-failed.json');
-
-const log = (msg: string) => console.log(`[${new Date().toISOString()}] ${msg}`);
-const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
 
 // ---- マッピング読込 ----
 // pitwu マッピング: キー "/wp-content/uploads/..." → CDN URL

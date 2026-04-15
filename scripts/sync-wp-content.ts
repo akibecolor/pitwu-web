@@ -12,27 +12,12 @@
  * ログ: logs/sync-wp-content.log
  */
 
-import { readFileSync, mkdirSync, writeFileSync, existsSync, appendFileSync } from 'fs';
+import { mkdirSync, writeFileSync, existsSync, appendFileSync } from 'fs';
 import { join, dirname } from 'path';
+import { requireMicroCmsEnv } from './lib/env.js';
+import { delay } from './lib/util.js';
 
-// ---- .env パース ----
-const raw = readFileSync(join(process.cwd(), '.env'), 'utf-8');
-const env: Record<string, string> = {};
-for (const line of raw.split('\n')) {
-  const t = line.trim();
-  if (!t || t.startsWith('#')) continue;
-  const i = t.indexOf('=');
-  if (i === -1) continue;
-  env[t.slice(0, i).trim()] = t.slice(i + 1).trim().replace(/\s+#.*$/, '').replace(/^["']|["']$/g, '');
-}
-
-const DOMAIN  = env.MICROCMS_SERVICE_DOMAIN;
-const API_KEY = env.MICROCMS_API_KEY;
-
-if (!DOMAIN || !API_KEY) {
-  console.error('❌ MICROCMS_SERVICE_DOMAIN または MICROCMS_API_KEY が未設定');
-  process.exit(1);
-}
+const { domain: DOMAIN, apiKey: API_KEY } = requireMicroCmsEnv();
 
 // ---- ログ ----
 mkdirSync(join(process.cwd(), 'logs'), { recursive: true });
@@ -40,13 +25,12 @@ const LOG_PATH = join(process.cwd(), 'logs', 'sync-wp-content.log');
 // 既存ログをクリア
 writeFileSync(LOG_PATH, '');
 
+// ファイル出力も伴うため tsLog ではなくローカル定義
 function log(msg: string) {
   const line = `[${new Date().toISOString()}] ${msg}`;
   console.log(line);
   appendFileSync(LOG_PATH, line + '\n');
 }
-
-const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
 
 // ---- microCMS: 全記事取得 ----
 async function fetchAllCMSArticles() {

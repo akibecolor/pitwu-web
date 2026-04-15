@@ -7,33 +7,11 @@
 
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
+import { requireMicroCmsEnv } from './lib/env.js';
+import { delay, tsLog as log } from './lib/util.js';
+import { getMimeType as getMime } from './lib/microcms.js';
 
-// ---- .env ----
-const raw = readFileSync(join(process.cwd(), '.env'), 'utf-8');
-const env: Record<string, string> = {};
-for (const line of raw.split('\n')) {
-  const t = line.trim();
-  if (!t || t.startsWith('#')) continue;
-  const i = t.indexOf('=');
-  if (i === -1) continue;
-  env[t.slice(0, i).trim()] = t.slice(i + 1).trim().replace(/\s+#.*$/, '').replace(/^["']|["']$/g, '');
-}
-
-const DOMAIN  = env.MICROCMS_SERVICE_DOMAIN;
-const API_KEY = env.MICROCMS_API_KEY;
-
-if (!DOMAIN || !API_KEY) {
-  console.error('❌ MICROCMS env 未設定'); process.exit(1);
-}
-
-const log = (msg: string) => console.log(`[${new Date().toISOString()}] ${msg}`);
-const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
-
-const getMime = (fn: string): string => {
-  const ext = fn.split('.').pop()?.toLowerCase() ?? '';
-  const map: Record<string,string> = { jpg:'image/jpeg', jpeg:'image/jpeg', png:'image/png', gif:'image/gif', webp:'image/webp', svg:'image/svg+xml', avif:'image/avif' };
-  return map[ext] ?? 'application/octet-stream';
-};
+const { domain: DOMAIN, apiKey: API_KEY } = requireMicroCmsEnv();
 
 // ---- microCMS 画像アップロード ----
 async function uploadImage(filePath: string): Promise<string | null> {

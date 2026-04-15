@@ -2,18 +2,11 @@
  * 移転記事内で WordPress にあった Twitter/X 埋め込みが microCMS で欠落している記事を検出
  * 結果: logs/missing-tweets.json
  */
-import { readFileSync, writeFileSync } from 'fs';
+import { writeFileSync } from 'fs';
+import { requireMicroCmsEnv } from './lib/env.js';
+import { tsLog as log } from './lib/util.js';
 
-const raw = readFileSync('.env', 'utf-8');
-const env: Record<string, string> = {};
-for (const line of raw.split('\n')) {
-  const t = line.trim(); if (!t || t.startsWith('#')) continue;
-  const i = t.indexOf('='); if (i === -1) continue;
-  env[t.slice(0, i).trim()] = t.slice(i + 1).trim().replace(/\s+#.*$/, '').replace(/^["']|["']$/g, '');
-}
-const D = env.MICROCMS_SERVICE_DOMAIN, K = env.MICROCMS_API_KEY;
-
-const log = (m: string) => console.log(`[${new Date().toISOString()}] ${m}`);
+const { domain: D, apiKey: K } = requireMicroCmsEnv();
 
 const all: { id: string; title: string; wpPostId?: number; content?: string }[] = [];
 let off = 0;
