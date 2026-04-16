@@ -19,9 +19,11 @@ import {
 interface Props {
   article: Article;
   comments?: Array<{ author: string; date: string; content: string }>;
+  newerArticle?: { title: string; path: string } | null;
+  olderArticle?: { title: string; path: string } | null;
 }
 
-const { article, comments = [] } = Astro.props;
+const { article, comments = [], newerArticle, olderArticle } = Astro.props;
 
 const articleMetaDescription = buildArticleMetaDescription(article.title, article.content);
 const renderedContent = expandTweetEmbeds(expandVideoEmbeds(article.content));
@@ -90,6 +92,28 @@ const siteUrl = 'https://pitwu.com';
 
       {hasTweet && (
         <script async src="https://platform.twitter.com/widgets.js" charset="utf-8" is:inline></script>
+      )}
+
+      <!-- 前後ナビゲーション -->
+      {(olderArticle || newerArticle) && (
+        <nav class="article-nav" aria-label="記事ナビゲーション">
+          <div class="article-nav-prev">
+            {olderArticle ? (
+              <a href={olderArticle.path} class="article-nav-link article-nav-link--prev">
+                <span class="article-nav-dir">← 前の記事</span>
+                <span class="article-nav-title">{olderArticle.title}</span>
+              </a>
+            ) : <span />}
+          </div>
+          <div class="article-nav-next">
+            {newerArticle ? (
+              <a href={newerArticle.path} class="article-nav-link article-nav-link--next">
+                <span class="article-nav-dir">次の記事 →</span>
+                <span class="article-nav-title">{newerArticle.title}</span>
+              </a>
+            ) : <span />}
+          </div>
+        </nav>
       )}
 
       <!-- 記事フッター -->
@@ -314,8 +338,51 @@ const siteUrl = 'https://pitwu.com';
     color: var(--color-deep, #1B3F8B);
   }
 
-  .article-footer {
+  .article-nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
     margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(110, 198, 240, 0.3);
+  }
+
+  .article-nav-prev { text-align: left; }
+  .article-nav-next { text-align: right; }
+
+  .article-nav-link {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    text-decoration: none;
+    padding: 0.875rem 1rem;
+    border-radius: 8px;
+    border: 1px solid rgba(110, 198, 240, 0.2);
+    transition: border-color 0.2s ease, background 0.2s ease;
+    max-width: 100%;
+  }
+
+  .article-nav-link:hover {
+    border-color: var(--color-sky, #6EC6F0);
+    background: rgba(110, 198, 240, 0.05);
+  }
+
+  .article-nav-dir {
+    font-size: 0.75rem;
+    color: rgba(26, 31, 46, 0.45);
+    letter-spacing: 0.05em;
+  }
+
+  .article-nav-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-deep, #1B3F8B);
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+
+  .article-footer {
+    margin-top: 2rem;
     padding-top: 1.5rem;
     border-top: 1px solid rgba(26, 31, 46, 0.1);
   }

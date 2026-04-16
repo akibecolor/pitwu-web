@@ -1,32 +1,44 @@
 ---
 import ArticleLayout from '../../../layouts/ArticleLayout.astro';
 import { getAllArticlesWithContent } from '../../../lib/microcms.js';
-import { getSourceDate } from '../../../lib/articleHelpers.js';
+import { getSourceDate, getArticlePath } from '../../../lib/articleHelpers.js';
 import type { GetStaticPaths } from 'astro';
 import type { Article } from '../../../types/index.js';
 
 export const getStaticPaths: GetStaticPaths = async () => {
   // content を含む全記事を一括取得（12回のバッチ API で完了）
   // 旧方式: 一覧取得 + 1127件の個別取得 = 1139回 → 新方式: 12回
+  // articles は新しい順（降順）にソート済み
   const articles = await getAllArticlesWithContent();
 
-  return articles.map((article) => {
+  return articles.map((article, index) => {
     const date = new Date(getSourceDate(article));
     const year = String(date.getFullYear());
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const slug = decodeURIComponent(article.slug);
+
+    // 新しい順なので index-1 が「次（新しい）」、index+1 が「前（古い）」
+    const newerArticle = index > 0
+      ? { title: articles[index - 1].title, path: getArticlePath(articles[index - 1]) }
+      : null;
+    const olderArticle = index < articles.length - 1
+      ? { title: articles[index + 1].title, path: getArticlePath(articles[index + 1]) }
+      : null;
+
     return {
       params: { year, month, slug },
-      props: { article },
+      props: { article, newerArticle, olderArticle },
     };
   });
 };
 
 interface Props {
   article: Article;
+  newerArticle: { title: string; path: string } | null;
+  olderArticle: { title: string; path: string } | null;
 }
 
-const { article } = Astro.props;
+const { article, newerArticle, olderArticle } = Astro.props;
 ---
 
-<ArticleLayout article={article} comments={[]} />
+<ArticleLayout article={article} newerArticle={newerArticle} olderArticle={olderArticle} comments={[]} />

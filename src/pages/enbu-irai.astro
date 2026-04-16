@@ -55,6 +55,40 @@ import PageLayout from '../layouts/PageLayout.astro';
       </div>
     </div>
 
+    <section class="faq-section" aria-labelledby="faq-heading">
+      <h2 id="faq-heading" class="faq-heading">
+        <span class="faq-heading-en">FAQ</span>
+        よくあるご質問
+      </h2>
+      <dl class="faq-list">
+        <div class="faq-item">
+          <dt class="faq-q">演舞の所要時間はどのくらいですか？</dt>
+          <dd class="faq-a">1ステージ約10〜30分を目安にご相談ください。複数ステージや長時間のご要望にも対応いたします。</dd>
+        </div>
+        <div class="faq-item">
+          <dt class="faq-q">何人くらいで来てもらえますか？</dt>
+          <dd class="faq-a">規模によって異なりますが、5〜20名程度でお伺いしています。より大人数の対応も検討できますので、会場の広さに合わせてご相談ください。</dd>
+        </div>
+        <div class="faq-item">
+          <dt class="faq-q">屋外・室内どちらでも対応できますか？</dt>
+          <dd class="faq-a">どちらも対応可能です。ただし雨天の屋外については事前にご相談ください。</dd>
+        </div>
+        <div class="faq-item">
+          <dt class="faq-q">音響設備の手配は必要ですか？</dt>
+          <dd class="faq-a">PCおよびCD音源が再生できマイクが使える環境をご準備ください。音響設備がない場合、こちらでPAを準備することも可能ですので一度ご相談ください。</dd>
+        </div>
+        <div class="faq-item">
+          <dt class="faq-q">相談から依頼確定まで、どのくらい余裕が必要ですか？</dt>
+          <dd class="faq-a">1ヶ月前を目安にご連絡いただけると調整がスムーズです。</dd>
+        </div>
+      </dl>
+    </section>
+
+    <div class="cta-block">
+      <p>まずはお気軽にお問い合わせください</p>
+      <a href="/contact/" class="cta-btn">お問合せはこちら</a>
+    </div>
+
     <section class="enbu-photo-section" aria-label="演舞の様子">
       <div class="photo-grid">
         <img src="/images/works/hitotsunagi/anotsu-yosakoi_20131013_07003.jpg" alt="安濃津よさこい 2013 演舞" loading="lazy" />
@@ -62,11 +96,6 @@ import PageLayout from '../layouts/PageLayout.astro';
         <img src="/images/works/hibiki/festival_2008-11-30_1.jpg" alt="響 2008 お祭り演舞" loading="lazy" />
       </div>
     </section>
-
-    <div class="cta-block">
-      <p>まずはお気軽にお問い合わせください</p>
-      <a href="/contact/" class="cta-btn">お問合せはこちら</a>
-    </div>
   </div>
 </PageLayout>
 
@@ -303,6 +332,74 @@ import PageLayout from '../layouts/PageLayout.astro';
     .photo-grid {
       grid-template-columns: 1fr;
     }
+  }
+
+  .faq-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .faq-heading {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: var(--color-deep, #1b3f8b);
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .faq-heading-en {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.8rem;
+    font-weight: 300;
+    letter-spacing: 0.35em;
+    color: var(--color-sky, #6ec6f0);
+    text-transform: uppercase;
+  }
+
+  .faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .faq-item {
+    padding: 1.25rem 1.5rem;
+    border-radius: 10px;
+    background: linear-gradient(165deg, rgba(240, 246, 255, 0.55), rgba(255, 255, 255, 0.98));
+    border: 1px solid rgba(110, 198, 240, 0.2);
+    box-shadow: 0 4px 14px rgba(27, 63, 139, 0.05);
+  }
+
+  .faq-q {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--color-deep, #1b3f8b);
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.02em;
+  }
+
+  .faq-q::before {
+    content: 'Q. ';
+    color: var(--color-sky, #6ec6f0);
+  }
+
+  .faq-a {
+    font-size: 0.9375rem;
+    line-height: 1.85;
+    color: rgba(26, 31, 46, 0.82);
+    padding-left: 1.5rem;
+  }
+
+  .faq-a::before {
+    content: 'A. ';
+    font-weight: 600;
+    color: var(--color-deep, #1b3f8b);
+    margin-left: -1.5rem;
   }
 
   .cta-block {
