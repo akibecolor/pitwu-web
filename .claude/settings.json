@@ -46,7 +46,8 @@
       "Bash(where gswin64c *)",
       "Bash(cp /tmp/pitwu-favicon.ico /c/Users/akico/Documents/pitwu-web/public/images/pitwu-favicon-orig.ico)",
       "Bash(node -e \"const sharp = require\\('sharp'\\); sharp\\('/tmp/pitwu-favicon.ico'\\).png\\(\\).toFile\\('/tmp/pitwu-favicon.png'\\).then\\(\\(\\)=>console.log\\('converted'\\)\\).catch\\(e=>console.error\\(e\\)\\)\")",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(node -e \"const d=require\\('./src/data/wp-pages.json'\\); const s=d.songs.find\\(x=>x.slug==='sorakakeru'\\); console.log\\(s.title\\);\")"
     ]
   }
 }
