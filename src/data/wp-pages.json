@@ -406,7 +406,8 @@
         "costumeBy": null,
         "narukoBy": null,
         "floatBy": null
-      }
+      },
+      "awardsHtml": "<ul class=\"home-list\">\n\t<li>能登よさこい祭り：優秀賞</li>\n\t<li>こいや祭り：ファミリー賞</li>\n</ul>"
     },
     {
       "slug": "marumanten",
@@ -429,7 +430,8 @@
         "costumeBy": null,
         "narukoBy": null,
         "floatBy": null
-      }
+      },
+      "awardsHtml": "<ul class=\"home-list\">\n\t<li>よさこい大阪大会：金賞（2022年）</li>\n</ul>"
     },
     {
       "slug": "monokuro",
@@ -452,7 +454,8 @@
         "costumeBy": null,
         "narukoBy": null,
         "floatBy": null
-      }
+      },
+      "awardsHtml": "<ul class=\"home-list\">\n\t<li>能登よさこい祭り：能登和っちゃ賞</li>\n\t<li>よさこい大阪大会：大賞</li>\n\t<li>紀の国いっとこよいやなデバ祭：金賞</li>\n\t<li>こいや祭り：フィナーレ選考（荒天中止）</li>\n</ul>"
     },
     {
       "slug": "soleil",
@@ -474,7 +477,8 @@
         "costumeBy": null,
         "narukoBy": null,
         "floatBy": null
-      }
+      },
+      "awardsHtml": "<ul class=\"home-list\">\n\t<li>原宿表参道元氣祭スーパーよさこい：鳴子賞</li>\n\t<li>よさこい祭り：高知よさこいLINE絆賞</li>\n\t<li>こいや祭り：やぐら会場賞</li>\n\t<li>富山のよさこい祭り：審査員特別賞、能登和っちゃ賞</li>\n\t<li>よさこい大阪大会：金賞＆ミャクミャク賞</li>\n\t<li>紀の国いっとこよいやなデバ祭：金賞</li>\n</ul>"
     },
     {
       "slug": "tattobu",
@@ -498,7 +502,8 @@
         "costumeBy": null,
         "narukoBy": null,
         "floatBy": null
-      }
+      },
+      "awardsHtml": "<ul class=\"home-list\">\n\t<li>よさこい大阪大会：大賞</li>\n\t<li>原宿表参道元氣祭スーパーよさこい：高知県知事賞</li>\n\t<li>富山のよさこい祭り：富山のよさこい祭り実行委員会会長賞、富山市長特別賞</li>\n\t<li>おどるんや～紀州よさこい祭り～：金賞（和歌山市長賞）</li>\n\t<li>四日市よさこい祭り：諏訪公園会場賞</li>\n\t<li>京都さくらよさこい：ブーブーパーク賞</li>\n\t<li>新舞子マリンパークサマーフェス：準大賞</li>\n\t<li>YOSAバカINフルーツパーク：特別賞フルーツパーク賞</li>\n</ul>"
     },
     {
       "slug": "gunjohyururi",
@@ -523,7 +528,8 @@
         "costumeBy": null,
         "narukoBy": null,
         "floatBy": null
-      }
+      },
+      "awardsHtml": "<ul class=\"home-list\">\n\t<li>京都さくらよさこい：ブーブーパーク賞</li>\n</ul>"
     }
   ],
   "mitepitwu": [
