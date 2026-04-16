@@ -31,16 +31,19 @@ async function fetchAll<T>(endpoint: string, queries: Record<string, unknown> = 
   return all;
 }
 
+// content を含まない軽量な記事一覧（カード表示用）
 export async function getAllArticles(): Promise<Article[]> {
   const articles = await fetchAll<Article>('articles', {
     fields: 'id,title,slug,publishedAt,wpDate,eyecatch,category,tags,wpPostId',
   });
-  // WordPress の投稿日時で降順ソート（wpDate がない場合は publishedAt にフォールバック）
-  return articles.sort((a, b) => {
-    const dateA = a.wpDate ?? a.publishedAt;
-    const dateB = b.wpDate ?? b.publishedAt;
-    return new Date(dateB).getTime() - new Date(dateA).getTime();
-  });
+  return sortByDate(articles);
+}
+
+// content を含む全記事一覧（ビルド時の一括取得用）
+// getArticleBySlug の N+1 問題を解消し、CI ビルドを高速化する
+export async function getAllArticlesWithContent(): Promise<Article[]> {
+  const articles = await fetchAll<Article>('articles');
+  return sortByDate(articles);
 }
 
 export async function getArticleBySlug(slug: string): Promise<Article | undefined> {
@@ -49,6 +52,14 @@ export async function getArticleBySlug(slug: string): Promise<Article | undefine
     queries: { filters: `slug[equals]${slug}`, limit: 1 },
   });
   return res.contents[0];
+}
+
+function sortByDate(articles: Article[]): Article[] {
+  return articles.sort((a, b) => {
+    const dateA = a.wpDate ?? a.publishedAt;
+    const dateB = b.wpDate ?? b.publishedAt;
+    return new Date(dateB).getTime() - new Date(dateA).getTime();
+  });
 }
 
 export async function getAllCategories(): Promise<Category[]> {
