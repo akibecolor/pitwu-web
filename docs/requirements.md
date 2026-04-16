@@ -1,8 +1,8 @@
 # 要件定義書 — pitwu.com リニューアル
 
-**バージョン**: 0.3
+**バージョン**: 0.4
 **作成日**: 2026-04-14
-**ステータス**: 承認済み（2026-04-14）— v0.3 追記（sitemap・ナビ文書化）
+**ステータス**: 承認済み（2026-04-14）— v0.4 追記（カレンダー・スケジュール管理）
 
 ---
 
@@ -51,6 +51,13 @@ pitwu.com を WordPress（さくらサーバー）から **Astro + microCMS + Cl
 
 ### CI/CD・デプロイ
 - [ ] **REQ-10**: GitHubへのプッシュをトリガーにCloudflare Pagesへ自動デプロイされる
+
+### カレンダー・スケジュール管理
+- [ ] **REQ-11**: よさこいチーム「夢源風人」の活動予定を Google Calendar で管理する（イベント用・練習用の2カレンダーを使い分け）
+- [ ] **REQ-12**: サイト上の `/schedule/` ページで Google Calendar の予定を閲覧できるようにする
+- [ ] **REQ-13**: Google Calendar の CRUD 操作を CLI スクリプト（`npx tsx scripts/gcal.ts`）で行えるようにする（追加時の重複チェック、終日/時刻指定の自動判定を含む）
+- [ ] **REQ-14**: Claude Code の `gcal-agent` サブエージェントを通じて、自然な会話からカレンダー操作ができるようにする（運用補助）
+- [ ] **REQ-15**: Google Calendar API 認証はサービスアカウント（`.env` の `GOOGLE_SERVICE_ACCOUNT_EMAIL` / `GOOGLE_PRIVATE_KEY`）を用い、リポジトリに秘密情報を含めない
 
 ---
 
