@@ -1,0 +1,168 @@
+---
+// awards.astro — 受賞歴
+import PageLayout from '../layouts/PageLayout.astro';
+
+const years = [
+  {
+    label: '2026',
+    awards: [
+      { festival: '京都さくらよさこい', prize: 'ブーブーパーク賞' },
+    ],
+  },
+  {
+    label: '2025',
+    awards: [
+      { festival: 'よさこい大阪大会', prize: '大賞' },
+      { festival: '原宿表参道元氣祭スーパーよさこい', prize: '高知県知事賞' },
+      { festival: '富山のよさこい祭り', prize: '富山のよさこい祭り実行委員会会長賞、富山市長特別賞' },
+      { festival: 'おどるんや～紀州よさこい祭り～', prize: '金賞（和歌山市長賞）' },
+      { festival: '四日市よさこい祭り', prize: '諏訪公園会場賞' },
+      { festival: '京都さくらよさこい', prize: 'ブーブーパーク賞' },
+      { festival: '新舞子マリンパークサマーフェス', prize: '準大賞' },
+      { festival: 'YOSAバカINフルーツパーク', prize: '特別賞フルーツパーク賞' },
+    ],
+  },
+  {
+    label: '2024',
+    awards: [
+      { festival: '原宿表参道元氣祭スーパーよさこい', prize: '鳴子賞' },
+      { festival: 'よさこい祭り', prize: '高知よさこいLINE絆賞' },
+      { festival: 'こいや祭り', prize: 'やぐら会場賞' },
+      { festival: '富山のよさこい祭り', prize: '審査員特別賞、能登和っちゃ賞' },
+      { festival: 'よさこい大阪大会', prize: '金賞＆ミャクミャク賞' },
+      { festival: '紀の国いっとこよいやなデバ祭', prize: '金賞' },
+    ],
+  },
+  {
+    label: '2023',
+    awards: [
+      { festival: '能登よさこい祭り', prize: '能登和っちゃ賞' },
+      { festival: 'よさこい大阪大会', prize: '大賞' },
+      { festival: '紀の国いっとこよいやなデバ祭', prize: '金賞' },
+      { festival: 'こいや祭り', prize: 'フィナーレ選考（荒天中止）' },
+    ],
+  },
+  {
+    label: '2020–2022',
+    awards: [
+      { festival: 'よさこい大阪大会', prize: '金賞（2022年）' },
+    ],
+  },
+  {
+    label: '2019',
+    awards: [
+      { festival: '能登よさこい祭り', prize: '優秀賞' },
+      { festival: 'こいや祭り', prize: 'ファミリー賞' },
+    ],
+  },
+];
+---
+
+<PageLayout
+  title="受賞歴 | 夢源風人"
+  description="大阪・東海を拠点に活動するよさこいチーム夢源風人の受賞歴一覧。"
+  pageTitle="受賞歴"
+  pageSubtitle="Awards"
+>
+  <div class="awards-content">
+    {years.map((group) => (
+      <section class="year-group">
+        <h2 class="year-heading">
+          <span class="year-en">Awards</span>
+          <span class="year-label">{group.label}</span>
+        </h2>
+        <ul class="award-list">
+          {group.awards.map((a) => (
+            <li class="award-item">
+              <span class="award-festival">{a.festival}</span>
+              <span class="award-prize">{a.prize}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))}
+  </div>
+</PageLayout>
+
+<style>
+  .awards-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+  }
+
+  .year-group {
+    border-top: 2px solid rgba(27, 63, 139, 0.12);
+    padding-top: 2rem;
+  }
+
+  .year-group:first-child {
+    border-top: none;
+    padding-top: 0;
+  }
+
+  .year-heading {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .year-en {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.75rem;
+    font-weight: 400;
+    letter-spacing: 0.35em;
+    color: var(--color-sky, #6EC6F0);
+    text-transform: uppercase;
+  }
+
+  .year-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--color-deep, #1B3F8B);
+    letter-spacing: 0.08em;
+    line-height: 1;
+  }
+
+  .award-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .award-item {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    padding: 0.65rem 1rem;
+    border-radius: 8px;
+    background: linear-gradient(155deg, rgba(240, 246, 255, 0.6), rgba(255, 255, 255, 0.95));
+    border: 1px solid rgba(110, 198, 240, 0.18);
+    border-left: 3px solid var(--color-sky, #6EC6F0);
+  }
+
+  .award-festival {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-deep, #1B3F8B);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .award-prize {
+    font-size: 0.9375rem;
+    color: rgba(26, 31, 46, 0.78);
+    line-height: 1.5;
+  }
+
+  @media (max-width: 480px) {
+    .award-item {
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+  }
+</style>
