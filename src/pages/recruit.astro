@@ -21,6 +21,7 @@ import PageLayout from '../layouts/PageLayout.astro';
         <p class="recruit-hero-sub">
           お問い合わせは<a href="/contact/">フォーム</a>から。熱い季節を一緒に駆け抜けましょう。
         </p>
+        <p class="recruit-closed-notice">※ 2026年度のメンバー募集は終了しました。次年度の募集開始時に改めてご案内いたします。</p>
         <p class="recruit-hero-doc">
           <a class="doc-link doc-link--on-dark" href="/wp-content/uploads/2025/04/kiyaku_2_6.pdf" target="_blank" rel="noopener noreferrer">
             メンバー規約（PDF）
@@ -173,6 +174,20 @@ import PageLayout from '../layouts/PageLayout.astro';
 
   .recruit-hero-sub a:hover {
     color: #ffffff;
+  }
+
+  .recruit-closed-notice {
+    position: relative;
+    z-index: 1;
+    margin: 1.25rem 0 0;
+    padding: 0.65rem 1.25rem;
+    background: rgba(212, 168, 75, 0.2);
+    border: 1px solid rgba(212, 168, 75, 0.5);
+    border-radius: 4px;
+    font-size: 0.8125rem;
+    color: var(--color-gold, #D4A84B);
+    letter-spacing: 0.04em;
+    line-height: 1.6;
   }
 
   .recruit-hero-doc {

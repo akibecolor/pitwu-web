@@ -3,7 +3,7 @@
 import PageLayout from '../../layouts/PageLayout.astro';
 import pagesData from '../../data/wp-pages.json';
 
-const songs = pagesData.songs;
+const songs = [...pagesData.songs].reverse();
 ---
 
 <PageLayout

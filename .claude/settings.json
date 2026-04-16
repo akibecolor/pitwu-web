@@ -40,7 +40,13 @@
       "Bash(kill 1789)",
       "Bash(git show:*)",
       "Bash(cp -r dist/pagefind public/)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(where magick *)",
+      "Bash(where inkscape *)",
+      "Bash(where gswin64c *)",
+      "Bash(cp /tmp/pitwu-favicon.ico /c/Users/akico/Documents/pitwu-web/public/images/pitwu-favicon-orig.ico)",
+      "Bash(node -e \"const sharp = require\\('sharp'\\); sharp\\('/tmp/pitwu-favicon.ico'\\).png\\(\\).toFile\\('/tmp/pitwu-favicon.png'\\).then\\(\\(\\)=>console.log\\('converted'\\)\\).catch\\(e=>console.error\\(e\\)\\)\")",
+      "Bash(git commit -m ' *)"
     ]
   }
 }
