@@ -396,6 +396,16 @@ const legacyContent = wrapLyricsSection(song.content);
     letter-spacing: 0.08em;
   }
 
+  /* 衣装・地方車写真 */
+  .photo-content :global(img) {
+    margin-bottom: 1rem;
+    border-radius: 8px;
+  }
+
+  .photo-content :global(img:last-child) {
+    margin-bottom: 0;
+  }
+
   /* Coming Soon カード */
   .coming-soon {
     display: flex;
