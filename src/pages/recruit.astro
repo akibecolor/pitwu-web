@@ -54,6 +54,35 @@ import PageLayout from '../layouts/PageLayout.astro';
       </div>
     </div>
 
+    <section class="faq-section" aria-labelledby="faq-heading">
+      <h2 id="faq-heading" class="faq-heading">
+        <span class="faq-heading-en">FAQ</span>
+        よくあるご質問
+      </h2>
+      <dl class="faq-list">
+        <div class="faq-item">
+          <dt class="faq-q">よさこい未経験でも大丈夫ですか？</dt>
+          <dd class="faq-a">もちろん大丈夫です。初心者歓迎で、基礎から一緒に練習します。</dd>
+        </div>
+        <div class="faq-item">
+          <dt class="faq-q">練習はどのくらいの頻度ですか？</dt>
+          <dd class="faq-a">主に週1〜2回（大阪・東海それぞれ）です。シーズン（春〜夏）は増えることもあります。</dd>
+        </div>
+        <div class="faq-item">
+          <dt class="faq-q">大阪在住ではないのですが参加できますか？</dt>
+          <dd class="faq-a">東海・関東にも多数のメンバーがいます。またその他の全国各地にメンバーがいますので、遠方の方もまずはご相談ください。</dd>
+        </div>
+        <div class="faq-item">
+          <dt class="faq-q">年齢制限はありますか？</dt>
+          <dd class="faq-a">制限はありません。5歳から60代まで幅広く活動しています。中高生以下の方は年齢によって家族の同伴・同意が必要なため一度ご相談ください。</dd>
+        </div>
+        <div class="faq-item">
+          <dt class="faq-q">どんな祭りに出ますか？</dt>
+          <dd class="faq-a">高知のよさこい祭り、こいや祭り、各地の地方大会など、年間を通じて複数の祭りに出演しています。</dd>
+        </div>
+      </dl>
+    </section>
+
     <div class="cta-block">
       <p>まずはお気軽にお問い合わせください</p>
       <a href="/contact/" class="cta-btn">お問合せはこちら</a>
@@ -299,6 +328,74 @@ import PageLayout from '../layouts/PageLayout.astro';
     font-size: 0.875rem;
     line-height: 1.75;
     color: rgba(26, 31, 46, 0.78);
+  }
+
+  .faq-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .faq-heading {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: var(--color-deep, #1b3f8b);
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .faq-heading-en {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.8rem;
+    font-weight: 300;
+    letter-spacing: 0.35em;
+    color: var(--color-sky, #6ec6f0);
+    text-transform: uppercase;
+  }
+
+  .faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .faq-item {
+    padding: 1.25rem 1.5rem;
+    border-radius: 10px;
+    background: linear-gradient(165deg, rgba(240, 246, 255, 0.55), rgba(255, 255, 255, 0.98));
+    border: 1px solid rgba(110, 198, 240, 0.2);
+    box-shadow: 0 4px 14px rgba(27, 63, 139, 0.05);
+  }
+
+  .faq-q {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--color-deep, #1b3f8b);
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.02em;
+  }
+
+  .faq-q::before {
+    content: 'Q. ';
+    color: var(--color-sky, #6ec6f0);
+  }
+
+  .faq-a {
+    font-size: 0.9375rem;
+    line-height: 1.85;
+    color: rgba(26, 31, 46, 0.82);
+    padding-left: 1.5rem;
+  }
+
+  .faq-a::before {
+    content: 'A. ';
+    font-weight: 600;
+    color: var(--color-deep, #1b3f8b);
+    margin-left: -1.5rem;
   }
 
   .cta-block {

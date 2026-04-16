@@ -7,9 +7,17 @@ import type { GetStaticPaths } from 'astro';
 // v2: structured layout for 2019+ songs
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  return pagesData.songs.map((song) => ({
+  return pagesData.songs.map((song, index) => ({
     params: { slug: song.slug },
-    props: { song },
+    props: {
+      song,
+      prevSong: index > 0
+        ? { slug: pagesData.songs[index - 1].slug, title: pagesData.songs[index - 1].title, year: pagesData.songs[index - 1].year }
+        : null,
+      nextSong: index < pagesData.songs.length - 1
+        ? { slug: pagesData.songs[index + 1].slug, title: pagesData.songs[index + 1].title, year: pagesData.songs[index + 1].year }
+        : null,
+    },
   }));
 };
 
@@ -28,6 +36,12 @@ interface Credits {
   ryukyuAori?: string | null;
 }
 
+interface SongNav {
+  slug: string;
+  title: string;
+  year: number | string;
+}
+
 interface Props {
   song: {
     slug: string;
@@ -43,9 +57,11 @@ interface Props {
     awardsHtml?: string | null;
     credits?: Credits | null;
   };
+  prevSong: SongNav | null;
+  nextSong: SongNav | null;
 }
 
-const { song } = Astro.props;
+const { song, prevSong, nextSong } = Astro.props;
 const yearLabel = typeof song.year === 'string' ? song.year : String(song.year);
 const subtitle = song.romaji ? `${yearLabel} — ${song.romaji}` : `${yearLabel} — Works`;
 
@@ -234,9 +250,27 @@ const legacyContent = wrapLyricsSection(song.content);
           <div class="song-content wp-content" set:html={legacyContent} />
         )}
 
-        <div class="back-link">
-          <a href="/discography/">← 作品一覧に戻る</a>
-        </div>
+        <nav class="song-nav" aria-label="作品ナビゲーション">
+          <div class="song-nav-prev">
+            {prevSong ? (
+              <a href={`/discography/${prevSong.slug}/`} class="song-nav-link song-nav-link--prev">
+                <span class="song-nav-dir">← 前の作品</span>
+                <span class="song-nav-meta">{prevSong.year}</span>
+                <span class="song-nav-title">{prevSong.title}</span>
+              </a>
+            ) : <span />}
+          </div>
+          <div class="song-nav-next">
+            {nextSong ? (
+              <a href={`/discography/${nextSong.slug}/`} class="song-nav-link song-nav-link--next">
+                <span class="song-nav-dir">次の作品 →</span>
+                <span class="song-nav-meta">{nextSong.year}</span>
+                <span class="song-nav-title">{nextSong.title}</span>
+              </a>
+            ) : <span />}
+          </div>
+          <a href="/discography/" class="song-nav-index">作品一覧</a>
+        </nav>
       </div>
     </div>
 
@@ -763,18 +797,80 @@ const legacyContent = wrapLyricsSection(song.content);
     margin: 0 0 var(--wp-block-gap);
   }
 
-  .back-link {
+  .song-nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 0.75rem 1rem;
     margin-top: 3rem;
     padding-top: 1.5rem;
     border-top: 1px solid rgba(27, 63, 139, 0.1);
   }
 
-  .back-link a {
-    font-size: 0.9375rem;
-    color: var(--color-deep, #1B3F8B);
+  .song-nav-prev { text-align: left; }
+  .song-nav-next { text-align: right; }
+
+  /* 「作品一覧」は2列目の行に中央配置のピルボタン */
+  .song-nav-index {
+    grid-column: 1 / -1;
+    justify-self: center;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.55rem 1.5rem;
+    border-radius: 999px;
+    border: 1px solid rgba(27, 63, 139, 0.22);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.25em;
+    color: rgba(26, 31, 46, 0.6);
     text-decoration: none;
-    font-weight: 500;
+    text-transform: uppercase;
+    background: rgba(240, 246, 255, 0.7);
+    transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
   }
 
-  .back-link a:hover { text-decoration: underline; }
+  .song-nav-index:hover {
+    border-color: var(--color-deep, #1B3F8B);
+    background: rgba(27, 63, 139, 0.06);
+    color: var(--color-deep, #1B3F8B);
+  }
+
+  .song-nav-link {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    text-decoration: none;
+    padding: 0.875rem 1rem;
+    border-radius: 8px;
+    border: 1px solid rgba(110, 198, 240, 0.2);
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+
+  .song-nav-link:hover {
+    border-color: var(--color-sky, #6EC6F0);
+    background: rgba(110, 198, 240, 0.05);
+  }
+
+  .song-nav-dir {
+    font-size: 0.75rem;
+    color: rgba(26, 31, 46, 0.45);
+    letter-spacing: 0.05em;
+  }
+
+  .song-nav-meta {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.8rem;
+    color: var(--color-sky, #6EC6F0);
+    letter-spacing: 0.1em;
+  }
+
+  .song-nav-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-deep, #1B3F8B);
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+  }
 </style>
