@@ -13,6 +13,7 @@
     "icons": "tsx scripts/generate-favicon.ts"
   },
   "dependencies": {
+    "@astrojs/cloudflare": "^13.1.10",
     "@astrojs/rss": "^4.0.18",
     "astro": "^6.1.6",
     "microcms-js-sdk": "^3.1.3"
