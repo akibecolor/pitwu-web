@@ -19,6 +19,13 @@ interface Credits {
   costumeBy?: string | null;
   narukoBy?: string | null;
   floatBy?: string | null;
+  costumeDesignBy?: string | null;
+  lyricist?: string | null;
+  vocalist?: string | null;
+  chorus?: string | null;
+  guitarist?: string | null;
+  shamisen?: string | null;
+  ryukyuAori?: string | null;
 }
 
 interface Props {
@@ -29,7 +36,11 @@ interface Props {
     year: number | string;
     romaji?: string;
     youtubeId?: string | null;
+    youtubeIds?: string[] | null;
     lyrics?: string | null;
+    costumeHtml?: string | null;
+    yataiHtml?: string | null;
+    awardsHtml?: string | null;
     credits?: Credits | null;
   };
 }
@@ -38,18 +49,28 @@ const { song } = Astro.props;
 const yearLabel = typeof song.year === 'string' ? song.year : String(song.year);
 const subtitle = song.romaji ? `${yearLabel} — ${song.romaji}` : `${yearLabel} — Works`;
 
-const hasYoutube = Boolean(song.youtubeId);
+const videoIds = song.youtubeIds?.length ? song.youtubeIds : (song.youtubeId ? [song.youtubeId] : []);
+const hasVideos  = videoIds.length > 0;
+const primaryVideoId   = videoIds.length >= 2 ? videoIds[0] : null;
+const sectionVideoIds  = videoIds.length >= 2 ? videoIds.slice(1) : videoIds;
 const hasLyrics  = Boolean(song.lyrics);
 const hasCredits = song.credits && Object.values(song.credits).some(Boolean);
 // credits オブジェクト自体が存在すれば 2019年以降の構造化ページ
 const isStructured = song.credits !== undefined;
 
 const creditLabels: [keyof Credits, string][] = [
-  ['composer',      '楽曲'],
-  ['choreographer', '振付'],
-  ['costumeBy',     '衣装制作'],
-  ['narukoBy',      '鳴子制作'],
-  ['floatBy',       '地方車製作'],
+  ['choreographer',  '振付'],
+  ['costumeDesignBy','衣装デザイン'],
+  ['lyricist',       '作詞'],
+  ['composer',       '楽曲'],
+  ['guitarist',      'ギター'],
+  ['shamisen',       '三味線'],
+  ['vocalist',       '歌'],
+  ['chorus',         'コーラス'],
+  ['ryukyuAori',     '琉球煽り'],
+  ['costumeBy',      '衣装制作'],
+  ['narukoBy',       '鳴子制作'],
+  ['floatBy',        '地方車製作'],
 ];
 
 const legacyContent = wrapLyricsSection(song.content);
@@ -81,6 +102,21 @@ const legacyContent = wrapLyricsSection(song.content);
           <span class="breadcrumb-current">{song.title}</span>
         </nav>
 
+        {primaryVideoId && (
+          <div class="primary-video-wrapper">
+            <div class="video-wrapper">
+              <iframe
+                src={`https://www.youtube.com/embed/${primaryVideoId}`}
+                title={`${song.title} 作品動画`}
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen
+                loading="lazy"
+              />
+            </div>
+          </div>
+        )}
+
         {isStructured ? (
           <div class="structured-sections">
 
@@ -106,10 +142,14 @@ const legacyContent = wrapLyricsSection(song.content);
                 <span class="section-title-en">Costume</span>
                 <span class="section-title-ja">衣装</span>
               </h2>
-              <div class="coming-soon">
-                <span class="coming-soon-label">Coming Soon</span>
-                <p class="coming-soon-note">衣装写真を準備中です</p>
-              </div>
+              {song.costumeHtml ? (
+                <div class="photo-content wp-content" set:html={song.costumeHtml} />
+              ) : (
+                <div class="coming-soon">
+                  <span class="coming-soon-label">Coming Soon</span>
+                  <p class="coming-soon-note">衣装写真を準備中です</p>
+                </div>
+              )}
             </section>
 
             <section class="section section--float">
@@ -117,10 +157,14 @@ const legacyContent = wrapLyricsSection(song.content);
                 <span class="section-title-en">Yatai</span>
                 <span class="section-title-ja">地方車</span>
               </h2>
-              <div class="coming-soon">
-                <span class="coming-soon-label">Coming Soon</span>
-                <p class="coming-soon-note">地方車写真を準備中です</p>
-              </div>
+              {song.yataiHtml ? (
+                <div class="photo-content wp-content" set:html={song.yataiHtml} />
+              ) : (
+                <div class="coming-soon">
+                  <span class="coming-soon-label">Coming Soon</span>
+                  <p class="coming-soon-note">地方車写真を準備中です</p>
+                </div>
+              )}
             </section>
 
             <section class="section section--credits">
@@ -147,21 +191,35 @@ const legacyContent = wrapLyricsSection(song.content);
               )}
             </section>
 
+            {song.awardsHtml && (
+              <section class="section section--awards">
+                <h2 class="section-title">
+                  <span class="section-title-en">Awards</span>
+                  <span class="section-title-ja">受賞歴</span>
+                </h2>
+                <div class="awards-content wp-content" set:html={song.awardsHtml} />
+              </section>
+            )}
+
             <section class="section section--video">
               <h2 class="section-title">
                 <span class="section-title-en">Video</span>
                 <span class="section-title-ja">作品動画</span>
               </h2>
-              {hasYoutube ? (
-                <div class="video-wrapper">
-                  <iframe
-                    src={`https://www.youtube.com/embed/${song.youtubeId}`}
-                    title={`${song.title} 作品動画`}
-                    frameborder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowfullscreen
-                    loading="lazy"
-                  />
+              {hasVideos ? (
+                <div class="video-list">
+                  {sectionVideoIds.map((id) => (
+                    <div class="video-wrapper">
+                      <iframe
+                        src={`https://www.youtube.com/embed/${id}`}
+                        title={`${song.title} 作品動画`}
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen
+                        loading="lazy"
+                      />
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <div class="coming-soon">
@@ -368,7 +426,39 @@ const legacyContent = wrapLyricsSection(song.content);
     letter-spacing: 0.05em;
   }
 
+  /* メイン動画（見出しなし・セクション上） */
+  .primary-video-wrapper {
+    margin-bottom: 2.5rem;
+  }
+
+  /* 受賞歴コンテンツ */
+  .awards-content :global(ul),
+  .awards-content :global(ol) {
+    padding-left: 1.25rem;
+    line-height: 1.9;
+    margin: 0;
+  }
+
+  .awards-content :global(li) {
+    font-size: 0.9375rem;
+    color: rgba(26, 31, 46, 0.82);
+    margin-bottom: 0.3em;
+  }
+
+  .awards-content :global(p) {
+    font-size: 0.9375rem;
+    line-height: 1.9;
+    color: rgba(26, 31, 46, 0.82);
+    margin: 0 0 0.5em;
+  }
+
   /* 作品動画 */
+  .video-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
   .video-wrapper {
     position: relative;
     width: 100%;
