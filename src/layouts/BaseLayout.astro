@@ -51,6 +51,15 @@ const ogImageUrl = ogImage ?? `${siteUrl}/ogp.jpg`;
     />
 
     <!-- Global CSS は frontmatter の import で Astro のバンドラー経由でロード -->
+
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-EYRMESGEB3" is:inline></script>
+    <script is:inline>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-EYRMESGEB3');
+    </script>
   </head>
   <body>
     <Header />
