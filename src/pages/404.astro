@@ -1,0 +1,104 @@
+---
+// 404.astro — カスタム 404 ページ（Cloudflare Pages が自動的に返す）
+import PageLayout from '../layouts/PageLayout.astro';
+---
+
+<PageLayout
+  title="404 Page Not Found | 夢源風人"
+  description="お探しのページが見つかりませんでした。"
+  pageTitle="404"
+  pageSubtitle="Page Not Found"
+>
+  <div class="not-found">
+    <p class="not-found-message">お探しのページが見つかりませんでした。</p>
+    <p class="not-found-sub">
+      URLが変更・削除されたか、入力ミスの可能性があります。
+    </p>
+
+    <nav class="not-found-links" aria-label="主要ページへのリンク">
+      <a href="/" class="not-found-link">
+        <span class="link-en">Top</span>
+        <span class="link-ja">トップ</span>
+      </a>
+      <a href="/discography/" class="not-found-link">
+        <span class="link-en">Works</span>
+        <span class="link-ja">作品</span>
+      </a>
+      <a href="/articles/" class="not-found-link">
+        <span class="link-en">Blog</span>
+        <span class="link-ja">ブログ</span>
+      </a>
+      <a href="/contact/" class="not-found-link">
+        <span class="link-en">Contact</span>
+        <span class="link-ja">お問合せ</span>
+      </a>
+    </nav>
+  </div>
+</PageLayout>
+
+<style>
+  .not-found {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 2rem 0 4rem;
+    gap: 1rem;
+  }
+
+  .not-found-message {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-deep, #1B3F8B);
+    letter-spacing: 0.04em;
+  }
+
+  .not-found-sub {
+    font-size: 0.9rem;
+    color: rgba(26, 31, 46, 0.55);
+    line-height: 1.8;
+  }
+
+  .not-found-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.875rem;
+    margin-top: 1.5rem;
+  }
+
+  .not-found-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 1rem 1.75rem;
+    border-radius: 8px;
+    border: 1px solid rgba(110, 198, 240, 0.3);
+    text-decoration: none;
+    background: rgba(240, 246, 255, 0.7);
+    transition: border-color 0.2s ease, background 0.2s ease;
+    min-width: 120px;
+  }
+
+  .not-found-link:hover {
+    border-color: var(--color-sky, #6EC6F0);
+    background: rgba(110, 198, 240, 0.08);
+  }
+
+  .link-en {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.3em;
+    color: var(--color-sky, #6EC6F0);
+    text-transform: uppercase;
+  }
+
+  .link-ja {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-deep, #1B3F8B);
+  }
+</style>
