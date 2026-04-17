@@ -54,6 +54,7 @@ interface Props {
     lyrics?: string | null;
     costumeIllustrationHtml?: string | null;
     costumeHtml?: string | null;
+    yataiIllustrationHtml?: string | null;
     yataiHtml?: string | null;
     awardsHtml?: string | null;
     credits?: Credits | null;
@@ -197,8 +198,31 @@ const legacyContent = wrapLyricsSection(song.content);
                 <span class="section-title-en">Jikatasha</span>
                 <span class="section-title-ja">地方車</span>
               </h2>
-              {song.yataiHtml ? (
-                <div class="photo-content wp-content" set:html={song.yataiHtml} />
+              {(song.yataiIllustrationHtml || song.yataiHtml) ? (
+                <div class="costume-subsections">
+                  {song.yataiIllustrationHtml && (
+                    <div class="costume-subsection">
+                      {song.yataiHtml && (
+                        <h3 class="subsection-title">
+                          <span class="subsection-title-en">Illustration</span>
+                          <span class="subsection-title-ja">地方車イラスト</span>
+                        </h3>
+                      )}
+                      <div class="photo-content wp-content" set:html={song.yataiIllustrationHtml} />
+                    </div>
+                  )}
+                  {song.yataiHtml && (
+                    <div class="costume-subsection">
+                      {song.yataiIllustrationHtml && (
+                        <h3 class="subsection-title">
+                          <span class="subsection-title-en">Photo</span>
+                          <span class="subsection-title-ja">地方車写真</span>
+                        </h3>
+                      )}
+                      <div class="photo-content wp-content" set:html={song.yataiHtml} />
+                    </div>
+                  )}
+                </div>
               ) : (
                 <div class="coming-soon">
                   <span class="coming-soon-label">Coming Soon</span>
