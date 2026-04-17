@@ -561,10 +561,15 @@ tsx scripts/inject-search-hints.ts   （新規・本節の主役）
   5. 形態素解析で固有名詞（名詞-固有名詞-*）のカタカナ読みを抽出
   6. エイリアス辞書に含まれる漢字表記が本文にあれば、対応するキー（よみ）を追加
   7. </div> 直前に「hidden な補強文字列ブロック」を挿入
-      - `<div data-pagefind-body aria-hidden="true"
+      - `<div data-search-hints="1" aria-hidden="true"
           style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;">
           読み仮名スペース区切り…
         </div>`
+      ※ ヒント div 自体には `data-pagefind-body` を付けない。
+         親の `data-pagefind-body` 要素の内側に挿入するため、属性を付けると
+         ネストした新しい `body` スコープが生まれて親本文がインデックスから
+         外れる退行が起きる（監査指摘 v1.0 Critical）。親スコープの一部として
+         そのまま索引させる。
       ※ `display:none` は Pagefind がインデックスしないので不使用
       │
       ▼
@@ -637,6 +642,7 @@ hint 注入は「記事ページ」のみ。判定ルールは以下。
 | hidden は `display:none` ではなく `position:absolute;left:-9999px;` | `display:none` は Pagefind 内の tokenizer が走査しない（公式ドキュメントの制約）。オフスクリーン配置なら索引対象になる |
 | 固有名詞のみ抽出（一般名詞は対象外） | 読み仮名を全単語に付けると索引がノイズで膨らみ AC-03（単一文字50件以下）が悪化する |
 | hint の挿入位置は `data-pagefind-body` 要素の末尾（`</div>` 直前） | 同じ `body` スコープ扱いにして記事単位のマッチング粒度を維持。別要素に `data-pagefind-body` を付けて切り分けると sub-result の扱いが変わる可能性 |
+| ヒント div には `data-pagefind-body` を付けない（マーカーは `data-search-hints="1"` のみ） | 親の `data-pagefind-body` 要素の内側にネストした `data-pagefind-body` があると、Pagefind が内側を新しいスコープと見なして親の本文テキストが索引から外れる。属性を付けずに挿入すれば親スコープの一部として索引される |
 | 辞書は JSON（JSON5 不使用） | ブラウザ非配信＆人間/AI 可読性優先（AC-10）。コメントは `_comment` キーで表現 |
 | 後処理を `tsx` で実行 | 既存スクリプトと同じ実行系（devDep 済み）で統一、Cloudflare Pages のビルド環境でも動作 |
 
