@@ -29,6 +29,7 @@
 
   // ── 構造化コンテンツ ──
   "lyrics": "<p>...<br>...</p>",  // 歌詞 HTML
+  "costumeIllustrationHtml": "<img ...>", // 衣装イラスト HTML（衣装セクションのサブ）
   "costumeHtml": "<img ...>",     // 衣装写真 HTML
   "yataiHtml": "<img ...>",       // 地方車写真 HTML
   "awardsHtml": "<ul class=\"home-list\"><li>...</li></ul>", // 受賞歴 HTML（なければ null）
@@ -97,6 +98,13 @@
 - WordPress から移行した `<img>` タグをそのまま格納
 - 複数枚あってもよい（CSS で自動的に `1rem` ギャップが入る）
 - 写真がなければ `null`（Coming Soon が表示される）
+
+### 衣装イラスト（`costumeIllustrationHtml`）
+- 衣装セクションのサブカテゴリ「Illustration / 衣装イラスト」として表示
+- 画像は `public/images/works/<slug>/` に配置し、`<img src="/images/works/<slug>/xxx.jpg" ...>` の形で記述
+- `costumeHtml`（写真）と併存する場合、両方にサブ見出しが付与される
+- `costumeIllustrationHtml` のみの場合、サブ見出しなしでイラストだけが表示される
+- イラストがなければ `null` またはフィールド省略
 
 ### 動画（`youtubeId` / `youtubeIds`）
 - 1本 → `"youtubeId": "VIDEO_ID"`
