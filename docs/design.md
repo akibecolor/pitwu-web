@@ -539,3 +539,104 @@ microCMS API 呼び出しの共通ヘルパー。
 | discography の巨大 CSS はそのまま残す | 分割するには CSS アーキテクチャ全体の設計議論が必要。純粋リファクタの範囲外 |
 | スクリプトの型定義共通化は最小限 | 各スクリプトのスコープが異なるため、ローカル型定義を保つほうが読みやすい |
 
+---
+
+## 15. 検索機能の改善（v1.0 — 2026-04-17）
+
+### 要件参照
+- `docs/requirements.md`「## 検索機能の改善要件（v1.0 — 2026-04-17）」
+- 受け入れ条件 AC-01〜AC-10
+
+### 15-1. アーキテクチャ
+
+```
+astro build  →  dist/[year]/[month]/[slug]/index.html  （記事本文に data-pagefind-body）
+      │
+      ▼
+tsx scripts/inject-search-hints.ts   （新規・本節の主役）
+  1. kuromoji（Node 向け）を ipadic で初期化（ビルド時のみ）
+  2. src/data/search-aliases.json を読み込む
+  3. dist/ 配下の記事ページ（/[year]/[month]/[slug]/index.html）を列挙
+  4. 各 HTML 内の data-pagefind-body 要素から本文テキストを抽出
+  5. 形態素解析で固有名詞（名詞-固有名詞-*）のカタカナ読みを抽出
+  6. エイリアス辞書に含まれる漢字表記が本文にあれば、対応するキー（よみ）を追加
+  7. </div> 直前に「hidden な補強文字列ブロック」を挿入
+      - `<div data-pagefind-body aria-hidden="true"
+          style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;">
+          読み仮名スペース区切り…
+        </div>`
+      ※ `display:none` は Pagefind がインデックスしないので不使用
+      │
+      ▼
+pagefind --site dist  →  /pagefind/ 生成（補強テキストがインデックス対象に入る）
+```
+
+### 15-2. 変更ファイル一覧
+
+| ファイル | 種別 | 内容 |
+|----------|------|------|
+| `scripts/inject-search-hints.ts` | 新規 | ビルド後処理。記事 HTML に hidden hint div を注入 |
+| `src/data/search-aliases.json` | 既存/確認 | 手動揺れ辞書（`たいが→大雅` など） |
+| `pagefind.yml` | 既存/確認 | `force_language: ja` を明示（CJK tokenizer 固定） |
+| `package.json` | 変更 | build スクリプトに `tsx scripts/inject-search-hints.ts` を挟み込む |
+
+### 15-3. 対象ページの判定
+
+hint 注入は「記事ページ」のみ。判定ルールは以下。
+
+- 相対パス（dist 起点）が `/YYYY/MM/slug/index.html` 形式（year: 4桁数字、month: 2桁数字）
+- かつ HTML 内に `data-pagefind-body` 属性付き要素が存在する
+
+上記以外（`index.html`, `about/`, `discography/`, `enbu-irai/`, `schedule/`, `tag/`, `category/`, `404.html` 等）は、
+(a) そもそも `data-pagefind-body` を持たないため Pagefind の索引対象外
+(b) スクリプトもパス判定でスキップ
+の二重防御で AC-05（非記事ページをヒットさせない）を維持する。
+
+### 15-4. kuromoji の読み抽出ルール
+
+| 条件 | 採用 |
+|------|------|
+| 品詞: 名詞-固有名詞-*（人名・地名・組織名） | ○（サイト固有の固有名詞を広く拾う） |
+| 品詞: 名詞-一般 | × （ノイズ過多） |
+| `reading`（カタカナ読み） | そのまま採用（2文字以上） |
+| `surface_form` が既に全てひらがな/カタカナ | 重複するのでスキップ |
+| kuromoji が辞書未登録（`reading` = `*`） | スキップ |
+
+抽出した読みは重複排除し、スペース区切りで hidden div に連結する。
+
+### 15-5. 辞書エイリアス適用
+
+- `src/data/search-aliases.json` の形: `{ "_comment": "...", "aliases": { "よみ": ["漢字1","漢字2"] } }`
+- 各記事本文テキスト（HTML タグ除去後）に対し、`"漢字1"` or `"漢字2"` を単純 `includes` で検索
+- 含まれていれば、その記事の hidden div に `"よみ"` を追加
+- 同じキーが kuromoji 抽出結果と重複する場合は片方のみ保持
+
+### 15-6. 後処理スクリプトの I/O
+
+| 項目 | 内容 |
+|------|------|
+| 入力 | `dist/**/*.html`（実際には記事ページに絞り込み） |
+| 出力 | 同じ HTML をインプレース書き換え |
+| 冪等性 | 挿入する div に `data-search-hints` マーカーを付与。既存のマーカー付き div があれば一度削除してから再挿入する（再実行可） |
+| 失敗方針 | kuromoji 初期化失敗はビルド停止（exit 1）。個別ファイル処理失敗はログ出力して続行 |
+
+### 15-7. ビルドコマンド変更
+
+```
+// before
+"build": "astro build && pagefind --site dist"
+
+// after
+"build": "astro build && tsx scripts/inject-search-hints.ts && pagefind --site dist"
+```
+
+### 15-8. 考慮したトレードオフ
+
+| 判断 | 理由 |
+|------|------|
+| hidden は `display:none` ではなく `position:absolute;left:-9999px;` | `display:none` は Pagefind 内の tokenizer が走査しない（公式ドキュメントの制約）。オフスクリーン配置なら索引対象になる |
+| 固有名詞のみ抽出（一般名詞は対象外） | 読み仮名を全単語に付けると索引がノイズで膨らみ AC-03（単一文字50件以下）が悪化する |
+| hint の挿入位置は `data-pagefind-body` 要素の末尾（`</div>` 直前） | 同じ `body` スコープ扱いにして記事単位のマッチング粒度を維持。別要素に `data-pagefind-body` を付けて切り分けると sub-result の扱いが変わる可能性 |
+| 辞書は JSON（JSON5 不使用） | ブラウザ非配信＆人間/AI 可読性優先（AC-10）。コメントは `_comment` キーで表現 |
+| 後処理を `tsx` で実行 | 既存スクリプトと同じ実行系（devDep 済み）で統一、Cloudflare Pages のビルド環境でも動作 |
+

@@ -1,0 +1,6 @@
+# Pagefind 設定
+# 参考: https://pagefind.app/docs/config-options/
+#
+# force_language: dist 内に含まれる HTML の言語自動判定を上書きし、
+# 全記事を日本語として扱わせる（ja）。ja は CJK 用の bigram tokenizer となる。
+force_language: ja
