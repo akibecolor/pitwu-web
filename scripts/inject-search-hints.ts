@@ -79,6 +79,14 @@ interface Tokenizer {
 
 /** kuromoji tokenizer を初期化。失敗したらビルド停止。 */
 function buildTokenizer(): Promise<Tokenizer> {
+  if (!existsSync(KUROMOJI_DICT_PATH)) {
+    return Promise.reject(
+      new Error(
+        `kuromoji 辞書が見つかりません: ${KUROMOJI_DICT_PATH}\n` +
+          `  → \`npm install\` を実行して node_modules/kuromoji/dict が生成されているか確認してください。`,
+      ),
+    );
+  }
   return new Promise((resolve, reject) => {
     kuromoji
       .builder({ dicPath: KUROMOJI_DICT_PATH })
@@ -235,11 +243,18 @@ function removeExistingHints(html: string): string {
   return html.replace(re, '');
 }
 
-/** 新しい hint div の HTML 文字列を作る。 */
+/** 新しい hint div の HTML 文字列を作る。
+ *
+ * 注意: このヒント div は、既存の `data-pagefind-body` 要素（記事本文）の
+ * 内側に挿入される。ヒント div 側にも `data-pagefind-body` を付けると
+ * 「ネストされた data-pagefind-body が新しいスコープを作り、親本文が
+ * インデックスから外れる」という Pagefind の挙動に抵触し、既存本文語句の
+ * 検索が退行する。そのため属性は付けない（親スコープの一部として索引される）。
+ */
 function buildHintDiv(tokens: string[]): string {
   const joined = tokens.join(' ');
   return (
-    `<div data-pagefind-body ${HINT_MARKER_ATTR} aria-hidden="true" ` +
+    `<div ${HINT_MARKER_ATTR} aria-hidden="true" ` +
     `style="${HINT_STYLE}">${escapeHtml(joined)}</div>`
   );
 }
@@ -293,10 +308,11 @@ async function main(): Promise<void> {
   for (const absPath of articles) {
     processed++;
     try {
-      let html = readFileSync(absPath, 'utf8');
+      const originalHtml = readFileSync(absPath, 'utf8');
 
       // 既存 hint を除去（冪等）
-      html = removeExistingHints(html);
+      let html = removeExistingHints(originalHtml);
+      const hadExistingHint = html !== originalHtml;
 
       const body = findPagefindBody(html);
       if (!body) {
@@ -313,8 +329,11 @@ async function main(): Promise<void> {
       for (const r of applyAliases(text, aliases)) tokens.add(r);
 
       if (tokens.size === 0) {
-        // 何も追加しない（ファイル書き戻しは既存 hint 除去のみ反映）
-        writeFileSync(absPath, html, 'utf8');
+        // トークンが無い場合は新規挿入しない。
+        // 既存ヒントがあった場合のみ（除去結果を反映するため）書き戻す。
+        if (hadExistingHint) {
+          writeFileSync(absPath, html, 'utf8');
+        }
         continue;
       }
 
