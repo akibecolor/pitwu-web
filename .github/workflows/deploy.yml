@@ -22,6 +22,12 @@ jobs:
 
       - run: npm ci
 
+      - name: Type check (astro check)
+        run: npm run check
+
+      - name: Lint (biome)
+        run: npm run lint
+
       - name: Build
         env:
           MICROCMS_SERVICE_DOMAIN: ${{ secrets.MICROCMS_SERVICE_DOMAIN }}

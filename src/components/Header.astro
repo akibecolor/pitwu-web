@@ -80,7 +80,7 @@ const isHome = Astro.url.pathname === '/';
   }
 
   /** モバイルメニューを開閉する（スクリム・body スクロール連動） */
-  function setMobileMenuOpen(open) {
+  function setMobileMenuOpen(open: boolean) {
     const toggle = document.getElementById('nav-toggle');
     const mobileNav = document.getElementById('mobile-nav');
     const backdrop = document.getElementById('mobile-nav-backdrop');
