@@ -31,19 +31,29 @@ async function fetchAll<T>(endpoint: string, queries: Record<string, unknown> = 
   return all;
 }
 
+// microCMS のリレーション項目は、参照が1件のとき配列ではなく単一オブジェクトで返ることがある。
+// 全ての消費側（ArticleCard の .map / タグ一覧の .some 等）が配列を前提にできるよう、取得層で正規化する。
+function normalizeArticle(article: Article): Article {
+  const rawTags = article.tags as Tag | Tag[] | undefined;
+  if (rawTags && !Array.isArray(rawTags)) {
+    return { ...article, tags: [rawTags] };
+  }
+  return article;
+}
+
 // content を含まない軽量な記事一覧（カード表示用）
 export async function getAllArticles(): Promise<Article[]> {
   const articles = await fetchAll<Article>('articles', {
     fields: 'id,title,slug,publishedAt,wpDate,eyecatch,category,tags,wpPostId',
   });
-  return sortByDate(articles);
+  return sortByDate(articles.map(normalizeArticle));
 }
 
 // content を含む全記事一覧（ビルド時の一括取得用）
 // getArticleBySlug の N+1 問題を解消し、CI ビルドを高速化する
 export async function getAllArticlesWithContent(): Promise<Article[]> {
   const articles = await fetchAll<Article>('articles');
-  return sortByDate(articles);
+  return sortByDate(articles.map(normalizeArticle));
 }
 
 export async function getArticleBySlug(slug: string): Promise<Article | undefined> {
@@ -51,7 +61,7 @@ export async function getArticleBySlug(slug: string): Promise<Article | undefine
     endpoint: 'articles',
     queries: { filters: `slug[equals]${slug}`, limit: 1 },
   });
-  return res.contents[0];
+  return res.contents[0] ? normalizeArticle(res.contents[0]) : undefined;
 }
 
 function sortByDate(articles: Article[]): Article[] {

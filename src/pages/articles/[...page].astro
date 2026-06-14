@@ -1,0 +1,194 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ArticleCard from '../../components/ArticleCard.astro';
+import { getAllArticles } from '../../lib/microcms.js';
+import type { GetStaticPaths, Page } from 'astro';
+import type { Article } from '../../types/index.js';
+
+// 約2,000件を1ページに描画していた問題を解消するためページ分割する。
+// rest パラメータ([...page])にすることで 1 ページ目は /articles/、2 ページ目以降は /articles/2 となる。
+export const getStaticPaths = (async ({ paginate }) => {
+  const articles = await getAllArticles();
+  return paginate(articles, { pageSize: 18 });
+}) satisfies GetStaticPaths;
+
+interface Props {
+  page: Page<Article>;
+}
+const { page } = Astro.props;
+
+// 1 ページ目だけ先頭記事を大きく見せる（従来のマガジン型レイアウトを踏襲）。
+const isFirst = page.currentPage === 1;
+const featured = isFirst ? page.data[0] : null;
+const rest = isFirst ? page.data.slice(1) : page.data;
+---
+
+<BaseLayout
+  title={isFirst ? '記事一覧 | 夢源風人' : `記事一覧 (${page.currentPage}ページ目) | 夢源風人`}
+  description="大阪・東海を拠点に活動する夢源風人の活動報告・コラムなど、記事の一覧です。"
+>
+  <div class="articles-page">
+    <div class="page-inner">
+      <header class="page-header">
+        <h1 class="page-title">
+          <span class="page-title-en">Articles</span>
+          記事一覧
+        </h1>
+      </header>
+
+      {page.data.length === 0 ? (
+        <p class="no-articles">記事はまだありません。</p>
+      ) : (
+        <div class="magazine-layout">
+          {featured && (
+            <div class="featured-wrap">
+              <ArticleCard article={featured} featured={true} />
+            </div>
+          )}
+
+          {rest.length > 0 && (
+            <div class="articles-grid">
+              {rest.map((article) => (
+                <ArticleCard article={article} />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {page.lastPage > 1 && (
+        <nav class="pager" aria-label="記事一覧のページ送り">
+          {page.url.prev ? (
+            <a class="pager-link" href={page.url.prev} rel="prev">← 新しい記事</a>
+          ) : (
+            <span class="pager-link is-disabled" aria-disabled="true">← 新しい記事</span>
+          )}
+          <span class="pager-status">{page.currentPage} / {page.lastPage}</span>
+          {page.url.next ? (
+            <a class="pager-link" href={page.url.next} rel="next">古い記事 →</a>
+          ) : (
+            <span class="pager-link is-disabled" aria-disabled="true">古い記事 →</span>
+          )}
+        </nav>
+      )}
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .articles-page {
+    padding-top: 64px; /* header height */
+    min-height: 80vh;
+  }
+
+  .page-inner {
+    max-width: var(--container-width);
+    margin: 0 auto;
+    padding: 3rem 1.5rem 5rem;
+  }
+
+  .page-header {
+    margin-bottom: 3rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(110, 198, 240, 0.3);
+  }
+
+  .page-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-deep, #1B3F8B);
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .page-title-en {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.875rem;
+    font-weight: 300;
+    letter-spacing: 0.35em;
+    color: var(--color-sky, #6EC6F0);
+    text-transform: uppercase;
+  }
+
+  .no-articles {
+    text-align: center;
+    color: rgba(26, 31, 46, 0.5);
+    padding: 4rem 0;
+    font-size: 1rem;
+  }
+
+  /* マガジン型レイアウト */
+  .magazine-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+  }
+
+  .featured-wrap {
+    /* featured article takes full width */
+  }
+
+  .articles-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+
+  @media (max-width: 900px) {
+    .articles-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 560px) {
+    .articles-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* ページャ */
+  .pager {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 3.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(110, 198, 240, 0.3);
+  }
+
+  .pager-link {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--color-deep, #1B3F8B);
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border: 1px solid rgba(27, 63, 139, 0.25);
+    border-radius: 999px;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .pager-link:hover {
+    background: var(--color-deep, #1B3F8B);
+    color: #fff;
+    border-color: var(--color-deep, #1B3F8B);
+  }
+
+  .pager-link.is-disabled {
+    color: rgba(26, 31, 46, 0.3);
+    border-color: rgba(26, 31, 46, 0.12);
+    pointer-events: none;
+  }
+
+  .pager-status {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    letter-spacing: 0.1em;
+    color: rgba(26, 31, 46, 0.6);
+    min-width: 4rem;
+    text-align: center;
+  }
+</style>
