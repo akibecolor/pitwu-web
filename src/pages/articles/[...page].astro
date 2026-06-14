@@ -47,7 +47,7 @@ const rest = isFirst ? page.data.slice(1) : page.data;
           )}
 
           {rest.length > 0 && (
-            <div class="articles-grid">
+            <div class="articles-grid" data-articles-grid>
               {rest.map((article) => (
                 <ArticleCard article={article} />
               ))}
@@ -56,23 +56,78 @@ const rest = isFirst ? page.data.slice(1) : page.data;
         </div>
       )}
 
-      {page.lastPage > 1 && (
-        <nav class="pager" aria-label="記事一覧のページ送り">
-          {page.url.prev ? (
-            <a class="pager-link" href={page.url.prev} rel="prev">← 新しい記事</a>
-          ) : (
-            <span class="pager-link is-disabled" aria-disabled="true">← 新しい記事</span>
-          )}
-          <span class="pager-status">{page.currentPage} / {page.lastPage}</span>
-          {page.url.next ? (
-            <a class="pager-link" href={page.url.next} rel="next">古い記事 →</a>
-          ) : (
-            <span class="pager-link is-disabled" aria-disabled="true">古い記事 →</span>
-          )}
-        </nav>
+      {/*
+        「もっと読む」: ページ送りルート(/articles/N)をデータ源に、次ページのカードを
+        JS で取得して追記する（スクロールで自動／クリックでも可）。
+        JS 無効時はそのまま次ページへ遷移するリンクとして機能する（段階的強化）。
+      */}
+      {page.url.next && (
+        <div class="load-more-wrap">
+          <a class="load-more" href={page.url.next} rel="next" data-load-more>
+            もっと読む
+          </a>
+        </div>
       )}
     </div>
   </div>
+
+  <script>
+    function setupLoadMore() {
+      const grid = document.querySelector('[data-articles-grid]');
+      const button = document.querySelector<HTMLAnchorElement>('[data-load-more]');
+      if (!grid || !button) return;
+
+      let nextUrl: string | null = button.getAttribute('href');
+      let loading = false;
+
+      async function loadNext() {
+        if (!nextUrl || loading || !button || !grid) return;
+        loading = true;
+        button.textContent = '読み込み中…';
+        try {
+          const res = await fetch(nextUrl);
+          if (!res.ok) throw new Error(String(res.status));
+          const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
+          const newCards = doc.querySelectorAll('[data-articles-grid] > *');
+          newCards.forEach((card) => grid.appendChild(document.importNode(card, true)));
+          nextUrl =
+            doc.querySelector('[data-load-more]')?.getAttribute('href') ?? null;
+        } catch {
+          // 失敗時はボタンを残してリトライ可能にする
+          button.textContent = 'もっと読む';
+          loading = false;
+          return;
+        }
+        loading = false;
+        if (nextUrl) {
+          button.setAttribute('href', nextUrl);
+          button.textContent = 'もっと読む';
+        } else {
+          observer?.disconnect();
+          button.remove();
+        }
+      }
+
+      button.addEventListener('click', (e) => {
+        e.preventDefault();
+        loadNext();
+      });
+
+      // スクロールで自動読み込み（無限スクロール）。ボタンが近づいたら取得。
+      let observer: IntersectionObserver | null = null;
+      if ('IntersectionObserver' in window) {
+        observer = new IntersectionObserver(
+          (entries) => {
+            if (entries[0]?.isIntersecting) loadNext();
+          },
+          { rootMargin: '600px' }
+        );
+        observer.observe(button);
+      }
+    }
+
+    setupLoadMore();
+  </script>
 </BaseLayout>
 
 <style>
@@ -148,47 +203,29 @@ const rest = isFirst ? page.data.slice(1) : page.data;
     }
   }
 
-  /* ページャ */
-  .pager {
+  /* もっと読む */
+  .load-more-wrap {
     display: flex;
-    align-items: center;
     justify-content: center;
-    gap: 1.5rem;
-    margin-top: 3.5rem;
-    padding-top: 2rem;
-    border-top: 1px solid rgba(110, 198, 240, 0.3);
+    margin-top: 3rem;
   }
 
-  .pager-link {
-    font-size: 0.9rem;
-    font-weight: 500;
+  .load-more {
+    display: inline-block;
+    font-size: 0.95rem;
+    font-weight: 600;
     color: var(--color-deep, #1B3F8B);
     text-decoration: none;
-    padding: 0.5rem 1rem;
-    border: 1px solid rgba(27, 63, 139, 0.25);
+    padding: 0.7rem 2.5rem;
+    border: 1px solid rgba(27, 63, 139, 0.3);
     border-radius: 999px;
     transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-    white-space: nowrap;
+    cursor: pointer;
   }
 
-  .pager-link:hover {
+  .load-more:hover {
     background: var(--color-deep, #1B3F8B);
     color: #fff;
     border-color: var(--color-deep, #1B3F8B);
-  }
-
-  .pager-link.is-disabled {
-    color: rgba(26, 31, 46, 0.3);
-    border-color: rgba(26, 31, 46, 0.12);
-    pointer-events: none;
-  }
-
-  .pager-status {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1rem;
-    letter-spacing: 0.1em;
-    color: rgba(26, 31, 46, 0.6);
-    min-width: 4rem;
-    text-align: center;
   }
 </style>
