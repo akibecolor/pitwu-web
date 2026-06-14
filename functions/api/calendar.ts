@@ -10,13 +10,24 @@ import { normalizeEvents, type CalendarKind, type RawGCalEvent } from '../../src
 
 interface Env {
   GOOGLE_CALENDAR_API_KEY?: string;
+  // 参照するカレンダーIDの上書き（任意）。未設定なら既定値を使う。
+  // 既定は gcal-agent 管理の「祭り・イベント参加<公開>」(80s4qcc8) / 練習(slfifr2s)。
+  // 将来 pitwu-app 公開先に寄せる場合は環境変数で差し替える（例: EVENT_CALENDAR_ID=c_8c348...）。コード変更不要。
+  EVENT_CALENDAR_ID?: string;
+  PRACTICE_CALENDAR_ID?: string;
 }
 
-// ID は公知情報（秘密でない）。scripts/gcal.ts と同じ2本。種別はカレンダー単位で判別。
-const CALENDARS: ReadonlyArray<{ id: string; kind: CalendarKind }> = [
-  { id: '80s4qcc8jd7hisb0k03vkist6g@group.calendar.google.com', kind: '祭り・イベント' },
-  { id: 'slfifr2ssskd7c6e343jla5i00@group.calendar.google.com', kind: '練習' },
-];
+// ID は公知情報（秘密でない）。環境変数が無いときの既定値。
+const DEFAULT_EVENT_ID = '80s4qcc8jd7hisb0k03vkist6g@group.calendar.google.com';
+const DEFAULT_PRACTICE_ID = 'slfifr2ssskd7c6e343jla5i00@group.calendar.google.com';
+
+// 種別はカレンダー単位で判別（タイトル推定はしない）。
+function resolveCalendars(env: Env): ReadonlyArray<{ id: string; kind: CalendarKind }> {
+  return [
+    { id: env.EVENT_CALENDAR_ID ?? DEFAULT_EVENT_ID, kind: '祭り・イベント' },
+    { id: env.PRACTICE_CALENDAR_ID ?? DEFAULT_PRACTICE_ID, kind: '練習' },
+  ];
+}
 
 function json(body: unknown, maxAge = 0): Response {
   const headers: Record<string, string> = {
@@ -38,7 +49,7 @@ export const onRequestGet = async (context: { env: Env }): Promise<Response> => 
 
   try {
     const collected: Array<{ raw: RawGCalEvent; kind: CalendarKind }> = [];
-    for (const cal of CALENDARS) {
+    for (const cal of resolveCalendars(context.env)) {
       const url = new URL(
         `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(cal.id)}/events`
       );
