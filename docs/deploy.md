@@ -32,9 +32,12 @@
 |--------|---|
 | `MICROCMS_SERVICE_DOMAIN` | microCMS のサービスドメイン (例: `pitwu`) |
 | `MICROCMS_API_KEY` | Content API キー（GET権限のみで可） |
+| `GOOGLE_CALENDAR_API_KEY` | スケジュールページ用。Calendar API を有効化した **read-only API キー**。`functions/api/calendar.ts`（Pages Function）がサーバー側で公開カレンダーを取得するのに使う（ブラウザには出ない） |
 | `NODE_VERSION` | `22` |
 
 5. **Save and Deploy** をクリック
+
+> 📅 **スケジュール（カレンダー）について**: `/api/calendar` は Cloudflare **Pages Function**（`functions/` 配下）として動く。`GOOGLE_CALENDAR_API_KEY` 未設定でもページは「予定なし」表示で落ちないが、予定を出すには本番（Production / Preview 両方）に設定が必要。`astro dev` では Functions は配信されないため、ローカルでカレンダーまで確認したい場合は `npm run build` 後に `npx wrangler pages dev dist` を使う。
 
 > ✅ ビルドが成功すると `xxxxx.pages.dev` の preview URL が発行されます。まずはそこで動作確認。
 
