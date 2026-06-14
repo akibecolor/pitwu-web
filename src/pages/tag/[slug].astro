@@ -11,9 +11,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
     params: { slug: decodeURIComponent(tag.slug) },
     props: {
       tag,
-      articles: articles.filter((a) =>
-        Array.isArray(a.tags) ? a.tags.some((t) => t.id === tag.id) : a.tags?.id === tag.id
-      ),
+      articles: articles.filter((a) => a.tags?.some((t) => t.id === tag.id)),
     },
   }));
 };

@@ -140,7 +140,7 @@ export function createMicroCmsClient(
         }
 
         const form = new FormData();
-        form.append('file', new Blob([buffer], { type: mime }), filename);
+        form.append('file', new Blob([new Uint8Array(buffer)], { type: mime }), filename);
 
         const res = await fetch(`${mgmtBase}/media`, {
           method: 'POST',
