@@ -28,6 +28,9 @@ jobs:
       - name: Lint (biome)
         run: npm run lint
 
+      - name: Test (vitest)
+        run: npm test
+
       - name: Build
         env:
           MICROCMS_SERVICE_DOMAIN: ${{ secrets.MICROCMS_SERVICE_DOMAIN }}
