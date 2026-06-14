@@ -12,6 +12,7 @@
     "astro": "astro",
     "check": "astro check",
     "lint": "biome lint .",
+    "test": "vitest run",
     "icons": "tsx scripts/generate-favicon.ts"
   },
   "dependencies": {
@@ -29,6 +30,7 @@
     "sharp": "^0.34.5",
     "to-ico": "^1.1.5",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.8"
   }
 }
