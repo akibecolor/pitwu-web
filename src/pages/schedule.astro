@@ -26,17 +26,16 @@ import PageLayout from '../layouts/PageLayout.astro';
         </svg>
         <span>活動カレンダー</span>
       </div>
+
+      <div class="calendar-legend" aria-hidden="true">
+        <span class="legend-item"><span class="legend-dot legend-dot--event"></span>祭り・イベント</span>
+        <span class="legend-item"><span class="legend-dot legend-dot--practice"></span>練習</span>
+      </div>
+
       <div class="calendar-body">
-        <iframe
-          loading="lazy"
-          title="夢源風人 活動カレンダー"
-          style="border: 0;"
-          src="https://www.google.com/calendar/embed?showTitle=0&showPrint=0&showTz=0&height=600&wkst=2&bgcolor=%23F0F6FF&src=80s4qcc8jd7hisb0k03vkist6g%40group.calendar.google.com&color=%231B3F8B&src=slfifr2ssskd7c6e343jla5i00%40group.calendar.google.com&color=%236EC6F0&ctz=Asia%2FTokyo"
-          width="100%"
-          height="600"
-          frameborder="0"
-          scrolling="no"
-        ></iframe>
+        <div id="calendar" class="calendar-list" aria-live="polite">
+          <p class="cal-loading">予定を読み込んでいます…</p>
+        </div>
       </div>
     </div>
 
@@ -45,6 +44,114 @@ import PageLayout from '../layouts/PageLayout.astro';
     </p>
   </div>
 </PageLayout>
+
+<script>
+  interface CalEvent {
+    id: string;
+    title: string;
+    kind: '祭り・イベント' | '練習';
+    isAllDay: boolean;
+    startDate: string;
+    endInclusive: string;
+    startTime: string | null;
+    location: string | null;
+    recurring: boolean;
+    htmlLink: string | null;
+  }
+
+  const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
+
+  function formatDay(dateStr: string): string {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const wd = WEEKDAYS[new Date(y, m - 1, d).getDay()];
+    return `${m}月${d}日(${wd})`;
+  }
+
+  function formatWhen(ev: CalEvent): string {
+    if (ev.startDate !== ev.endInclusive) {
+      const [, sm, sd] = ev.startDate.split('-').map(Number);
+      const [, em, ed] = ev.endInclusive.split('-').map(Number);
+      return sm === em ? `${sm}月${sd}–${ed}日` : `${sm}/${sd}–${em}/${ed}`;
+    }
+    const day = formatDay(ev.startDate);
+    return ev.startTime ? `${day} ${ev.startTime}` : day;
+  }
+
+  function monthLabel(key: string): string {
+    const [y, m] = key.split('-');
+    return `${y}年${Number(m)}月`;
+  }
+
+  function buildItem(ev: CalEvent): HTMLLIElement {
+    const li = document.createElement('li');
+    li.className = `cal-item kind-${ev.kind === '練習' ? 'practice' : 'event'}`;
+
+    const when = document.createElement('span');
+    when.className = 'cal-when';
+    when.textContent = formatWhen(ev);
+    li.appendChild(when);
+
+    const body = document.createElement('div');
+    body.className = 'cal-body';
+
+    const title = document.createElement('span');
+    title.className = 'cal-title';
+    title.textContent = ev.recurring ? `${ev.title} ↻` : ev.title;
+    body.appendChild(title);
+
+    if (ev.location) {
+      const loc = document.createElement('span');
+      loc.className = 'cal-loc';
+      loc.textContent = ev.location;
+      body.appendChild(loc);
+    }
+    li.appendChild(body);
+    return li;
+  }
+
+  async function render(): Promise<void> {
+    const root = document.getElementById('calendar');
+    if (!root) return;
+    try {
+      const res = await fetch('/api/calendar');
+      const data = (await res.json()) as { events?: CalEvent[]; error?: string };
+      const events = data.events ?? [];
+      if (data.error || events.length === 0) {
+        root.innerHTML = '<p class="cal-empty">現在表示できる予定はありません。</p>';
+        return;
+      }
+
+      const groups = new Map<string, CalEvent[]>();
+      for (const ev of events) {
+        const key = ev.startDate.slice(0, 7);
+        const list = groups.get(key) ?? [];
+        list.push(ev);
+        groups.set(key, list);
+      }
+
+      const frag = document.createDocumentFragment();
+      for (const [key, list] of groups) {
+        const section = document.createElement('section');
+        section.className = 'cal-month';
+        const h = document.createElement('h2');
+        h.className = 'cal-month-title';
+        h.textContent = monthLabel(key);
+        section.appendChild(h);
+        const ul = document.createElement('ul');
+        ul.className = 'cal-month-list';
+        for (const ev of list) ul.appendChild(buildItem(ev));
+        section.appendChild(ul);
+        frag.appendChild(section);
+      }
+      root.replaceChildren(frag);
+    } catch {
+      root.innerHTML =
+        '<p class="cal-empty">予定の読み込みに失敗しました。時間をおいて再度お試しください。</p>';
+    }
+  }
+
+  render();
+</script>
 
 <style>
   .schedule-wrap {
@@ -98,9 +205,123 @@ import PageLayout from '../layouts/PageLayout.astro';
     letter-spacing: 0.05em;
   }
 
-  .calendar-body iframe {
-    display: block;
-    width: 100%;
+  .calendar-legend {
+    display: flex;
+    gap: 1.25rem;
+    padding: 0.75rem 1.25rem;
+    border-bottom: 1px solid rgba(27, 63, 139, 0.08);
+    font-size: 0.8rem;
+    color: rgba(26, 31, 46, 0.7);
+  }
+
+  .legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .legend-dot {
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .legend-dot--event {
+    background: #E8943A;
+  }
+
+  .legend-dot--practice {
+    background: var(--color-sky, #6EC6F0);
+  }
+
+  .calendar-body {
+    padding: 1.25rem;
+  }
+
+  .cal-loading,
+  .cal-empty {
+    text-align: center;
+    color: rgba(26, 31, 46, 0.5);
+    padding: 2.5rem 0;
+    font-size: 0.95rem;
+  }
+
+  .cal-month + .cal-month {
+    margin-top: 1.75rem;
+  }
+
+  .cal-month-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--color-deep, #1B3F8B);
+    padding-bottom: 0.4rem;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(110, 198, 240, 0.35);
+  }
+
+  .cal-month-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .cal-item {
+    display: flex;
+    gap: 0.9rem;
+    align-items: baseline;
+    padding: 0.6rem 0.9rem;
+    border-radius: 8px;
+    background: var(--color-base, #F0F6FF);
+    border-left: 4px solid var(--color-sky, #6EC6F0);
+  }
+
+  .cal-item.kind-event {
+    border-left-color: #E8943A;
+    background: #FFF6EC;
+  }
+
+  .cal-when {
+    flex-shrink: 0;
+    min-width: 8.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-deep, #1B3F8B);
+  }
+
+  .cal-item.kind-event .cal-when {
+    color: #B96A18;
+  }
+
+  .cal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+  }
+
+  .cal-title {
+    font-size: 0.95rem;
+    color: var(--color-ink, #1A1F2E);
+    overflow-wrap: anywhere;
+  }
+
+  .cal-loc {
+    font-size: 0.8rem;
+    color: rgba(26, 31, 46, 0.55);
+  }
+
+  @media (max-width: 560px) {
+    .cal-item {
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .cal-when {
+      min-width: 0;
+    }
   }
 
   .schedule-footer {
