@@ -31,3 +31,6 @@ logs/
 
 # 移行アーカイブ（古いWP画像のzip等）
 *.zip
+
+# Cloudflare / wrangler local state
+.wrangler/
