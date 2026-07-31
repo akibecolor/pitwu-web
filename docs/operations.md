@@ -168,6 +168,84 @@ Git で管理されている固定ページ（`src/pages/`）：
 | `MICROCMS_API_KEY` | microCMS Content API キー | `.env` + Cloudflare Pages 環境変数 |
 | `GOOGLE_SERVICE_ACCOUNT_EMAIL` | Google Calendar 操作用 | `.env`（ローカルのみ） |
 | `GOOGLE_PRIVATE_KEY` | Google Calendar 操作用 | `.env`（ローカルのみ） |
+| `CONTACT_ENDPOINT` | 問い合わせ受け口（Apps Script の `/exec` URL） | Cloudflare Pages 環境変数 |
+| `CONTACT_SHARED_SECRET` | 問い合わせ受け口の共有シークレット | Cloudflare Pages 環境変数 |
+
+---
+
+## 問い合わせフォーム（`/contact/`）
+
+### 仕組み
+
+```
+ブラウザ → /api/contact（Cloudflare Pages Function）→ Apps Script ウェブアプリ
+                                                        ├─ スプレッドシートへ記録
+                                                        ├─ 問い合わせ者へ受付確認メール
+                                                        └─ 事務局へ通知メール
+```
+
+- ページ: `src/pages/contact.astro`
+- 中継: `functions/api/contact.ts`
+- 受け口: `scripts/apps-script/contact.gs`
+
+> **なぜ Google フォーム直送信をやめたか**
+> Google フォームが送信時に invisible reCAPTCHA を必須化したため、ブラウザからの
+> 直接 POST は常に HTTP 400 で破棄されるようになった。さらに旧実装は `mode:'no-cors'`
+> で失敗を検知できず、**届いていないのに「受け付けました」と表示していた**。
+
+### セットアップ手順（初回のみ）
+
+1. **記録先スプレッドシートを用意**
+   新規スプレッドシートを作成し、URL の `/d/` と `/edit` の間の文字列（=ID）を控える。
+   シートは自動作成されるので、タブを手で作る必要はない。
+
+2. **Apps Script プロジェクトを作成**
+   [script.google.com](https://script.google.com/) →「新しいプロジェクト」→
+   `scripts/apps-script/contact.gs` の内容を貼り付けて保存。
+
+3. **スクリプト プロパティを設定**（プロジェクトの設定 → スクリプト プロパティ）
+
+   | キー | 値 |
+   |------|-----|
+   | `SHARED_SECRET` | 推測されない長い文字列（後述の `CONTACT_SHARED_SECRET` と同じ値） |
+   | `SPREADSHEET_ID` | 手順1で控えた ID |
+   | `NOTIFY_TO` | 事務局の通知先（任意／既定 `contact@pitwu.com`） |
+   | `SHEET_NAME` | 記録先シート名（任意／既定「サイト問い合わせ」） |
+
+4. **ウェブアプリとしてデプロイ**
+   「デプロイ」→「新しいデプロイ」→ 種類は **ウェブアプリ**
+   - 次のユーザーとして実行: **自分**
+   - アクセスできるユーザー: **全員**
+   発行された `https://script.google.com/macros/s/.../exec` の URL を控える。
+   初回は Google の承認画面が出るので許可する（メール送信とシート書き込みの権限）。
+
+5. **Cloudflare Pages に環境変数を設定**
+   Pages → Settings → Environment variables に以下を追加し、再デプロイ。
+
+   | 変数名 | 値 |
+   |--------|-----|
+   | `CONTACT_ENDPOINT` | 手順4の `/exec` URL |
+   | `CONTACT_SHARED_SECRET` | 手順3の `SHARED_SECRET` と同じ値 |
+
+### 動作確認
+
+```bash
+# 設定済みかどうかだけ確認（秘密は出ない）
+curl -s https://pitwu.com/api/contact
+# => {"ok":true,"configured":true}
+```
+
+そのうえで `/contact/` から実際に1件送信し、**①完了画面が出る ②スプレッドシートに行が増える
+③受付確認メールが届く ④事務局に通知が届く** の4点を確認する。
+
+> `configured:false` の場合、フォームは送信時にエラーと代替手段（LINE／Googleフォーム）を表示する。
+> **成功したふりはしない**設計なので、取りこぼしは起きない。
+
+### 注意
+
+- Apps Script のメール送信は無料枠で **1日100通** まで（1件の問い合わせで2通消費）。
+- コードを直した後は Apps Script 側で**「新しいデプロイ」を作り直す**（保存だけでは反映されない）。
+- 旧 Google フォーム自体は残してあり、エラー時の代替リンク先として使っている。
 
 ---
 

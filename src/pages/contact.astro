@@ -1,7 +1,18 @@
 ---
 import PageLayout from '../layouts/PageLayout.astro';
 
-const FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLSdQNB3ZJfhKVE21mrWs9uJeF8ZQjO13gSZDpLgjKCJdGNlXow/formResponse';
+// 送信先は同一オリジンの Pages Function（functions/api/contact.ts）。
+// そこから Google Apps Script のウェブアプリへサーバー側で転送する。
+//
+// 旧実装は Google フォームの formResponse へブラウザから直接 POST していたが、
+// フォーム側が invisible reCAPTCHA を必須化したため常に HTTP 400 で破棄され、
+// さらに mode:'no-cors' で失敗を検知できず「送信完了」と誤表示していた。
+const FORM_ACTION = '/api/contact';
+
+// 送信できないときの最終手段（公式フォーム／LINE）
+const FALLBACK_FORM_URL =
+  'https://docs.google.com/forms/d/e/1FAIpQLSdQNB3ZJfhKVE21mrWs9uJeF8ZQjO13gSZDpLgjKCJdGNlXow/viewform';
+const LINE_URL = 'https://line.me/ti/p/%40cca1992y';
 ---
 
 <PageLayout
@@ -17,7 +28,13 @@ const FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLSdQNB3ZJfhKVE21mrW
     </p>
 
     <form id="contact-form" class="contact-form" novalidate>
-      <!-- メールアドレス（Google Forms 組み込み） -->
+      <!-- ボット除け。人間には見えないので入力されていたら破棄する（サーバー側で判定） -->
+      <div class="honeypot" aria-hidden="true">
+        <label for="f-nickname">ニックネーム</label>
+        <input type="text" id="f-nickname" name="nickname" tabindex="-1" autocomplete="off" />
+      </div>
+
+      <!-- メールアドレス -->
       <div class="form-group">
         <label class="form-label" for="f-email">
           メールアドレス <span class="required">必須</span>
@@ -26,7 +43,7 @@ const FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLSdQNB3ZJfhKVE21mrW
           class="form-input"
           type="email"
           id="f-email"
-          name="emailAddress"
+          name="email"
           required
           autocomplete="email"
           placeholder="your@email.com"
@@ -42,7 +59,7 @@ const FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLSdQNB3ZJfhKVE21mrW
           class="form-input"
           type="text"
           id="f-name"
-          name="entry.1000000"
+          name="name"
           required
           autocomplete="name"
           placeholder="例：山田 太郎"
@@ -59,7 +76,7 @@ const FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLSdQNB3ZJfhKVE21mrW
           class="form-input"
           type="text"
           id="f-line"
-          name="entry.1293547663"
+          name="line"
           placeholder="LINE ID または表示名"
         />
       </div>
@@ -74,7 +91,7 @@ const FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLSdQNB3ZJfhKVE21mrW
           class="form-input"
           type="text"
           id="f-twitter"
-          name="entry.1635986243"
+          name="twitter"
           placeholder="@username"
         />
       </div>
@@ -85,7 +102,7 @@ const FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLSdQNB3ZJfhKVE21mrW
           年代 <span class="required">必須</span>
         </label>
         <div class="select-wrap">
-          <select class="form-input form-select" id="f-age" name="entry.1000002" required>
+          <select class="form-input form-select" id="f-age" name="age" required>
             <option value="" disabled selected>選択してください</option>
             {['社会人-10代','社会人-20代','社会人-30代','社会人-40代以上','高校・大学・専門学生','小・中学生'].map((v) => (
               <option value={v}>{v}</option>
@@ -101,7 +118,7 @@ const FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLSdQNB3ZJfhKVE21mrW
           性別 <span class="required">必須</span>
         </label>
         <div class="select-wrap">
-          <select class="form-input form-select" id="f-gender" name="entry.1000003" required>
+          <select class="form-input form-select" id="f-gender" name="gender" required>
             <option value="" disabled selected>選択してください</option>
             {['男性','女性'].map((v) => (
               <option value={v}>{v}</option>
@@ -117,7 +134,7 @@ const FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLSdQNB3ZJfhKVE21mrW
           投稿種別 <span class="required">必須</span>
         </label>
         <div class="select-wrap">
-          <select class="form-input form-select" id="f-type" name="entry.1000004" required>
+          <select class="form-input form-select" id="f-type" name="type" required>
             <option value="" disabled selected>選択してください</option>
             {['高知よさこい祭りに参加したい','練習会を見学したい','チームについて','ご依頼','その他'].map((v) => (
               <option value={v}>{v}</option>
@@ -136,7 +153,7 @@ const FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLSdQNB3ZJfhKVE21mrW
         <textarea
           class="form-input form-textarea"
           id="f-body"
-          name="entry.1000005"
+          name="body"
           required
           rows="6"
           placeholder="お問い合わせ内容をご記入ください"
@@ -161,20 +178,48 @@ const FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLSdQNB3ZJfhKVE21mrW
 
     <div class="line-block">
       <p>連絡がうまくできない場合はLINEでも承ります</p>
-      <a href="https://line.me/ti/p/%40cca1992y" target="_blank" rel="noopener noreferrer" class="line-btn">
+      <a href={LINE_URL} target="_blank" rel="noopener noreferrer" class="line-btn">
         LINE で友だち追加
       </a>
     </div>
   </div>
 </PageLayout>
 
-<script define:vars={{ FORM_ACTION }}>
+<script define:vars={{ FORM_ACTION, FALLBACK_FORM_URL, LINE_URL }}>
   const form = document.getElementById('contact-form');
   const successEl = document.getElementById('form-success');
   const errorEl = document.getElementById('form-error');
   const submitBtn = document.getElementById('submit-btn');
   const btnText = document.getElementById('btn-text');
   const btnLoading = document.getElementById('btn-loading');
+
+  // 送信できなかったときは必ずエラーを出し、代替の連絡手段を必ず提示する。
+  // （成功扱いにして問い合わせを黙って捨てるのが以前の最大の問題だった）
+  function showError(message) {
+    errorEl.innerHTML = '';
+    const p = document.createElement('p');
+    p.className = 'form-error-msg';
+    p.textContent = message;
+    const alt = document.createElement('p');
+    alt.className = 'form-error-alt';
+    alt.innerHTML =
+      'お急ぎの場合は <a href="' +
+      LINE_URL +
+      '" target="_blank" rel="noopener noreferrer">LINE</a>' +
+      ' または <a href="' +
+      FALLBACK_FORM_URL +
+      '" target="_blank" rel="noopener noreferrer">Googleフォーム</a>' +
+      ' からお問い合わせください。';
+    errorEl.append(p, alt);
+    errorEl.hidden = false;
+    errorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function setLoading(on) {
+    submitBtn.disabled = on;
+    btnText.hidden = on;
+    btnLoading.hidden = !on;
+  }
 
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -185,31 +230,39 @@ const FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLSdQNB3ZJfhKVE21mrW
       return;
     }
 
-    // 送信中表示
-    submitBtn.disabled = true;
-    btnText.hidden = true;
-    btnLoading.hidden = false;
+    setLoading(true);
     errorEl.hidden = true;
 
-    const data = new FormData(form);
+    const payload = Object.fromEntries(new FormData(form).entries());
 
     try {
-      // Google Forms は CORS を返さないため no-cors で送信
-      await fetch(FORM_ACTION, {
+      const res = await fetch(FORM_ACTION, {
         method: 'POST',
-        mode: 'no-cors',
-        body: data,
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(payload),
       });
 
-      // no-cors では成功/失敗を区別できないため、送信完了として扱う
+      // 同一オリジンなので本物のステータスと本文が読める。
+      let result = {};
+      try {
+        result = await res.json();
+      } catch {
+        // 想定外の応答（HTML など）は失敗として扱う
+      }
+
+      if (!res.ok || result.ok !== true) {
+        showError(result.error || '送信に失敗しました。時間をおいて再度お試しください。');
+        setLoading(false);
+        return;
+      }
+
       form.hidden = true;
       successEl.hidden = false;
+      successEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
     } catch {
-      errorEl.textContent = '送信に失敗しました。しばらく経ってから再度お試しいただくか、LINEよりご連絡ください。';
-      errorEl.hidden = false;
-      submitBtn.disabled = false;
-      btnText.hidden = false;
-      btnLoading.hidden = true;
+      // 通信断・オフラインなど
+      showError('通信エラーで送信できませんでした。電波状況をご確認ください。');
+      setLoading(false);
     }
   });
 </script>
@@ -340,6 +393,15 @@ const FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLSdQNB3ZJfhKVE21mrW
     font-size: 0.875rem;
   }
 
+  /* ボット除け（画面外へ逃がす。display:none だと入力してくるボットがいる） */
+  .honeypot {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
   /* エラー */
   .form-error {
     background: #fff5f5;
@@ -349,6 +411,22 @@ const FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLSdQNB3ZJfhKVE21mrW
     font-size: 0.875rem;
     color: #c53030;
     line-height: 1.6;
+  }
+
+  .form-error-msg {
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .form-error-alt {
+    margin: 0.5rem 0 0;
+    font-size: 0.8125rem;
+  }
+
+  .form-error-alt a {
+    color: #c53030;
+    font-weight: 700;
+    text-decoration: underline;
   }
 
   /* 送信ボタン */
