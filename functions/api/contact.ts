@@ -59,6 +59,14 @@ function str(v: unknown): string {
   return typeof v === 'string' ? v.trim() : '';
 }
 
+// 上流（Apps Script）側の失敗を返すときのステータス。
+//
+// 502 は使ってはいけない: Cloudflare のエッジは 502 を「オリジン障害」と見なして
+// 自前のエラーページ（本文 "error code: 502"）に差し替えてしまい、こちらの JSON が
+// ページ側に届かなくなる（503 と 4xx は素通りすることを本番で確認済み）。
+// ページ側は body の ok で判定しているので、200 + ok:false が最も確実。
+const UPSTREAM_FAIL_STATUS = 200;
+
 export const onRequestPost = async (context: {
   request: Request;
   env: Env;
@@ -130,14 +138,14 @@ export const onRequestPost = async (context: {
       // HTML（ログイン画面など）が返ってきたケース。デプロイ設定ミスの典型。
       return json(
         { ok: false, error: '送信先の応答が不正です。時間をおいてお試しください。' },
-        502
+        UPSTREAM_FAIL_STATUS
       );
     }
 
     if (!res.ok || result.ok !== true) {
       return json(
         { ok: false, error: result.error || '送信先でエラーが発生しました。' },
-        502
+        UPSTREAM_FAIL_STATUS
       );
     }
 
@@ -150,7 +158,7 @@ export const onRequestPost = async (context: {
           ? '送信がタイムアウトしました。'
           : '送信中にエラーが発生しました。',
       },
-      502
+      UPSTREAM_FAIL_STATUS
     );
   }
 };
