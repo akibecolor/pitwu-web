@@ -34,3 +34,5 @@ logs/
 
 # Cloudflare / wrangler local state
 .wrangler/
+# wrangler がローカル実行時に読む環境変数（シークレットを含む）
+.dev.vars
