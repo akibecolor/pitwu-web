@@ -164,12 +164,14 @@ const LINE_URL = 'https://line.me/ti/p/%40cca1992y';
 
       <button type="submit" class="submit-btn" id="submit-btn">
         <span id="btn-text">送信する</span>
-        <span id="btn-loading" hidden>送信中...</span>
+        <span id="btn-loading" class="btn-loading" hidden>
+          <span class="spinner" aria-hidden="true"></span>送信中
+        </span>
       </button>
     </form>
 
     <!-- 送信完了メッセージ -->
-    <div id="form-success" class="form-success" hidden>
+    <div id="form-success" class="form-success" role="status" hidden>
       <div class="success-icon" aria-hidden="true">✓</div>
       <h2>お問い合わせを受け付けました</h2>
       <p>ご入力いただいたメールアドレスに確認メールをお送りします。<br />
@@ -217,6 +219,7 @@ const LINE_URL = 'https://line.me/ti/p/%40cca1992y';
 
   function setLoading(on) {
     submitBtn.disabled = on;
+    submitBtn.setAttribute('aria-busy', String(on));
     btnText.hidden = on;
     btnLoading.hidden = !on;
   }
@@ -256,6 +259,9 @@ const LINE_URL = 'https://line.me/ti/p/%40cca1992y';
         return;
       }
 
+      // 完了画面に切り替える前にボタンを通常状態へ戻す。
+      // （フォームは隠すが、状態を残したままにしない）
+      setLoading(false);
       form.hidden = true;
       successEl.hidden = false;
       successEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -287,6 +293,12 @@ const LINE_URL = 'https://line.me/ti/p/%40cca1992y';
     display: flex;
     flex-direction: column;
     gap: 1.75rem;
+  }
+
+  /* display を指定した要素は hidden 属性（UA の display:none）が効かなくなる。
+     送信成功後にフォームが消えず「送信中...」が残る不具合の原因だったので明示する。 */
+  .contact-form[hidden] {
+    display: none;
   }
 
   .form-group {
@@ -432,6 +444,11 @@ const LINE_URL = 'https://line.me/ti/p/%40cca1992y';
   /* 送信ボタン */
   .submit-btn {
     align-self: flex-start;
+    /* 「送信する」と「送信中」で幅が跳ねないよう中央揃え＋最小幅を持たせる */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 11rem;
     padding: 0.9rem 2.5rem;
     background: var(--color-deep, #1B3F8B);
     color: #ffffff;
@@ -443,6 +460,41 @@ const LINE_URL = 'https://line.me/ti/p/%40cca1992y';
     border-radius: 6px;
     cursor: pointer;
     transition: background 0.2s, transform 0.2s, opacity 0.2s;
+  }
+
+  /* 送信中の表示（スピナー＋テキスト） */
+  .btn-loading {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  /* display 指定により hidden 属性が効かなくなるため明示（.contact-form と同じ理由） */
+  .btn-loading[hidden] {
+    display: none;
+  }
+
+  .spinner {
+    width: 1em;
+    height: 1em;
+    flex-shrink: 0;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: spinner-rotate 0.7s linear infinite;
+  }
+
+  @keyframes spinner-rotate {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* アニメーションを控えたい設定の環境ではゆっくり回す */
+  @media (prefers-reduced-motion: reduce) {
+    .spinner {
+      animation-duration: 2.4s;
+    }
   }
 
   .submit-btn:hover:not(:disabled) {
