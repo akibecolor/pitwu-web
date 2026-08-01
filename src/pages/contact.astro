@@ -174,8 +174,32 @@ const LINE_URL = 'https://line.me/ti/p/%40cca1992y';
     <div id="form-success" class="form-success" role="status" hidden>
       <div class="success-icon" aria-hidden="true">✓</div>
       <h2>お問い合わせを受け付けました</h2>
-      <p>ご入力いただいたメールアドレスに確認メールをお送りします。<br />
+      <p class="success-lead">ご入力いただいたメールアドレスに確認メールをお送りします。<br />
       しばらくしても届かない場合は、迷惑メールフォルダをご確認ください。</p>
+
+      <!-- 送信内容の控え。メールを見ない方向けに、この場で保存できるようにする。
+           スクリーンショットで1枚に収まるよう、白背景・枠つきのカードにまとめる。 -->
+      <div class="receipt" id="receipt">
+        <div class="receipt-head">
+          <p class="receipt-title">お問い合わせ内容の控え</p>
+          <p class="receipt-team">夢源風人（むげんかじぴとぅ）</p>
+          <p class="receipt-date">受付日時：<span id="receipt-date"></span></p>
+        </div>
+        <dl class="receipt-list" id="receipt-list"></dl>
+        <p class="receipt-url">https://pitwu.com/</p>
+      </div>
+
+      <div class="receipt-actions">
+        <button type="button" class="copy-btn" id="copy-btn">
+          <svg class="copy-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+            <rect x="9" y="9" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="2" />
+            <path d="M5 15V5a2 2 0 0 1 2-2h10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          </svg>
+          <span id="copy-btn-label">内容をコピー</span>
+        </button>
+        <span class="copy-feedback" id="copy-feedback" aria-live="polite"></span>
+      </div>
+      <p class="receipt-hint">この控えはスクリーンショットでも保存できます。</p>
     </div>
 
     <div class="line-block">
@@ -224,6 +248,106 @@ const LINE_URL = 'https://line.me/ti/p/%40cca1992y';
     btnLoading.hidden = !on;
   }
 
+  // 控えに載せる項目と順番。任意項目は入力があるときだけ出す。
+  const RECEIPT_FIELDS = [
+    { key: 'name', label: 'お名前' },
+    { key: 'email', label: 'メールアドレス' },
+    { key: 'line', label: 'LINE', optional: true },
+    { key: 'twitter', label: 'X（旧Twitter）', optional: true },
+    { key: 'age', label: '年代' },
+    { key: 'gender', label: '性別' },
+    { key: 'type', label: '投稿種別' },
+    { key: 'body', label: '質問内容' },
+  ];
+
+  // Apps Script が受付日時を返さなかったときの保険（日本時間で組み立てる）。
+  function nowInJst() {
+    const d = new Date();
+    const jst = new Date(d.getTime() + (d.getTimezoneOffset() + 540) * 60000);
+    const p = (n) => String(n).padStart(2, '0');
+    return (
+      jst.getFullYear() + '-' + p(jst.getMonth() + 1) + '-' + p(jst.getDate()) +
+      ' ' + p(jst.getHours()) + ':' + p(jst.getMinutes()) + ':' + p(jst.getSeconds())
+    );
+  }
+
+  let receiptText = '';
+
+  function buildReceipt(payload, receivedAt) {
+    const stamp = receivedAt || nowInJst();
+    document.getElementById('receipt-date').textContent = stamp;
+
+    const list = document.getElementById('receipt-list');
+    list.innerHTML = '';
+    const lines = [];
+
+    for (const f of RECEIPT_FIELDS) {
+      const value = (payload[f.key] || '').trim();
+      if (!value && f.optional) continue;
+
+      const dt = document.createElement('dt');
+      dt.textContent = f.label;
+      const dd = document.createElement('dd');
+      // 質問内容は改行を保ったまま表示する
+      dd.textContent = value;
+      if (f.key === 'body') dd.className = 'receipt-body';
+      list.append(dt, dd);
+
+      lines.push(f.key === 'body' ? f.label + '：\n' + value : f.label + '：' + value);
+    }
+
+    // コピー用のプレーンテキスト（メールに貼っても読める形）
+    receiptText = [
+      '■ お問い合わせ内容の控え',
+      '夢源風人（むげんかじぴとぅ）',
+      '受付日時：' + stamp,
+      '',
+      ...lines,
+      '',
+      'https://pitwu.com/',
+    ].join('\n');
+  }
+
+  const copyBtn = document.getElementById('copy-btn');
+  const copyLabel = document.getElementById('copy-btn-label');
+  const copyFeedback = document.getElementById('copy-feedback');
+
+  copyBtn?.addEventListener('click', async () => {
+    let copied = false;
+    try {
+      await navigator.clipboard.writeText(receiptText);
+      copied = true;
+    } catch {
+      // 権限が無い/古い環境向けのフォールバック
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = receiptText;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        copied = document.execCommand('copy');
+        document.body.removeChild(ta);
+      } catch {
+        copied = false;
+      }
+    }
+
+    if (copied) {
+      copyLabel.textContent = 'コピーしました';
+      copyBtn.classList.add('is-copied');
+      copyFeedback.textContent = '控えをクリップボードにコピーしました';
+      setTimeout(() => {
+        copyLabel.textContent = '内容をコピー';
+        copyBtn.classList.remove('is-copied');
+        copyFeedback.textContent = '';
+      }, 2400);
+    } else {
+      copyFeedback.textContent = 'コピーできませんでした。長押しで選択してコピーしてください。';
+    }
+  });
+
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -262,9 +386,10 @@ const LINE_URL = 'https://line.me/ti/p/%40cca1992y';
       // 完了画面に切り替える前にボタンを通常状態へ戻す。
       // （フォームは隠すが、状態を残したままにしない）
       setLoading(false);
+      buildReceipt(payload, result.receivedAt);
       form.hidden = true;
       successEl.hidden = false;
-      successEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      successEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch {
       // 通信断・オフラインなど
       showError('通信エラーで送信できませんでした。電波状況をご確認ください。');
@@ -535,6 +660,161 @@ const LINE_URL = 'https://line.me/ti/p/%40cca1992y';
     font-size: 0.9375rem;
     line-height: 2;
     color: rgba(26, 31, 46, 0.7);
+  }
+
+  /* ===== 送信内容の控え ===== */
+  /* スクリーンショットで1枚に収まるよう、白背景・枠つきで情報を密に置く */
+  .receipt {
+    margin: 1.75rem auto 0;
+    max-width: 34rem;
+    background: #ffffff;
+    border: 1.5px solid rgba(27, 63, 139, 0.25);
+    border-radius: 8px;
+    padding: 1.25rem 1.25rem 1rem;
+    text-align: left;
+  }
+
+  .receipt-head {
+    border-bottom: 1px solid rgba(27, 63, 139, 0.15);
+    padding-bottom: 0.75rem;
+    margin-bottom: 0.875rem;
+  }
+
+  .form-success .receipt-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-deep, #1B3F8B);
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .form-success .receipt-team {
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    color: rgba(26, 31, 46, 0.6);
+    margin: 0.125rem 0 0;
+  }
+
+  .form-success .receipt-date {
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    color: rgba(26, 31, 46, 0.75);
+    margin: 0.375rem 0 0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ラベルと値を2列に。狭い画面では縦積みに切り替える */
+  .receipt-list {
+    display: grid;
+    grid-template-columns: 7.5rem 1fr;
+    gap: 0.4rem 0.75rem;
+    margin: 0;
+  }
+
+  .receipt-list dt {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: rgba(26, 31, 46, 0.55);
+    line-height: 1.7;
+  }
+
+  .receipt-list dd {
+    font-size: 0.875rem;
+    color: var(--color-ink, #1A1F2E);
+    line-height: 1.7;
+    margin: 0;
+    /* 長いメールアドレスやURLでも枠を破らない */
+    overflow-wrap: anywhere;
+  }
+
+  /* 質問内容は改行をそのまま活かす */
+  .receipt-list dd.receipt-body {
+    white-space: pre-wrap;
+  }
+
+  .form-success .receipt-url {
+    font-size: 0.75rem;
+    line-height: 1.6;
+    color: rgba(26, 31, 46, 0.4);
+    text-align: right;
+    margin: 0.875rem 0 0;
+    padding-top: 0.625rem;
+    border-top: 1px solid rgba(27, 63, 139, 0.1);
+  }
+
+  /* ===== コピー操作 ===== */
+  .receipt-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+
+  .copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    background: #ffffff;
+    color: var(--color-deep, #1B3F8B);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 700;
+    border: 1.5px solid var(--color-deep, #1B3F8B);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+  }
+
+  .copy-btn:hover {
+    background: var(--color-deep, #1B3F8B);
+    color: #ffffff;
+  }
+
+  .copy-btn.is-copied {
+    background: #38a169;
+    border-color: #38a169;
+    color: #ffffff;
+  }
+
+  .copy-icon {
+    flex-shrink: 0;
+  }
+
+  .copy-feedback {
+    font-size: 0.8125rem;
+    color: #38a169;
+    line-height: 1.6;
+  }
+
+  .form-success .receipt-hint {
+    font-size: 0.75rem;
+    line-height: 1.7;
+    color: rgba(26, 31, 46, 0.5);
+    margin: 0.625rem 0 0;
+  }
+
+  @media (max-width: 480px) {
+    .form-success {
+      padding: 2rem 1.125rem;
+    }
+
+    /* 狭い画面ではラベルを値の上に積む（横幅が足りず折り返すのを防ぐ） */
+    .receipt-list {
+      grid-template-columns: 1fr;
+      gap: 0.125rem;
+    }
+
+    .receipt-list dt {
+      margin-top: 0.5rem;
+    }
+
+    .receipt-list dt:first-child {
+      margin-top: 0;
+    }
   }
 
   /* LINE ブロック */

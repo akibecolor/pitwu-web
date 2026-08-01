@@ -113,7 +113,9 @@ function doPost(e) {
       console.error('mail failed: ' + mailWarning);
     }
 
-    return jsonOut({ ok: true, mailWarning: mailWarning }, 200);
+    // receivedAt はページ側の「控え」表示に使う。
+    // スプレッドシートの受信日時と完全に一致させるため、ここで確定した値を返す。
+    return jsonOut({ ok: true, mailWarning: mailWarning, receivedAt: receivedAt }, 200);
   } catch (err) {
     console.error(err);
     return jsonOut({ ok: false, error: String(err) }, 500);

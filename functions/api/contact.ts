@@ -131,7 +131,7 @@ export const onRequestPost = async (context: {
 
     // Apps Script は失敗時も HTTP 200 を返しうるので、本文の ok を必ず確認する。
     const text = await res.text();
-    let result: { ok?: boolean; error?: string } = {};
+    let result: { ok?: boolean; error?: string; receivedAt?: string } = {};
     try {
       result = JSON.parse(text) as typeof result;
     } catch {
@@ -149,7 +149,9 @@ export const onRequestPost = async (context: {
       );
     }
 
-    return json({ ok: true }, 200);
+    // receivedAt はページ側の「控え」に表示する受付日時（Asia/Tokyo）。
+    // 旧バージョンの Apps Script が返さない場合もあるので、無ければページ側で補う。
+    return json({ ok: true, receivedAt: result.receivedAt }, 200);
   } catch (e) {
     return json(
       {
