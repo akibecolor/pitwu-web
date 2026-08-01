@@ -633,19 +633,31 @@ const LINE_URL = 'https://line.me/ti/p/%40cca1992y';
   }
 
   /* 送信完了 */
+  /* 面はサイトのパレット（白＋群青）で構成し、緑はチェックバッジだけに絞る。
+     ページ背景が白濁(--color-base #F0F6FF)なので、白のカードが自然に浮き上がる。 */
   .form-success {
-    background: #f0fff4;
-    border: 1.5px solid #68d391;
+    background: var(--color-white, #ffffff);
+    border: 1.5px solid rgba(27, 63, 139, 0.25);
     border-radius: 12px;
     padding: 3rem 2rem;
     text-align: center;
+    box-shadow: 0 2px 16px rgba(27, 63, 139, 0.06);
   }
 
+  /* 緑の丸バッジに白のチェック。「成功」の一目瞭然さはここで担保する */
   .success-icon {
-    font-size: 3rem;
-    color: #38a169;
-    margin-bottom: 1rem;
+    width: 3.25rem;
+    height: 3.25rem;
+    margin: 0 auto 1.125rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #38a169;
+    color: #ffffff;
+    border-radius: 50%;
+    font-size: 1.75rem;
     font-weight: 700;
+    line-height: 1;
   }
 
   .form-success h2 {
@@ -663,11 +675,12 @@ const LINE_URL = 'https://line.me/ti/p/%40cca1992y';
   }
 
   /* ===== 送信内容の控え ===== */
-  /* スクリーンショットで1枚に収まるよう、白背景・枠つきで情報を密に置く */
+  /* スクリーンショットで1枚に収まるよう、枠つきで情報を密に置く。
+     外側が白カードなので、控えは淡い青地にして面を分離する。 */
   .receipt {
     margin: 1.75rem auto 0;
     max-width: 34rem;
-    background: #ffffff;
+    background: #f7faff;
     border: 1.5px solid rgba(27, 63, 139, 0.25);
     border-radius: 8px;
     padding: 1.25rem 1.25rem 1rem;
