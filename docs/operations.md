@@ -188,6 +188,10 @@ Git で管理されている固定ページ（`src/pages/`）：
 - 中継: `functions/api/contact.ts`
 - 受け口: `scripts/apps-script/contact.gs`
 
+送信完了画面には**送信内容の控え**（コピーボタン付き・スクリーンショット可）を表示する。
+メールを見ない利用者が多いため。受付日時は Apps Script が返す `receivedAt` を使うので
+スプレッドシートの「受信日時」と完全に一致する（返ってこない場合はブラウザ側で日本時間を補完）。
+
 > **なぜ Google フォーム直送信をやめたか**
 > Google フォームが送信時に invisible reCAPTCHA を必須化したため、ブラウザからの
 > 直接 POST は常に HTTP 400 で破棄されるようになった。さらに旧実装は `mode:'no-cors'`
