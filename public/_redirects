@@ -3,6 +3,11 @@
 /enbu-irarai /enbu-irai/ 301
 /enbu-irarai/ /enbu-irai/ 301
 
+# 記事「ぴとぅのサイトをリニューアルしました！」は microCMS で slug 未入力のまま公開され、
+# /2026/04/undefined/ として配信されていた（2026-10 に slug=site-renewal を設定）
+/2026/04/undefined /2026/04/site-renewal/ 301
+/2026/04/undefined/ /2026/04/site-renewal/ 301
+
 # ── WordPress 互換 ──
 # RSSフィード（既存購読者）
 /feed /rss.xml 301
