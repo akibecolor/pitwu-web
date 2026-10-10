@@ -116,7 +116,7 @@ sequenceDiagram
   A->>P: wrangler pages deploy --branch=main
 ```
 
-- ビルドは microCMS の全件取得があるため **15〜20分** かかる。
+- ビルドからデプロイまで **1〜2分**（2026-10 実測）。
 - check / lint / test のどれかが落ちるとデプロイされない（その環境は前の版のまま）。
 
 ### 3-2. 記事更新（microCMS）

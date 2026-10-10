@@ -14,7 +14,7 @@ git commit -m "変更内容"
 git push origin main
 ```
 
-- **ビルド時間**: 約15〜20分（microCMS から記事を全件取得するため）
+- **ビルド時間**: 約1〜2分（GitHub Actions 全体。2026-10 実測）
 - **ロールバック**: Cloudflare ダッシュボード → Pages → Deployments → 過去デプロイを「Rollback」
 
 ---
