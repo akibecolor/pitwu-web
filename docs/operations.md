@@ -114,7 +114,6 @@ Git で管理されている固定ページ（`src/pages/`）：
 | メンバー募集 | `src/pages/recruit.astro` |
 | お問合せ | `src/pages/contact.astro` |
 | 検索 | `src/pages/search.astro` |
-| メンバーページ | `src/pages/members/` |
 
 ---
 
@@ -144,8 +143,8 @@ Git で管理されている固定ページ（`src/pages/`）：
 - **`public/images/` 以下の画像パスを変更しない**  
   WordPress 移行コンテンツ内の `<img src="...">` がこのパスを参照している。
 
-- **`src/pages/members/` を誰でも見られる場所に移動しない**  
-  Cloudflare Zero Trust で保護されているパス。
+- **メンバー向けのページ・資料をこのサイトに置かない**  
+  このリポジトリは GitHub で公開されており、サイトも認証なしで配信される。メンバー向けのもの（旧 `/members/`、会報「みてぴとぅ」）は pitwu-app に移管した（2026-10）。
 
 ### 気をつけること
 
