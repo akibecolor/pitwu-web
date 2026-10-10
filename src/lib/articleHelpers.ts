@@ -30,20 +30,11 @@ export function getSourceDate(article: Article): string {
 /**
  * URL に使う slug（デコード済み）を返す。
  * slug は WordPress 由来で URL エンコード済みの場合があるためデコードする。
- * microCMS で slug 未入力の記事は記事 ID を使い、ビルドログに警告を出す
- * （以前は decodeURIComponent(undefined) が "undefined" を返し、/YYYY/MM/undefined/ になっていた）。
+ * slug は任意入力。未入力の記事は microCMS の記事 ID を使う（ID は変わらないので URL も変わらない）。
+ * 以前は decodeURIComponent(undefined) が "undefined" を返し、/YYYY/MM/undefined/ になっていた。
  */
-const warnedMissingSlug = new Set<string>();
-
 export function getArticleSlug(article: Article): string {
-  if (!article.slug) {
-    // 記事一覧などで何度も呼ばれるので、1記事につき1回だけ警告する
-    if (warnedMissingSlug.has(article.id)) return article.id;
-    warnedMissingSlug.add(article.id);
-    console.warn(`[articles] slug が未入力の記事があります: 「${article.title}」(id=${article.id})。microCMS で slug を入力してください。`);
-    return article.id;
-  }
-  return decodeURIComponent(article.slug);
+  return article.slug ? decodeURIComponent(article.slug) : article.id;
 }
 
 /** 記事の正規パス（`/YYYY/MM/<decoded-slug>`）を返す。 */

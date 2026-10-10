@@ -26,6 +26,10 @@ git push origin main
 microCMS の管理画面から追加・編集。  
 保存 → Webhook → Cloudflare Pages が自動で再ビルド（デプロイフックが設定済みの場合）。
 
+**記事の URL**: `/年/月/<slug>/`。`slug` 欄は任意で、**空なら microCMS の記事 ID が URL になる**（例 `/2026/10/abc123xyz/`）。
+ID は変わらないので、タイトルを直しても URL は切れない。
+公開後に `slug` を入れたり変えたりすると URL が変わるので、その場合は `public/_redirects` に旧 URL からの転送を足す。
+
 > デプロイフックの設定: Cloudflare Pages → Settings → Deploy hooks で URL 発行 → microCMS の Webhook に登録。
 
 ---
