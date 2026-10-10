@@ -20,7 +20,8 @@ describe('getArticleSlug', () => {
 
 describe('getArticlePath', () => {
   it('wpDate を優先して /YYYY/MM/slug を作る', () => {
-    expect(getArticlePath(article({ wpDate: '2003-06-01T00:00:00+09:00', slug: 'old' } as Partial<Article>))).toBe('/2003/06/old');
+    // 月の境目はタイムゾーンで変わる（CI は UTC）ので月の半ばの日時を使う
+    expect(getArticlePath(article({ wpDate: '2003-06-15T12:00:00+09:00', slug: 'old' } as Partial<Article>))).toBe('/2003/06/old');
   });
 
   it('slug 未入力でも /YYYY/MM/undefined にならない', () => {
