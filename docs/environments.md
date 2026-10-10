@@ -41,8 +41,8 @@ flowchart LR
     subgraph Pages["Pages プロジェクト: pitwu-web（Direct Upload）"]
       prod["Production 環境<br/>pitwu.com"]
       prev["Preview 環境<br/>staging.pitwu-web.pages.dev<br/>noindex"]
-      fnP["Functions（本番）<br/>/api/calendar<br/>/api/contact"]
-      fnS["Functions（ステージング）<br/>/api/calendar<br/>/api/contact = 送信不可"]
+      fnP["Functions（本番）<br/>/api/calendar<br/>/api/contact<br/>/members/* = 404"]
+      fnS["Functions（ステージング）<br/>/api/calendar<br/>/api/contact = 送信不可<br/>/members/* = 404"]
     end
     wh["Worker<br/>pitwu-microcms-webhook<br/>署名検証（#17 で反映予定）"]
     pv["Worker<br/>pitwu-preview<br/>（下書きプレビュー）"]
@@ -328,6 +328,9 @@ pitwu-app（非公開リポジトリ・ログインあり）に移管する。�
 | ページ | `src/pages/members/`（`index` / `secret` / `mitepitwu/`） | 削除。`/members/*` は 404 |
 | 本文データ | `src/data/wp-pages.json` の `mitepitwu`（5号分） | 削除 |
 | 画像 | `public/images/mitepitwu/`（85枚・約38MB） | 削除 |
+
+`/members/` 以下は `functions/members/[[path]].ts` が必ず 404 を返す。削除前に配信された HTML が Cloudflare のエッジに残り、
+一部の拠点や `pitwu-web.pages.dev` から古いページが返り続けたため（静的ファイルより手前で動く Function で上書きする）。
 
 移管元データ（本文・画像・元のページ）は pitwu-app リポジトリ（非公開）の `migration/mitepitwu/` にコピーした。
 このリポジトリでは **Git の履歴からも除去**した（2026-10-10、`git filter-repo` で全ブランチを書き換えて force push）。
