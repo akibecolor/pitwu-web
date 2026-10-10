@@ -1,7 +1,7 @@
 ---
 import ArticleLayout from '../../../layouts/ArticleLayout.astro';
 import { getAllArticlesWithContent } from '../../../lib/microcms.js';
-import { getSourceDate, getArticlePath } from '../../../lib/articleHelpers.js';
+import { getSourceDate, getArticlePath, getArticleSlug } from '../../../lib/articleHelpers.js';
 import type { GetStaticPaths } from 'astro';
 import type { Article } from '../../../types/index.js';
 
@@ -15,7 +15,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
     const date = new Date(getSourceDate(article));
     const year = String(date.getFullYear());
     const month = String(date.getMonth() + 1).padStart(2, '0');
-    const slug = decodeURIComponent(article.slug);
+    const slug = getArticleSlug(article);
 
     // 新しい順なので index-1 が「次（新しい）」、index+1 が「前（古い）」
     const newerArticle = index > 0
