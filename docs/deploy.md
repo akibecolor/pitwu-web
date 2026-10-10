@@ -1,5 +1,9 @@
 # デプロイ手順（Cloudflare Pages）
 
+> ⚠️ **このドキュメントは WordPress からの移行時（2026-04）の初回構築記録。現在の運用とは異なる。**
+> 現在は Pages の Git 連携を使わず、GitHub Actions がビルドして `wrangler pages deploy` で送る（Direct Upload）。
+> 現行の構成・設定は [`environments.md`](environments.md)、開発環境は [`setup.md`](setup.md) を参照。
+
 このドキュメントは pitwu-web を **Cloudflare Pages** に本番デプロイする手順を示します。
 
 ---

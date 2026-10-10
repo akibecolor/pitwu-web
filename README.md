@@ -13,35 +13,32 @@ Astro + microCMS + Cloudflare Pages で構築。
 | CMS（記事） | [microCMS](https://microcms.io) |
 | ホスティング | [Cloudflare Pages](https://pages.cloudflare.com) |
 | 検索 | [Pagefind](https://pagefind.app) |
-| 認証（メンバーページ） | Cloudflare Zero Trust (Access) |
 
 ---
 
-## ローカル開発
+## はじめに
+
+- 開発環境の構築 → [`docs/setup.md`](docs/setup.md)
+- 本番・ステージングの構成図 → [`docs/environments.md`](docs/environments.md)
 
 ```bash
-npm install
-npm run dev      # http://localhost:4321
-```
-
-環境変数（`.env`）が必要：
-
-```
-MICROCMS_SERVICE_DOMAIN=xxxx
-MICROCMS_API_KEY=xxxx
+npm ci
+cp .env.example .env   # MICROCMS_SERVICE_DOMAIN / MICROCMS_API_KEY を記入
+npm run dev            # http://localhost:4321
 ```
 
 ---
 
 ## デプロイ
 
-`main` ブランチへ push すると Cloudflare Pages が自動ビルド・デプロイする。
+GitHub Actions（`.github/workflows/deploy.yml`）がビルドし、Cloudflare Pages に送る。
 
-```bash
-git push origin main
-```
+| ブランチ | 環境 | URL |
+|---------|------|-----|
+| `main` | 本番 | https://pitwu.com |
+| `staging` | ステージング（構築予定） | https://staging.pitwu-web.pages.dev |
 
-ビルドログは Cloudflare ダッシュボードの **Workers & Pages → pitwu-web → Deployments** で確認。
+microCMS で記事を公開すると本番が自動で再ビルドされる。詳細は [`docs/environments.md`](docs/environments.md)。
 
 ---
 
@@ -49,9 +46,11 @@ git push origin main
 
 | ファイル | 内容 |
 |---------|------|
+| [`docs/setup.md`](docs/setup.md) | **開発環境構築ガイド（新メンバーはここから）** |
+| [`docs/environments.md`](docs/environments.md) | **本番・ステージングの構成図と設定** |
 | [`docs/requirements.md`](docs/requirements.md) | 要件定義書 |
 | [`docs/design.md`](docs/design.md) | アーキテクチャ・設計書 |
-| [`docs/deploy.md`](docs/deploy.md) | Cloudflare Pages デプロイ手順 |
+| [`docs/deploy.md`](docs/deploy.md) | Cloudflare Pages 初回構築の記録（移行時） |
 | [`docs/discography.md`](docs/discography.md) | 作品ページの仕様・データ更新ルール |
 | [`docs/operations.md`](docs/operations.md) | 日常運用ガイド（コンテンツ更新・注意事項） |
 | [`docs/review.md`](docs/review.md) | コードレビュー結果 |
