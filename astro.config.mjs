@@ -8,5 +8,8 @@ import sitemap from '@astrojs/sitemap';
 // https://astro.build/config
 export default defineConfig({
   site: 'https://pitwu.com',
+  // Astro 7 で既定が 'jsx'（隣り合うインライン要素間の空白を削る）に変わった。
+  // WordPress 由来の本文や見た目を変えないため、従来の挙動を明示する。
+  compressHTML: true,
   integrations: [sitemap()],
 });

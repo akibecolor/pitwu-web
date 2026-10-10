@@ -8,7 +8,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
-import toIco from 'to-ico';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, '..');
@@ -80,6 +79,32 @@ async function buildMasterIcon(): Promise<Buffer> {
     .toBuffer();
 }
 
+/**
+ * PNG をそのまま埋め込んだ ICO を組み立てる（Vista 以降の全ブラウザが対応する形式）。
+ * 以前は to-ico を使っていたが、古い依存（jimp / request）が脆弱性警告の元だったので自前にした。
+ */
+function pngsToIco(images: { png: Buffer; size: number }[]): Buffer {
+  const header = Buffer.alloc(6);
+  header.writeUInt16LE(0, 0); // reserved
+  header.writeUInt16LE(1, 2); // type: icon
+  header.writeUInt16LE(images.length, 4);
+  let offset = 6 + 16 * images.length;
+  const entries = images.map(({ png, size }) => {
+    const e = Buffer.alloc(16);
+    e.writeUInt8(size >= 256 ? 0 : size, 0); // width（256 は 0 と書く決まり）
+    e.writeUInt8(size >= 256 ? 0 : size, 1); // height
+    e.writeUInt8(0, 2); // palette
+    e.writeUInt8(0, 3); // reserved
+    e.writeUInt16LE(1, 4); // color planes
+    e.writeUInt16LE(32, 6); // bits per pixel
+    e.writeUInt32LE(png.length, 8);
+    e.writeUInt32LE(offset, 12);
+    offset += png.length;
+    return e;
+  });
+  return Buffer.concat([header, ...entries, ...images.map((i) => i.png)]);
+}
+
 async function main() {
   if (!fs.existsSync(KUMO_SRC)) {
     console.error('Missing source:', KUMO_SRC);
@@ -95,7 +120,10 @@ async function main() {
   fs.writeFileSync(path.join(root, 'public', 'favicon-preview-512.png'), master);
   await sharp(master).resize(180, 180).png().toFile(path.join(root, 'public', 'apple-touch-icon.png'));
 
-  const ico = await toIco([png16, png32], { sizes: [16, 32] });
+  const ico = pngsToIco([
+    { png: png16, size: 16 },
+    { png: png32, size: 32 },
+  ]);
   fs.writeFileSync(path.join(root, 'public', 'favicon.ico'), ico);
 
   const b64 = png128.toString('base64');
