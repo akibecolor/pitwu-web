@@ -1,11 +1,19 @@
 name: Deploy to Cloudflare Pages
 
+# main    → Production（https://pitwu.com）
+# staging → Preview   （https://staging.pitwu-web.pages.dev）
+# 環境の全体像は docs/environments.md を参照。
 on:
   repository_dispatch:
     types: [microcms_update]
   push:
-    branches: [main]
+    branches: [main, staging]
   workflow_dispatch:
+
+# 同じブランチへの連続 push は古い方を打ち切る（main と staging は並行して走れる）
+concurrency:
+  group: deploy-${{ github.ref_name }}
+  cancel-in-progress: true
 
 jobs:
   deploy:
@@ -42,4 +50,5 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name=pitwu-web
+          # --branch が Pages の production branch（main）なら Production、それ以外は Preview に入る
+          command: pages deploy dist --project-name=pitwu-web --branch=${{ github.ref_name }}
