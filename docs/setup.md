@@ -96,7 +96,7 @@ npm run dev        # http://localhost:4321
 ### 4-2. 本番に近い形で確認（API 込み）
 
 ```bash
-npm run build                     # 15〜20分かかる（記事全件取得 + 検索インデックス生成）
+npm run build                     # 1〜2分（記事全件取得 + 検索インデックス生成）
 npx wrangler pages dev dist       # http://localhost:8788
 ```
 
@@ -137,7 +137,7 @@ gitGraph
 1. `staging` から作業ブランチを切る: `git switch staging && git pull && git switch -c feature/xxx`
    - 名前の例: `feature/calendar-ui`, `fix/contact-form`, `docs/setup`
 2. push して **`staging` 宛て**に PR を出す → レビュー → マージ
-3. 数十分後、https://staging.pitwu-web.pages.dev で確認
+3. 数分後、https://staging.pitwu-web.pages.dev で確認
 4. 問題なければ **`staging` → `main`** の PR を出してマージ → 本番に出る
 
 | やること | 宛先 |
@@ -174,7 +174,7 @@ gitGraph
 | `npm ci` が失敗する | Node が古い。22.12 以上にする |
 | `/schedule/` に予定が出ない（ローカル） | `npm run dev` では Functions が動かない。§4-2 の方法で、`.dev.vars` に API キーを入れる |
 | 検索ページで何も出ない（ローカル） | 検索インデックスはビルド時に生成される。`npm run dev` では出ない。§4-2 |
-| push したのに反映されない | Actions のログを確認（`gh run list --workflow=deploy.yml`）。check/lint/test で落ちていることが多い。ビルド自体も15〜20分かかる |
+| push したのに反映されない | Actions のログを確認（`gh run list --workflow=deploy.yml`）。check/lint/test で落ちていることが多い。ビルド自体は1〜2分で終わる |
 | Pages の環境変数を変えたのに効かない | 既存デプロイには反映されない。再デプロイ（`gh workflow run deploy.yml --ref <branch>`） |
 
 ---

@@ -29,32 +29,34 @@ flowchart LR
     local["ローカル<br/>astro dev / wrangler pages dev"]
   end
 
-  subgraph GH["GitHub: akibecolor/pitwu-web"]
-    main[("main")]
-    staging[("staging")]
+  subgraph GH["GitHub: akibecolor/pitwu-web（公開）"]
     feat[("feature/*")]
+    staging[("staging")]
+    main[("main<br/>ルールセットで保護<br/>PR+承認1件／管理者は例外")]
     gha["GitHub Actions<br/>deploy.yml<br/>check → lint → test → build → deploy"]
   end
 
   subgraph CF["Cloudflare（アカウント共通）"]
+    acc{{"Cloudflare Access<br/>コラボレーターのみ<br/>（予定 #19）"}}
     subgraph Pages["Pages プロジェクト: pitwu-web（Direct Upload）"]
       prod["Production 環境<br/>pitwu.com"]
-      prev["Preview 環境<br/>staging.pitwu-web.pages.dev"]
-      fn["Pages Functions<br/>/api/calendar<br/>/api/contact"]
+      prev["Preview 環境<br/>staging.pitwu-web.pages.dev<br/>noindex"]
+      fnP["Functions（本番）<br/>/api/calendar<br/>/api/contact"]
+      fnS["Functions（ステージング）<br/>/api/calendar<br/>/api/contact = 送信不可"]
     end
-    wh["Worker<br/>pitwu-microcms-webhook"]
+    wh["Worker<br/>pitwu-microcms-webhook<br/>署名検証（#17 で反映予定）"]
     pv["Worker<br/>pitwu-preview<br/>（下書きプレビュー）"]
   end
 
   subgraph Ext["外部サービス"]
     cms["microCMS<br/>（記事）"]
-    gcal["Google Calendar API"]
-    gas["Apps Script<br/>contact.gs<br/>→ スプレッドシート / メール"]
+    gcal["Google Calendar API<br/>（キー未設定 #18）"]
+    gas["Apps Script<br/>contact.gs<br/>→ スプレッドシート / 事務局メール"]
   end
 
   local -- push --> feat
   feat -- PR --> staging
-  staging -- PR --> main
+  staging -- "PR（merge commit）" --> main
   main --> gha
   staging --> gha
   gha -- "--branch=main" --> prod
@@ -65,10 +67,12 @@ flowchart LR
   wh -- "repository_dispatch" --> gha
   cms -. "下書き取得" .-> pv
 
-  prod --- fn
-  prev --- fn
-  fn -- "read-only API キー" --> gcal
-  fn -- "共有シークレット付き POST" --> gas
+  prod --- fnP
+  prev --- fnS
+  acc -.-> prev
+  fnP -- "read-only API キー" --> gcal
+  fnS -- "read-only API キー" --> gcal
+  fnP -- "共有シークレット付き POST" --> gas
 ```
 
 ポイント:
@@ -81,6 +85,8 @@ flowchart LR
 - **どの環境に入るかは `--branch` で決まる**。Pages の production branch は `main`。
   それ以外のブランチ名でデプロイすると Preview 環境に入り、`<ブランチ名>.pitwu-web.pages.dev`
   というエイリアスURLが付く。
+- **問い合わせ（`/api/contact`）が Apps Script に届くのは本番だけ**。ステージングは送り先を外してあり、送信はエラー表示になる（[§5 手順3](#手順3-問い合わせフォームを本番から切り離す)）。
+- 図中の「#番号」は対応待ちの issue。片付いたら図からも外す。
 - **Preview 環境（`*.pages.dev`）には Cloudflare が自動で `X-Robots-Tag: noindex` を付ける**
   ので、ステージングが検索に載る心配はない。
 
@@ -110,7 +116,7 @@ sequenceDiagram
   A->>P: wrangler pages deploy --branch=main
 ```
 
-- ビルドは microCMS の全件取得があるため **15〜20分** かかる。
+- ビルドからデプロイまで **1〜2分**（2026-10 実測）。
 - check / lint / test のどれかが落ちるとデプロイされない（その環境は前の版のまま）。
 
 ### 3-2. 記事更新（microCMS）
