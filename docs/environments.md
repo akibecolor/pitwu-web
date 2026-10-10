@@ -163,11 +163,14 @@ sequenceDiagram
 
 | Worker | ソース | Secrets | 役割 |
 |--------|--------|---------|------|
-| `pitwu-microcms-webhook` | `workers/microcms-webhook/` | `GITHUB_PAT` | microCMS の Webhook を GitHub の `repository_dispatch` に中継 |
+| `pitwu-microcms-webhook` | `workers/microcms-webhook/` | `GITHUB_PAT`, `MICROCMS_WEBHOOK_SECRET` | microCMS の Webhook を GitHub の `repository_dispatch` に中継。`X-MICROCMS-Signature` の署名が合わないリクエストは 401 で捨てる |
 | `pitwu-preview` | `workers/preview/` | `MICROCMS_SERVICE_DOMAIN`, `MICROCMS_API_KEY` | microCMS 下書きのプレビュー表示 |
 
-URL は `https://<worker名>.small-scene-ce53.workers.dev`。どちらも環境は1つ（本番のみ）で、
-GitHub Actions ではなく手動 `npx wrangler deploy` で更新する（4月以降は変更なし）。
+どちらも環境は1つ（本番のみ）で、GitHub Actions ではなく手動 `npx wrangler deploy` で更新する。
+URL は Cloudflare ダッシュボードで確認する（このリポジトリは公開なので、URL は書かない）。
+
+`MICROCMS_WEBHOOK_SECRET` は microCMS の Webhook 設定の「シークレット値」と同じ値にする。
+変えるときは両方を同時に変える（片方だけだと記事更新で再ビルドされなくなる）。
 
 > 同じ Cloudflare アカウントに `pitwu-app` / `pitwu-app-staging` / `pitwu-cron` も載っているが、
 > これらは別リポジトリ（pitwu-app）のもの。このリポジトリからは触らない。
