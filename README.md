@@ -36,7 +36,7 @@ GitHub Actions（`.github/workflows/deploy.yml`）がビルドし、Cloudflare P
 | ブランチ | 環境 | URL |
 |---------|------|-----|
 | `main` | 本番 | https://pitwu.com |
-| `staging` | ステージング（構築予定） | https://staging.pitwu-web.pages.dev |
+| `staging` | ステージング | https://staging.pitwu-web.pages.dev |
 
 microCMS で記事を公開すると本番が自動で再ビルドされる。詳細は [`docs/environments.md`](docs/environments.md)。
 

@@ -12,7 +12,7 @@ pitwu.com（夢源風人 公式サイト）がどこで動き、どう反映さ�
 | 環境 | URL | 何が入るか | 誰が見るか | 状態 |
 |------|-----|-----------|-----------|------|
 | **本番 (Production)** | https://pitwu.com<br>https://pitwu-web.pages.dev | `main` ブランチ | 一般公開 | ✅ 稼働中 |
-| **ステージング (Preview)** | https://staging.pitwu-web.pages.dev | `staging` ブランチ | 開発メンバー・確認者 | 🚧 **未構築**（[§5](#5-ステージングの構築手順初回のみ管理者)） |
+| **ステージング (Preview)** | https://staging.pitwu-web.pages.dev | `staging` ブランチ | 開発メンバー・確認者 | ✅ 稼働中（2026-10-10〜。残作業は [§5](#5-ステージングの構築手順初回のみ管理者) の進捗表） |
 | **個別デプロイURL** | `https://<id>.pitwu-web.pages.dev` | デプロイ1回ごとの固定スナップショット | 確認・ロールバック用 | ✅ 自動発行 |
 | **ローカル** | http://localhost:4321 | 手元の作業ツリー | 自分 | [`setup.md`](setup.md) |
 
@@ -150,8 +150,8 @@ sequenceDiagram
 | `CLOUDFLARE_ACCOUNT_ID` | `.env`（任意） | ✅ | — | — | 同上 |
 | `GOOGLE_CALENDAR_API_KEY` | `.dev.vars` | — | ⚠️ **未設定** | 未設定 | `/api/calendar` |
 | `EVENT_CALENDAR_ID` / `PRACTICE_CALENDAR_ID` | `.dev.vars`（任意） | — | 未設定（既定値を使用） | 未設定 | カレンダーIDの上書き |
-| `CONTACT_ENDPOINT` | `.dev.vars`（任意） | — | ✅ | ⚠️ **本番と同じ値** | `/api/contact` の転送先 |
-| `CONTACT_SHARED_SECRET` | `.dev.vars`（任意） | — | ✅ (secret) | ⚠️ **本番と同じ値** | 同上 |
+| `CONTACT_ENDPOINT` | `.dev.vars`（任意） | — | ✅ | 未設定（ステージング用 Apps Script 待ち） | `/api/contact` の転送先 |
+| `CONTACT_SHARED_SECRET` | `.dev.vars`（任意） | — | ✅ (secret) | 未設定（同上） | 同上 |
 | `GOOGLE_SERVICE_ACCOUNT_EMAIL` / `GOOGLE_PRIVATE_KEY` | `.env` | — | — | — | `scripts/gcal.ts`（予定の読み書き。ローカル専用） |
 
 - `MICROCMS_*` は **ビルド時にしか使わない**ので Pages 側には不要。GitHub Secrets だけにあればよい。
@@ -163,11 +163,14 @@ sequenceDiagram
 
 | Worker | ソース | Secrets | 役割 |
 |--------|--------|---------|------|
-| `pitwu-microcms-webhook` | `workers/microcms-webhook/` | `GITHUB_PAT` | microCMS の Webhook を GitHub の `repository_dispatch` に中継 |
+| `pitwu-microcms-webhook` | `workers/microcms-webhook/` | `GITHUB_PAT`, `MICROCMS_WEBHOOK_SECRET` | microCMS の Webhook を GitHub の `repository_dispatch` に中継。`X-MICROCMS-Signature` の署名が合わないリクエストは 401 で捨てる |
 | `pitwu-preview` | `workers/preview/` | `MICROCMS_SERVICE_DOMAIN`, `MICROCMS_API_KEY` | microCMS 下書きのプレビュー表示 |
 
-URL は `https://<worker名>.small-scene-ce53.workers.dev`。どちらも環境は1つ（本番のみ）で、
-GitHub Actions ではなく手動 `npx wrangler deploy` で更新する（4月以降は変更なし）。
+どちらも環境は1つ（本番のみ）で、GitHub Actions ではなく手動 `npx wrangler deploy` で更新する。
+URL は Cloudflare ダッシュボードで確認する（このリポジトリは公開なので、URL は書かない）。
+
+`MICROCMS_WEBHOOK_SECRET` は microCMS の Webhook 設定の「シークレット値」と同じ値にする。
+変えるときは両方を同時に変える（片方だけだと記事更新で再ビルドされなくなる）。
 
 > 同じ Cloudflare アカウントに `pitwu-app` / `pitwu-app-staging` / `pitwu-cron` も載っているが、
 > これらは別リポジトリ（pitwu-app）のもの。このリポジトリからは触らない。
@@ -178,12 +181,23 @@ GitHub Actions ではなく手動 `npx wrangler deploy` で更新する（4月�
 |----------|------|-------------|------|
 | microCMS | 共有 | 共有 | 同じ公開記事が出る |
 | Google Calendar | 共有 | 共有 | 読み取りのみなので共有で問題なし |
-| Apps Script（問い合わせ） | 本番用デプロイ | **専用を用意する**（[§5 手順3](#手順3-問い合わせフォームを本番から切り離す)） | 共有すると事務局に本物の通知メールが飛ぶ |
+| Apps Script（問い合わせ） | 本番用デプロイ | 専用を用意する（[§5 手順3](#手順3-問い合わせフォームを本番から切り離す)）。それまでステージングの問い合わせは送信エラーになる | 共有すると事務局に本物の通知メールが飛ぶ |
 | DNS | Cloudflare（`pitwu.com`） | 不要（`pages.dev`） | |
 
 ---
 
 ## 5. ステージングの構築手順（初回のみ・管理者）
+
+### 進捗（2026-10-10）
+
+| 手順 | 状態 |
+|------|------|
+| 1. `deploy.yml` を staging 対応 | ✅ PR #16 |
+| 2. `staging` ブランチ作成 | ✅ |
+| 3. 問い合わせを本番から切り離す | ✅ Preview の `CONTACT_*` を削除済み（本番に届かない）。⏳ ステージング用 Apps Script を作って入れれば送信テストも可能になる |
+| 4. カレンダー API キー | ⏳ キーの発行待ち（本番も未設定） |
+| 5. ステージングに鍵をかける | ⏳ Cloudflare Zero Trust の有効化待ち |
+| 6. `main` の保護 | ⏳ ルールセット設定待ち |
 
 Cloudflare と GitHub の管理権限がある人が1回だけ行う。
 
@@ -285,7 +299,7 @@ GitHub → Settings → Branches で `main` にルールを追加:
 | 1 | **`/members/*`（会報「みてぴとぅ」含む）が認証なしで公開されていた** | 誰でも閲覧でき、サイトマップにも載っていた | pitwu-app へ移管する方針。サイトとリポジトリからは削除済み（2026-10、`chore/isolate-members`）。残作業は §8 |
 | 2 | **本番に `GOOGLE_CALENDAR_API_KEY` が未設定** | `/api/calendar` が `API key not configured` を返し、`/schedule/` に予定が出ない | §5 手順4 |
 | 3 | **`www.pitwu.com` が 522** | www 付きでアクセスした人にエラー画面 | Pages の Custom domains に `www.pitwu.com` を追加、または apex へのリダイレクトルールを設定 |
-| 4 | Preview の `CONTACT_*` が本番と同じ | ステージング構築後に送信テストすると本番に届く | §5 手順3 |
+| 4 | ~~Preview の `CONTACT_*` が本番と同じ~~ | — | 解消（2026-10-10、Preview から削除） |
 
 ---
 
