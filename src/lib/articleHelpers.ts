@@ -28,15 +28,21 @@ export function getSourceDate(article: Article): string {
 }
 
 /**
- * 記事の正規パス（`/YYYY/MM/<decoded-slug>`）を返す。
+ * URL に使う slug（デコード済み）を返す。
  * slug は WordPress 由来で URL エンコード済みの場合があるためデコードする。
+ * slug は任意入力。未入力の記事は microCMS の記事 ID を使う（ID は変わらないので URL も変わらない）。
+ * 以前は decodeURIComponent(undefined) が "undefined" を返し、/YYYY/MM/undefined/ になっていた。
  */
+export function getArticleSlug(article: Article): string {
+  return article.slug ? decodeURIComponent(article.slug) : article.id;
+}
+
+/** 記事の正規パス（`/YYYY/MM/<decoded-slug>`）を返す。 */
 export function getArticlePath(article: Article): string {
   const date = new Date(getSourceDate(article));
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
-  const slug = decodeURIComponent(article.slug);
-  return `/${year}/${month}/${slug}`;
+  return `/${year}/${month}/${getArticleSlug(article)}`;
 }
 
 /**
