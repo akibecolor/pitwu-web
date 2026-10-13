@@ -21,7 +21,29 @@ import PageLayout from '../layouts/PageLayout.astro';
         <p class="recruit-hero-sub">
           お問い合わせは<a href="/contact/">フォーム</a>から。熱い季節を一緒に駆け抜けましょう。
         </p>
-        <p class="recruit-closed-notice">※ 2026年度のメンバー募集は終了しました。次年度の募集開始時に改めてご案内いたします。</p>
+        <div class="recruit-notice">
+          <div class="recruit-notice-head">
+            <span class="recruit-notice-badge">募集予告</span>
+            <h3 class="recruit-notice-title">2027年度メンバー募集を11月1日から開始します</h3>
+          </div>
+          <dl class="recruit-notice-period">
+            <dt>募集期間</dt>
+            <dd>
+              <span class="recruit-notice-period-date">11月1日（日）〜 11月30日（月）</span>
+              <span class="recruit-notice-period-note">※ 開始日は予定です</span>
+            </dd>
+          </dl>
+          <div class="recruit-trial">
+            <h4 class="recruit-trial-heading">体験会</h4>
+            <ul class="recruit-trial-list">
+              <li><span class="recruit-trial-area">大阪</span><span class="recruit-trial-date">12月12日（土）</span></li>
+              <li><span class="recruit-trial-area">東海</span><span class="recruit-trial-date">12月19日（土）</span></li>
+              <li><span class="recruit-trial-area">東京</span><span class="recruit-trial-date">12月20日（日）</span></li>
+            </ul>
+          </div>
+          <p class="recruit-notice-text">募集開始後、参加ご希望の方はフォームよりお問い合わせください。</p>
+          <p class="recruit-notice-note">※ 今年度は、春のメンバー募集は行わない可能性があります。</p>
+        </div>
         <p class="recruit-hero-doc">
           <a class="doc-link doc-link--on-dark" href="/docs/kiyaku_2_8.pdf" target="_blank" rel="noopener noreferrer">
             メンバー規約（PDF）
@@ -36,8 +58,8 @@ import PageLayout from '../layouts/PageLayout.astro';
         <p>高知のよさこい祭りに出たい！こいや祭りに出たい！地元のお祭りで踊りたい！体を動かしながら新しい趣味をはじめてみたい！などなど、理由は様々ですが私達と一緒に踊りませんか？</p>
         <ul>
           <li><strong>年齢構成：</strong>年齢制限なし。5歳から60代まで幅広い踊り子がいます。中高生以下の参加については一度ご相談ください</li>
-          <li><strong>活動場所：</strong>大阪 / 東海（各地にメンバーがいます）</li>
-          <li><strong>年間登録費（踊り子）：</strong>20,000円（高校生・学生は15,000円 / 小中学生は10,000円）</li>
+          <li><strong>主な練習場所：</strong>大阪 / 東海 / 東京（メンバーは全国各地にいます）</li>
+          <li><strong>年間登録費（踊り子）：</strong>20,000円（高校生以上の学生15,000円 / 高校生未満10,000円）</li>
         </ul>
       </div>
 
@@ -66,7 +88,7 @@ import PageLayout from '../layouts/PageLayout.astro';
         </div>
         <div class="faq-item">
           <dt class="faq-q">練習はどのくらいの頻度ですか？</dt>
-          <dd class="faq-a">主に週1〜2回（大阪・東海それぞれ）です。シーズン（春〜夏）は増えることもあります。</dd>
+          <dd class="faq-a">主に週1〜2回です。大阪での練習開催が多くあります。</dd>
         </div>
         <div class="faq-item">
           <dt class="faq-q">大阪在住ではないのですが参加できますか？</dt>
@@ -78,7 +100,7 @@ import PageLayout from '../layouts/PageLayout.astro';
         </div>
         <div class="faq-item">
           <dt class="faq-q">どんな祭りに出ますか？</dt>
-          <dd class="faq-a">高知のよさこい祭り、こいや祭り、各地の地方大会など、年間を通じて複数の祭りに出演しています。</dd>
+          <dd class="faq-a">高知のよさこい祭り、こいや祭り、全国各地のお祭りなど、年間を通じて複数の祭りに出演しています。</dd>
         </div>
       </dl>
     </section>
@@ -205,18 +227,145 @@ import PageLayout from '../layouts/PageLayout.astro';
     color: #ffffff;
   }
 
-  .recruit-closed-notice {
+  /* 募集の案内：ヒーロー内の白いパネル */
+  .recruit-notice {
     position: relative;
     z-index: 1;
-    margin: 1.25rem 0 0;
-    padding: 0.65rem 1.25rem;
-    background: rgba(212, 168, 75, 0.2);
-    border: 1px solid rgba(212, 168, 75, 0.5);
-    border-radius: 4px;
+    max-width: 40rem;
+    margin: 1.75rem auto 0;
+    padding: 1.6rem 1.5rem;
+    border-radius: 8px;
+    background: #ffffff;
+    color: var(--color-ink, #1a1f2e);
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+  }
+
+  .recruit-notice-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem 0.75rem;
+  }
+
+  .recruit-notice-badge {
+    padding: 0.2rem 0.75rem;
+    border-radius: 999px;
+    background: var(--color-deep, #1b3f8b);
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+
+  .recruit-notice-title {
+    margin: 0;
+    font-family: 'Noto Serif JP', serif;
+    font-size: clamp(1.05rem, 0.95rem + 0.6vw, 1.25rem);
+    font-weight: 700;
+    color: var(--color-deep, #1b3f8b);
+    line-height: 1.5;
+  }
+
+  .recruit-notice-period {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.9rem;
+    margin: 0;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    background: rgba(110, 198, 240, 0.12);
+  }
+
+  .recruit-notice-period dt {
     font-size: 0.8125rem;
-    color: var(--color-gold, #D4A84B);
-    letter-spacing: 0.04em;
-    line-height: 1.6;
+    font-weight: 700;
+    color: rgba(26, 31, 46, 0.7);
+  }
+
+  .recruit-notice-period dd {
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.75rem;
+  }
+
+  .recruit-notice-period-date {
+    font-size: 1.125rem;
+    font-weight: 700;
+  }
+
+  .recruit-notice-period-note {
+    font-size: 0.75rem;
+    color: rgba(26, 31, 46, 0.7);
+  }
+
+  .recruit-trial {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .recruit-trial-heading {
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--color-deep, #1b3f8b);
+  }
+
+  .recruit-trial-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.6rem;
+  }
+
+  @media (max-width: 560px) {
+    .recruit-trial-list {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .recruit-trial-list li {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.75rem 0.9rem;
+    border: 1px solid rgba(27, 63, 139, 0.18);
+    border-radius: 6px;
+  }
+
+  .recruit-trial-area {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: rgba(26, 31, 46, 0.7);
+  }
+
+  .recruit-trial-date {
+    font-size: 1.0625rem;
+    font-weight: 700;
+  }
+
+  .recruit-notice-text,
+  .recruit-notice-note {
+    margin: 0;
+    line-height: 1.8;
+  }
+
+  .recruit-notice-text {
+    font-size: 0.9375rem;
+  }
+
+  .recruit-notice-note {
+    font-size: 0.8125rem;
+    color: rgba(26, 31, 46, 0.7);
   }
 
   .recruit-hero-doc {
