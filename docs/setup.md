@@ -15,7 +15,7 @@ pitwu-web の開発に新しく加わる人向け。上から順に進めれば�
 | microCMS の **GET 権限のみの API キー**とサービスドメイン | ✅ | ローカルでビルド・表示するため（記事データを取得する） |
 | microCMS 管理画面のアカウント | 記事を触るなら | 記事の作成・編集 |
 | Cloudflare アカウントへの招待 | デプロイ・設定を触るなら | ダッシュボードの閲覧、Pages の環境変数、ロールバック |
-| ステージングの閲覧許可（Cloudflare Access） | ステージング構築後 | `staging.pitwu-web.pages.dev` を開くため |
+| IT班の共有アカウントのログイン情報 | ✅ | `staging.pitwu-web.pages.dev` を開くため（Google ログインで鍵がかかっている） |
 | Google Calendar API キー / サービスアカウント | カレンダーを触るなら | `/schedule/` の表示確認、`scripts/gcal.ts` |
 
 > 鍵類は Slack 等に平文で貼らず、1Password などの共有保管庫から受け取る。
@@ -139,7 +139,7 @@ gitGraph
 1. `staging` から作業ブランチを切る: `git switch staging && git pull && git switch -c feature/xxx`
    - 名前の例: `feature/calendar-ui`, `fix/contact-form`, `docs/setup`
 2. push して **`staging` 宛て**に PR を出す → レビュー → マージ
-3. 数分後、https://staging.pitwu-web.pages.dev で確認
+3. 数分後、https://staging.pitwu-web.pages.dev で確認（Google のログイン画面が出るので、IT班の共有アカウントでログインする）
 4. 問題なければ **`staging` → `main`** の PR を出してマージ → 本番に出る
 
 | やること | 宛先 |
