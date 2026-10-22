@@ -3,7 +3,7 @@
 pitwu.com（夢源風人 公式サイト）がどこで動き、どう反映されるかの全体図。
 ローカル開発の始め方は [`setup.md`](setup.md) を参照。
 
-> 最終確認日: 2026-10-22（Cloudflare API・GitHub・実URLで確認した実態に基づく）
+> 最終確認日: 2026-10-23（Cloudflare API・GitHub・実URLで確認した実態に基づく）
 
 ---
 
@@ -12,7 +12,7 @@ pitwu.com（夢源風人 公式サイト）がどこで動き、どう反映さ�
 | 環境 | URL | 何が入るか | 誰が見るか | 状態 |
 |------|-----|-----------|-----------|------|
 | **本番 (Production)** | https://pitwu.com<br>https://pitwu-web.pages.dev | `main` ブランチ | 一般公開 | ✅ 稼働中 |
-| **ステージング (Preview)** | https://staging.pitwu-web.pages.dev | `staging` ブランチ | 開発メンバー・確認者 | ✅ 稼働中（2026-10-10〜。残作業は [§5](#5-ステージングの構築手順初回のみ管理者) の進捗表） |
+| **ステージング (Preview)** | https://staging.pitwu-web.pages.dev | `staging` ブランチ | IT班の共有アカウントでログインした人（Cloudflare Access） | ✅ 稼働中（2026-10-10〜。残作業は [§5](#5-ステージングの構築手順初回のみ管理者) の進捗表） |
 | **個別デプロイURL** | `https://<id>.pitwu-web.pages.dev` | デプロイ1回ごとの固定スナップショット | 確認・ロールバック用 | ✅ 自動発行 |
 | **ローカル** | http://localhost:4321 | 手元の作業ツリー | 自分 | [`setup.md`](setup.md) |
 
@@ -37,7 +37,7 @@ flowchart LR
   end
 
   subgraph CF["Cloudflare（アカウント共通）"]
-    acc{{"Cloudflare Access<br/>コラボレーターのみ<br/>（予定 #19）"}}
+    acc{{"Cloudflare Access<br/>IT班の共有アカウントのみ<br/>（Google ログイン）"}}
     subgraph Pages["Pages プロジェクト: pitwu-web（Direct Upload）"]
       prod["Production 環境<br/>pitwu.com"]
       prev["Preview 環境<br/>staging.pitwu-web.pages.dev<br/>noindex"]
@@ -203,7 +203,7 @@ URL は Cloudflare ダッシュボードで確認する（このリポジトリ�
 | 2. `staging` ブランチ作成 | ✅ |
 | 3. 問い合わせを本番から切り離す | ✅ Preview の `CONTACT_*` を削除済み（本番に届かない）。⏳ ステージング用 Apps Script を作って入れれば送信テストも可能になる |
 | 4. カレンダー API キー | ⏳ キーの発行待ち（本番も未設定） |
-| 5. ステージングに鍵をかける | ⏳ Cloudflare Zero Trust の有効化待ち |
+| 5. ステージングに鍵をかける | ✅ 2026-10-23（IT班の共有アカウントで Google ログイン） |
 | 6. `main` の保護 | ⏳ ルールセット設定待ち |
 
 Cloudflare と GitHub の管理権限がある人が1回だけ行う。
@@ -275,15 +275,25 @@ curl -s https://staging.pitwu-web.pages.dev/api/calendar | head -c 200
 # {"error":"API key not configured",...} が出なければOK
 ```
 
-### 手順5. ステージングに鍵をかける（推奨）
+### 手順5. ステージングに鍵をかける
 
-ステージングには未公開の変更が出るので、Cloudflare Access で開発メンバーだけに絞る。
+ステージングには未公開の変更が出るので、Cloudflare Access で IT班の共有アカウント（`pitwu.com` の Google アカウント）だけに絞る。
+開発者は個人のアカウントではなく、共有アカウントでログインしてステージングを見る（2026-10-23 設定済み）。
 
-1. Pages → `pitwu-web` → Settings → General → **Access policy** を有効化
-   （Preview デプロイ全体＝`*.pitwu-web.pages.dev` に Access がかかる）
-2. Zero Trust → Access → Applications で、許可するメールアドレス（開発メンバー）を設定
+1. **Google のログインを用意する**
+   - Google Cloud に専用プロジェクトを作る（pitwu-app のプロジェクトは使わない。同意画面の設定を変えると pitwu-app のログインに影響する）
+   - Google Auth Platform で、対象を **内部**（`pitwu.com` のアカウントだけ）にする
+   - クライアント（ウェブ アプリケーション）を作り、生成元に `https://<チーム名>.cloudflareaccess.com`、
+     リダイレクト URI に `https://<チーム名>.cloudflareaccess.com/cdn-cgi/access/callback` を入れる
+2. **Zero Trust に Google を追加**：インテグレーション → ID プロバイダー → Google に、1 のクライアント ID とシークレットを入れて「テスト」
+3. **鍵をかける**：Workers & Pages → `pitwu-web` → 設定 → 一般 → プレビュー アクセス →「プレビューを制限」
+   （`*.pitwu-web.pages.dev` 全体＝ステージングとデプロイごとの URL に Access がかかる）
+4. **通す人を決める**：作られたアプリのポリシーを「許可 / Include: メール = IT班の共有アカウント」だけにする。
+   自動で付く「Allow Members」（Cloudflare アカウントのメンバー）はアプリから外す
+5. **ログイン方法**：アプリの認証で「すべての ID プロバイダーを受け入れる」をオフにし、Google だけにする
 
-> 注: 鍵がかかるのは Preview 側だけ。本番は一般公開サイトなので認証は持たない（メンバー向けの内容は pitwu-app 側で扱う）。
+> 注: 鍵がかかるのは Preview 側だけ。本番（`pitwu.com`・`pitwu-web.pages.dev`）は一般公開サイトなので認証は持たない（メンバー向けの内容は pitwu-app 側で扱う）。
+> 通す人を変えるときは、Zero Trust → Access コントロール → アプリケーション → pitwu-web のポリシーを編集する。
 
 ### 手順6. `main` を保護する（推奨）
 
@@ -342,5 +352,5 @@ pitwu-app（非公開リポジトリ・ログインあり）に移管する。�
 
 - [x] pitwu-app へコピー（`migration/mitepitwu/`）
 - [ ] pitwu-app 側でログイン必須のページとして取り込む
-- [ ] 過去の個別デプロイURL（`https://<id>.pitwu-web.pages.dev/members/`）は古いスナップショットのまま配信され続ける。消すなら Cloudflare で古いデプロイを削除（ロールバック先も消える）
+- [x] 過去の個別デプロイURL（`https://<id>.pitwu-web.pages.dev/members/`）は古いスナップショットのまま残るが、2026-10-23 からステージングと同じ Cloudflare Access がかかり、外からは見えない（デプロイ自体を消すかは任意）
 - [ ] 検索エンジンに載っている分は、404 になれば順次消える。急ぐなら Google Search Console の「削除」で `/members/` 配下を申請
