@@ -27,12 +27,14 @@ pitwu-web の開発に新しく加わる人向け。上から順に進めれば�
 
 | ツール | バージョン | 確認コマンド |
 |--------|-----------|-------------|
-| Node.js | **22.12 以上**（CI は 22） | `node -v` |
+| Node.js | **22.23.4 以上 または 24.22.1 以上**（CI は 22 系の最新） | `node -v` |
 | npm | Node 同梱 | `npm -v` |
 | Git | 任意の最近の版 | `git --version` |
 | GitHub CLI（任意） | — | `gh --version` |
 
 Windows / macOS どちらでも動く。Node のバージョン管理は fnm・Volta・nvm など好みで。
+
+> Node のセキュリティリリース（例: 2026-10-21 の 22.23.4 / 24.22.1）が出たら、手元の Node も上げる。
 
 ---
 
@@ -171,7 +173,7 @@ gitGraph
 | 症状 | 原因と対処 |
 |------|-----------|
 | `microCMS env vars が未設定` | `.env` が無い・値が空。§3-1 |
-| `npm ci` が失敗する | Node が古い。22.12 以上にする |
+| `npm ci` が失敗する | Node が古い。22.23.4 / 24.22.1 以上にする |
 | `/schedule/` に予定が出ない（ローカル） | `npm run dev` では Functions が動かない。§4-2 の方法で、`.dev.vars` に API キーを入れる |
 | 検索ページで何も出ない（ローカル） | 検索インデックスはビルド時に生成される。`npm run dev` では出ない。§4-2 |
 | push したのに反映されない | Actions のログを確認（`gh run list --workflow=deploy.yml`）。check/lint/test で落ちていることが多い。ビルド自体は1〜2分で終わる |

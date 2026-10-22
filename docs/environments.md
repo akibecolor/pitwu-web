@@ -3,7 +3,7 @@
 pitwu.com（夢源風人 公式サイト）がどこで動き、どう反映されるかの全体図。
 ローカル開発の始め方は [`setup.md`](setup.md) を参照。
 
-> 最終確認日: 2026-10-10（Cloudflare API・GitHub・実URLで確認した実態に基づく）
+> 最終確認日: 2026-10-22（Cloudflare API・GitHub・実URLで確認した実態に基づく）
 
 ---
 
@@ -79,6 +79,7 @@ flowchart LR
 
 - **サイト本体は完全静的（SSG）**。HTML はビルド時に microCMS から記事を取ってきて作る。
   ランタイムに動くのは Pages Functions（`functions/api/*`）の2本だけ。
+- **Node が動くのはビルド（GitHub Actions）と手元だけ**。本番の `/api/*` と Worker は Cloudflare のランタイム（workerd）で動き、Node の脆弱性の影響を受けない。CI は `check-latest: true` で毎回 22 系の最新を使う。
 - **Pages プロジェクトは Git 連携していない（Direct Upload）**。Cloudflare 側ではビルドせず、
   GitHub Actions がビルドした `dist/` を `wrangler pages deploy` で送り込む。
   Cloudflare ダッシュボードの「ビルド設定」は使われていない。
