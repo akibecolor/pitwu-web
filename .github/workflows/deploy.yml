@@ -26,6 +26,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+          # ランナーに入っている古い 22.x ではなく、毎回最新の 22.x（セキュリティ修正済み）を使う
+          check-latest: true
           cache: 'npm'
 
       - run: npm ci
