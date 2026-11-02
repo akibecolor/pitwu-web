@@ -23,15 +23,15 @@ import PageLayout from '../layouts/PageLayout.astro';
         </p>
         <div class="recruit-notice">
           <div class="recruit-notice-head">
-            <span class="recruit-notice-badge">募集予告</span>
-            <h3 class="recruit-notice-title">2027年度メンバー募集を11月1日から開始します</h3>
+            <span class="recruit-notice-badge">募集中</span>
+            <h3 class="recruit-notice-title">2027年度メンバー募集</h3>
           </div>
           <dl class="recruit-notice-period">
-            <dt>募集期間</dt>
+            <dt>体験会参加申込期間</dt>
             <dd>
-              <span class="recruit-notice-period-date">11月1日（日）〜 11月30日（月）</span>
-              <span class="recruit-notice-period-note">※ 開始日は予定です</span>
+              <span class="recruit-notice-period-date">〜 11月30日（月）まで</span>
             </dd>
+            <dd class="recruit-notice-period-note">※ 定員となった場合は11/30以前に参加申込終了となる場合がございます。ご了承ください。</dd>
           </dl>
           <div class="recruit-trial">
             <h4 class="recruit-trial-heading">体験会</h4>
@@ -41,7 +41,7 @@ import PageLayout from '../layouts/PageLayout.astro';
               <li><span class="recruit-trial-area">東京</span><span class="recruit-trial-date">12月20日（日）</span></li>
             </ul>
           </div>
-          <p class="recruit-notice-text">募集開始後、参加ご希望の方はフォームよりお問い合わせください。</p>
+          <p class="recruit-notice-text">参加ご希望の方はフォームよりお問い合わせください。</p>
           <p class="recruit-notice-note">※ 今年度は、春のメンバー募集は行わない可能性があります。</p>
         </div>
         <p class="recruit-hero-doc">
@@ -301,6 +301,7 @@ import PageLayout from '../layouts/PageLayout.astro';
   }
 
   .recruit-notice-period-note {
+    flex: 1 1 100%;
     font-size: 0.75rem;
     color: rgba(26, 31, 46, 0.7);
   }
