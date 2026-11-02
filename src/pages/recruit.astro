@@ -1,6 +1,8 @@
 ---
 // recruit.astro — メンバー募集（Join Us）
 import PageLayout from '../layouts/PageLayout.astro';
+
+const TRIAL_FORM_URL = 'https://forms.gle/aNjN2xrwRwG7FWNz6';
 ---
 
 <PageLayout
@@ -19,7 +21,7 @@ import PageLayout from '../layouts/PageLayout.astro';
           あなたの手が、みんなの笑顔と舞台をつくる——未経験でも、初心者でも、まずは気軽にどうぞ。
         </p>
         <p class="recruit-hero-sub">
-          お問い合わせは<a href="/contact/">フォーム</a>から。熱い季節を一緒に駆け抜けましょう。
+          参加のお申し込みは<a href={TRIAL_FORM_URL} target="_blank" rel="noopener noreferrer">体験会参加フォーム</a>から。熱い季節を一緒に駆け抜けましょう。
         </p>
         <div class="recruit-notice">
           <div class="recruit-notice-head">
@@ -41,7 +43,10 @@ import PageLayout from '../layouts/PageLayout.astro';
               <li><span class="recruit-trial-area">東京</span><span class="recruit-trial-date">12月20日（日）</span></li>
             </ul>
           </div>
-          <p class="recruit-notice-text">参加ご希望の方はフォームよりお問い合わせください。</p>
+          <div class="recruit-notice-apply">
+            <p class="recruit-notice-text">メンバーをご希望の方は、体験会へのお申し込みをお願いします。</p>
+            <a href={TRIAL_FORM_URL} class="cta-btn" target="_blank" rel="noopener noreferrer">体験会に申し込む</a>
+          </div>
           <p class="recruit-notice-note">※ 今年度は、春のメンバー募集は行わない可能性があります。</p>
         </div>
         <p class="recruit-hero-doc">
@@ -106,8 +111,8 @@ import PageLayout from '../layouts/PageLayout.astro';
     </section>
 
     <div class="cta-block">
-      <p>まずはお気軽にお問い合わせください</p>
-      <a href="/contact/" class="cta-btn">お問合せはこちら</a>
+      <p>まずは体験会にお申し込みください</p>
+      <a href={TRIAL_FORM_URL} class="cta-btn" target="_blank" rel="noopener noreferrer">体験会に申し込む</a>
     </div>
   </div>
 </PageLayout>
@@ -362,6 +367,24 @@ import PageLayout from '../layouts/PageLayout.astro';
 
   .recruit-notice-text {
     font-size: 0.9375rem;
+  }
+
+  .recruit-notice-apply {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.85rem;
+    text-align: center;
+  }
+
+  /* 白いパネルの上なので、ボタンの色を濃くする */
+  .recruit-notice-apply .cta-btn {
+    background-color: var(--color-deep, #1b3f8b);
+    color: #ffffff;
+  }
+
+  .recruit-notice-apply .cta-btn:hover {
+    background-color: #2a5298;
   }
 
   .recruit-notice-note {
