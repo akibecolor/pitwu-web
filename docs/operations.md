@@ -64,11 +64,11 @@ npx tsx scripts/gcal.ts
 
 ```astro
 <!-- recruit.astro 内 -->
-<a href="/docs/kiyaku_2_8.pdf" ...>メンバー規約（PDF）</a>
+<a href="/docs/kiyaku_2_9.pdf" ...>メンバー規約（PDF）</a>
 ```
 
 **PDF 更新手順:**
-1. 新しい PDF を `public/docs/` に置く（ファイル名に版番号を入れる: 例 `kiyaku_2_9.pdf`）
+1. 新しい PDF を `public/docs/` に置く（ファイル名に版番号を入れる: 例 `kiyaku_2_10.pdf`）
 2. `recruit.astro` の `href` を新しいファイル名に変更
 3. 古い PDF は削除する
 4. push
