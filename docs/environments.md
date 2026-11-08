@@ -3,7 +3,7 @@
 pitwu.com（夢源風人 公式サイト）がどこで動き、どう反映されるかの全体図。
 ローカル開発の始め方は [`setup.md`](setup.md) を参照。
 
-> 最終確認日: 2026-10-23（Cloudflare API・GitHub・実URLで確認した実態に基づく）
+> 最終確認日: 2026-11-09（カレンダーの参照先と `/api/calendar` の状態を確認。それ以外は 2026-10-23 に Cloudflare API・GitHub・実URLで確認した実態に基づく）
 
 ---
 
@@ -50,7 +50,7 @@ flowchart LR
 
   subgraph Ext["外部サービス"]
     cms["microCMS<br/>（記事）"]
-    gcal["Google Calendar API<br/>（キー未設定 #18）"]
+    gcal["Google Calendar API<br/>pitwu-app の外部公開カレンダーを読む<br/>（キー未設定 #18）"]
     gas["Apps Script<br/>contact.gs<br/>→ スプレッドシート / 事務局メール"]
   end
 
@@ -156,7 +156,7 @@ sequenceDiagram
 | `CLOUDFLARE_API_TOKEN` | `.env`（任意） | ✅ | — | — | `wrangler pages deploy` |
 | `CLOUDFLARE_ACCOUNT_ID` | `.env`（任意） | ✅ | — | — | 同上 |
 | `GOOGLE_CALENDAR_API_KEY` | `.dev.vars` | — | ⚠️ **未設定** | 未設定 | `/api/calendar` |
-| `EVENT_CALENDAR_ID` / `PRACTICE_CALENDAR_ID` | `.dev.vars`（任意） | — | 未設定（既定値を使用） | 未設定 | カレンダーIDの上書き |
+| `EVENT_CALENDAR_ID` / `PRACTICE_CALENDAR_ID` | `.dev.vars`（任意） | — | 未設定（既定値を使用） | 未設定 | カレンダーIDの上書き。既定は pitwu-app の外部公開先（祭り・イベント `c_8c348…` / 練習 `slfifr2s…`）。普段は設定しない |
 | `CONTACT_ENDPOINT` | `.dev.vars`（任意） | — | ✅ | 未設定（ステージング用 Apps Script 待ち） | `/api/contact` の転送先 |
 | `CONTACT_SHARED_SECRET` | `.dev.vars`（任意） | — | ✅ (secret) | 未設定（同上） | 同上 |
 | `GOOGLE_SERVICE_ACCOUNT_EMAIL` / `GOOGLE_PRIVATE_KEY` | `.env` | — | — | — | `scripts/gcal.ts`（予定の読み書き。ローカル専用） |
@@ -267,13 +267,40 @@ curl -s https://staging.pitwu-web.pages.dev/api/contact
 
 ### 手順4. カレンダーの API キーを入れる
 
-Pages → Settings → Variables and Secrets で、**Production と Preview の両方**に
-`GOOGLE_CALENDAR_API_KEY`（Calendar API だけ許可した read-only キー）を追加し、再デプロイ。
+`/schedule/` は Pages Function `/api/calendar` が Google Calendar API で予定を読む。キーが無いと
+`{"error":"API key not configured","events":[]}` を返し、ページに予定が出ない。
+読むカレンダーは pitwu-app の外部公開先と同じ（既定値。`EVENT_CALENDAR_ID` / `PRACTICE_CALENDAR_ID` は設定しない）。
+
+**A. キーを作る（Google Cloud のプロジェクト管理者）**
+
+1. Google Cloud コンソールで対象プロジェクトを選び、「API とサービス → ライブラリ」で **Google Calendar API** を有効にする
+2. 「API とサービス → 認証情報 → 認証情報を作成 → API キー」でキーを作る。名前は `pitwu-web calendar (read-only)` など用途が分かるものにする
+3. キーの「API の制限」で **Google Calendar API だけ**を許可する
+4. 「アプリケーションの制限」は **なし** にする（Cloudflare のサーバーから呼ぶため、HTTP リファラーや IP では絞れない）
+5. キーの値は Cloudflare 管理者に安全な方法で渡す（チャット・issue・コミットに書かない）
+
+公開カレンダーを読むだけのキーなので書き込みはできない。ただし利用枠を使われないよう、3 の制限は必ずかける。
+
+**B. キーを入れる（Cloudflare 管理者）**
+
+1. Cloudflare ダッシュボード → **Workers & Pages** → `pitwu-web` → **Settings（設定）** → **Variables and Secrets（変数とシークレット）**
+2. まず **Preview** に `GOOGLE_CALENDAR_API_KEY` を **Secret（暗号化）** で追加して保存
+3. 環境変数は次のデプロイから効くので、ステージングを再デプロイする（GitHub → Actions → `deploy.yml` → Run workflow で `staging` を選ぶ。または `staging` への次の push を待つ）
+4. ステージングを確認する（下の curl。ステージングは Cloudflare Access の内側なので、IT班の共有アカウントでログインしたブラウザで `/api/calendar` と `/schedule/` を開いてもよい）
+5. 問題なければ **Production** にも同じ名前で追加し、本番を再デプロイする（Actions の `deploy.yml` を `main` で実行。または `main` への次のマージを待つ）
+6. 本番を確認する（下の curl）。確認できたら §5 進捗表の「4」と §6 の既知の問題「2」を更新する
 
 ```bash
 curl -s https://staging.pitwu-web.pages.dev/api/calendar | head -c 200
-# {"error":"API key not configured",...} が出なければOK
+curl -s https://pitwu.com/api/calendar | head -c 200
+# {"error":"API key not configured",...} が出ず、"events":[{...}] が返ればOK
 ```
+
+うまくいかないとき:
+
+- `calendar … fetch failed: 403` → Calendar API が有効になっていない、またはキーの API 制限が違う
+- `calendar … fetch failed: 404` → カレンダーが公開されていない、または ID の誤り
+- 変数を入れたのに `API key not configured` のまま → 再デプロイしていない、または Preview / Production を取り違えている
 
 ### 手順5. ステージングに鍵をかける
 
@@ -317,6 +344,7 @@ GitHub → Settings → Branches で `main` にルールを追加:
 | 2 | **本番に `GOOGLE_CALENDAR_API_KEY` が未設定** | `/api/calendar` が `API key not configured` を返し、`/schedule/` に予定が出ない | §5 手順4 |
 | 3 | **`www.pitwu.com` が 522** | www 付きでアクセスした人にエラー画面 | Pages の Custom domains に `www.pitwu.com` を追加、または apex へのリダイレクトルールを設定 |
 | 4 | ~~Preview の `CONTACT_*` が本番と同じ~~ | — | 解消（2026-10-10、Preview から削除） |
+| 5 | ~~トップ「直近のイベント」と `/schedule/` の既定が旧カレンダー `80s4qcc8…`~~ | アプリで外部公開した予定がサイトに出ない（旧カレンダーは 2026-05 から更新なし） | 解消（2026-11、参照先を pitwu-app の外部公開先 `c_8c348…` に変更） |
 
 ---
 

@@ -37,8 +37,8 @@
 | `MICROCMS_SERVICE_DOMAIN` | microCMS のサービスドメイン (例: `pitwu`) |
 | `MICROCMS_API_KEY` | Content API キー（GET権限のみで可） |
 | `GOOGLE_CALENDAR_API_KEY` | スケジュールページ用。Calendar API を有効化した **read-only API キー**。`functions/api/calendar.ts`（Pages Function）がサーバー側で公開カレンダーを取得するのに使う（ブラウザには出ない） |
-| `EVENT_CALENDAR_ID` | （任意）祭り・イベントカレンダーIDの上書き。未設定なら既定 `80s4qcc8…`。将来 pitwu-app 公開先 `c_8c348…` に寄せる等、コード変更なしで切替できる |
-| `PRACTICE_CALENDAR_ID` | （任意）練習カレンダーIDの上書き。未設定なら既定 `slfifr2s…` |
+| `EVENT_CALENDAR_ID` | （任意）祭り・イベントカレンダーIDの上書き。未設定なら既定 `c_8c348…`（pitwu-app の外部公開先と同じ）。普段は設定しない |
+| `PRACTICE_CALENDAR_ID` | （任意）練習カレンダーIDの上書き。未設定なら既定 `slfifr2s…`（pitwu-app の外部公開先と同じ）。普段は設定しない |
 | `NODE_VERSION` | `22` |
 
 5. **Save and Deploy** をクリック
