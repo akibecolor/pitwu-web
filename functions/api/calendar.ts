@@ -6,7 +6,13 @@
 //
 // 正規化ロジックは src/lib/calendar.ts に集約（ユニットテスト済み）。ここは取得＋整形の薄いラッパ。
 // ※ wrangler/esbuild がバンドルする。tsconfig からは除外（astro check / biome の対象外）。
-import { normalizeEvents, type CalendarKind, type RawGCalEvent } from '../../src/lib/calendar';
+import {
+  normalizeEvents,
+  previousMonthStart,
+  todayInTokyo,
+  type CalendarKind,
+  type RawGCalEvent,
+} from '../../src/lib/calendar';
 
 interface Env {
   GOOGLE_CALENDAR_API_KEY?: string;
@@ -42,10 +48,9 @@ export const onRequestGet = async (context: { env: Env }): Promise<Response> => 
   // キー未設定でも 500 で真っ白にせず、ページ側がフォールバック表示できるよう 200 + error。
   if (!apiKey) return json({ error: 'API key not configured', events: [] });
 
-  // 直近の実績も少し見せるため timeMin は約1ヶ月前から。
-  const since = new Date();
-  since.setMonth(since.getMonth() - 1);
-  const timeMin = since.toISOString();
+  // /schedule/ で前の月を丸ごと見せるため、timeMin は前の月の1日 0:00（日本時間）から。
+  // 「今から1か月前」だと前の月の前半が欠け、予定が無いように見えていた。
+  const timeMin = `${previousMonthStart(todayInTokyo())}T00:00:00+09:00`;
 
   try {
     const collected: Array<{ raw: RawGCalEvent; kind: CalendarKind }> = [];

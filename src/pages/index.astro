@@ -266,7 +266,7 @@ const latestArticles = allArticles.slice(0, 6);
 </BaseLayout>
 
 <script>
-  import { upcomingEvents, weekdayOf, type CalendarEvent } from '../lib/calendar';
+  import { todayInTokyo, upcomingEvents, weekdayOf, type CalendarEvent } from '../lib/calendar';
 
   const WD = ['日', '月', '火', '水', '木', '金', '土'];
   const fmt = (ev: CalendarEvent): string => {
@@ -288,8 +288,10 @@ const latestArticles = allArticles.slice(0, 6);
     };
     try {
       const res = await fetch('/api/calendar');
-      const data = (await res.json()) as { events?: CalendarEvent[] };
-      const today = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Tokyo' }).format(new Date());
+      const data = (await res.json()) as { events?: CalendarEvent[]; error?: string };
+      // API は失敗しても 200 + error を返す。「予定なし」と取り違えないよう、/schedule/ と同じく失敗として出す
+      if (data.error) return empty('予定を読み込めませんでした。');
+      const today = todayInTokyo();
       // トップは祭り・イベントのみ3件。同じ日でもカードは分ける
       const list = upcomingEvents((data.events ?? []).filter((e) => e.kind === '祭り・イベント'), today, 3);
       if (!list.length) return empty('現在お知らせできる予定はありません。');

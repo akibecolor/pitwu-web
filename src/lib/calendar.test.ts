@@ -122,6 +122,8 @@ import {
   buildMonthWeeks,
   upcomingEvents,
   isPastEvent,
+  previousMonthStart,
+  todayInTokyo,
   type CalendarEvent,
 } from './calendar.js';
 
@@ -168,5 +170,17 @@ describe('upcomingEvents / isPastEvent', () => {
     const list = [ev('old', '2026-11-01'), ev('mid', '2026-11-09', '2026-11-12'), ev('x', '2026-11-15'), ev('y', '2026-11-15', '2026-11-15', '10:00'), ev('z', '2026-11-20')];
     expect(isPastEvent(list[0], '2026-11-11')).toBe(true);
     expect(upcomingEvents(list, '2026-11-11', 3).map((e) => e.id)).toEqual(['mid', 'x', 'y']);
+  });
+});
+
+describe('previousMonthStart / todayInTokyo', () => {
+  it('前の月の1日。1月なら前の年の12月', () => {
+    expect(previousMonthStart('2026-11-11')).toBe('2026-10-01');
+    expect(previousMonthStart('2026-03-31')).toBe('2026-02-01');
+    expect(previousMonthStart('2027-01-05')).toBe('2026-12-01');
+  });
+  it('日本時間で日付を出す（UTC では前の日でも、日本時間で日付が変わっていれば翌日）', () => {
+    expect(todayInTokyo(new Date('2026-10-31T15:30:00Z'))).toBe('2026-11-01');
+    expect(todayInTokyo(new Date('2026-10-31T14:59:59Z'))).toBe('2026-10-31');
   });
 });
