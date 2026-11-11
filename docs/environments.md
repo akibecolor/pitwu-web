@@ -3,7 +3,7 @@
 pitwu.com（夢源風人 公式サイト）がどこで動き、どう反映されるかの全体図。
 ローカル開発の始め方は [`setup.md`](setup.md) を参照。
 
-> 最終確認日: 2026-11-09（カレンダーの参照先と `/api/calendar` の状態を確認。それ以外は 2026-10-23 に Cloudflare API・GitHub・実URLで確認した実態に基づく）
+> 最終確認日: 2026-11-10（カレンダー API キーの設定と `/api/calendar` の応答を確認。それ以外は 2026-10-23 に Cloudflare API・GitHub・実URLで確認した実態に基づく）
 
 ---
 
@@ -50,7 +50,7 @@ flowchart LR
 
   subgraph Ext["外部サービス"]
     cms["microCMS<br/>（記事）"]
-    gcal["Google Calendar API<br/>pitwu-app の外部公開カレンダーを読む<br/>（キー未設定 #18）"]
+    gcal["Google Calendar API<br/>pitwu-app の外部公開カレンダーを読む"]
     gas["Apps Script<br/>contact.gs<br/>→ スプレッドシート / 事務局メール"]
   end
 
@@ -155,7 +155,7 @@ sequenceDiagram
 | `MICROCMS_API_KEY` | `.env` | ✅ | — | — | 同上（GET 権限のみのキー） |
 | `CLOUDFLARE_API_TOKEN` | `.env`（任意） | ✅ | — | — | `wrangler pages deploy` |
 | `CLOUDFLARE_ACCOUNT_ID` | `.env`（任意） | ✅ | — | — | 同上 |
-| `GOOGLE_CALENDAR_API_KEY` | `.dev.vars` | — | ⚠️ **未設定** | 未設定 | `/api/calendar` |
+| `GOOGLE_CALENDAR_API_KEY` | `.dev.vars` | — | ✅ (secret) | ✅ (secret) | `/api/calendar`。キーは `scripts/gcal.ts` のサービスアカウントと同じ Google Cloud プロジェクトにある（Calendar API のみに制限） |
 | `EVENT_CALENDAR_ID` / `PRACTICE_CALENDAR_ID` | `.dev.vars`（任意） | — | 未設定（既定値を使用） | 未設定 | カレンダーIDの上書き。既定は pitwu-app の外部公開先（祭り・イベント `c_8c348…` / 練習 `slfifr2s…`）。普段は設定しない |
 | `CONTACT_ENDPOINT` | `.dev.vars`（任意） | — | ✅ | 未設定（ステージング用 Apps Script 待ち） | `/api/contact` の転送先 |
 | `CONTACT_SHARED_SECRET` | `.dev.vars`（任意） | — | ✅ (secret) | 未設定（同上） | 同上 |
@@ -202,7 +202,7 @@ URL は Cloudflare ダッシュボードで確認する（このリポジトリ�
 | 1. `deploy.yml` を staging 対応 | ✅ PR #16 |
 | 2. `staging` ブランチ作成 | ✅ |
 | 3. 問い合わせを本番から切り離す | ✅ Preview の `CONTACT_*` を削除済み（本番に届かない）。⏳ ステージング用 Apps Script を作って入れれば送信テストも可能になる |
-| 4. カレンダー API キー | ⏳ キーの発行待ち（本番も未設定） |
+| 4. カレンダー API キー | ✅ 2026-11-10（Preview → Production の順に設定） |
 | 5. ステージングに鍵をかける | ✅ 2026-10-23（IT班の共有アカウントで Google ログイン） |
 | 6. `main` の保護 | ⏳ ルールセット設定待ち |
 
@@ -341,7 +341,7 @@ GitHub → Settings → Branches で `main` にルールを追加:
 | # | 問題 | 影響 | 対応 |
 |---|------|------|------|
 | 1 | **`/members/*`（会報「みてぴとぅ」含む）が認証なしで公開されていた** | 誰でも閲覧でき、サイトマップにも載っていた | pitwu-app へ移管する方針。サイトとリポジトリからは削除済み（2026-10、`chore/isolate-members`）。残作業は §8 |
-| 2 | **本番に `GOOGLE_CALENDAR_API_KEY` が未設定** | `/api/calendar` が `API key not configured` を返し、`/schedule/` に予定が出ない | §5 手順4 |
+| 2 | ~~本番に `GOOGLE_CALENDAR_API_KEY` が未設定~~ | `/api/calendar` が `API key not configured` を返し、`/schedule/` に予定が出ない | 解消（2026-11-10、Production / Preview に設定。§5 手順4） |
 | 3 | **`www.pitwu.com` が 522** | www 付きでアクセスした人にエラー画面 | Pages の Custom domains に `www.pitwu.com` を追加、または apex へのリダイレクトルールを設定 |
 | 4 | ~~Preview の `CONTACT_*` が本番と同じ~~ | — | 解消（2026-10-10、Preview から削除） |
 | 5 | ~~トップ「直近のイベント」と `/schedule/` の既定が旧カレンダー `80s4qcc8…`~~ | アプリで外部公開した予定がサイトに出ない（旧カレンダーは 2026-05 から更新なし） | 解消（2026-11、参照先を pitwu-app の外部公開先 `c_8c348…` に変更） |
