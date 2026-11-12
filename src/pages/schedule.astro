@@ -4,153 +4,227 @@ import PageLayout from '../layouts/PageLayout.astro';
 
 <PageLayout
   title="スケジュール | 夢源風人"
-  description="夢源風人の出演・練習会などのスケジュール。祭りの出演予定から日常の練習会まで、活動予定をカレンダーで確認できます。"
+  description="夢源風人が出演する祭り・イベントの予定。月ごとのカレンダーで確認できます。"
   pageTitle="スケジュール"
   pageSubtitle="Schedule"
 >
   <div class="schedule-wrap">
-    <div class="schedule-notice">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="notice-icon">
-        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-      </svg>
-      <span>
-        練習場所・時間は天候その他の事情により変更する場合があります。
-        見学希望の方は事前に<a href="/contact/">お問合せよりご連絡</a>ください。
-      </span>
-    </div>
+    <p class="schedule-lead">夢源風人が出演する祭り・イベントの予定です。予定は変更になる場合があります。</p>
 
     <div class="calendar-card">
-      <div class="calendar-header">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-        </svg>
-        <span>活動カレンダー</span>
+      <div class="cal-nav">
+        <button type="button" class="nav-btn" id="cal-prev" aria-label="前の月">◀<span class="nav-txt"> 前の月</span></button>
+        <h2 id="cal-label" class="cal-label" aria-live="polite"></h2>
+        <button type="button" class="nav-btn" id="cal-next" aria-label="次の月"><span class="nav-txt">次の月 </span>▶</button>
       </div>
-
-      <div class="calendar-legend" aria-hidden="true">
-        <span class="legend-item"><span class="legend-dot legend-dot--event"></span>祭り・イベント</span>
-        <span class="legend-item"><span class="legend-dot legend-dot--practice"></span>練習</span>
+      <div class="cal-week" aria-hidden="true">
+        <span class="sun">日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span class="sat">土</span>
       </div>
-
-      <div class="calendar-body">
-        <div id="calendar" class="calendar-list" aria-live="polite">
-          <p class="cal-loading">予定を読み込んでいます…</p>
-        </div>
-      </div>
+      <div id="cal-grid" class="cal-grid" aria-hidden="true"></div>
     </div>
 
+    <section class="month-list" aria-labelledby="list-heading">
+      <h3 id="list-heading" class="list-heading"></h3>
+      <div id="cal-list" aria-live="polite">
+        <p class="cal-empty">予定を読み込んでいます…</p>
+      </div>
+    </section>
+
     <p class="schedule-footer">
-      ご不明な点は<a href="/contact/">お問合せ</a>ください。
+      出演のご依頼・ご不明な点は<a href="/contact/">お問合せ</a>ください。
     </p>
   </div>
 </PageLayout>
 
 <script>
-  interface CalEvent {
-    id: string;
-    title: string;
-    kind: '祭り・イベント' | '練習';
-    isAllDay: boolean;
-    startDate: string;
-    endInclusive: string;
-    startTime: string | null;
-    location: string | null;
-    recurring: boolean;
-    htmlLink: string | null;
-  }
+  import {
+    buildMonthWeeks,
+    isPastEvent,
+    japaneseHolidays,
+    previousMonthStart,
+    todayInTokyo,
+    weekdayOf,
+    ymd,
+    type CalendarEvent,
+  } from '../lib/calendar';
 
   const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
+  const today = todayInTokyo();
+  // /api/calendar が返すのは前の月の1日から。それより前の月は予定が無いように見えるので戻れなくする
+  const earliest = previousMonthStart(today);
+  let year = Number(today.slice(0, 4));
+  let month = Number(today.slice(5, 7));
+  let events: CalendarEvent[] = [];
+  let loaded = false;
+  let failed = false;
+  const holidayCache = new Map<number, Set<string>>();
 
-  function formatDay(dateStr: string): string {
-    const [y, m, d] = dateStr.split('-').map(Number);
-    const wd = WEEKDAYS[new Date(y, m - 1, d).getDay()];
-    return `${m}月${d}日(${wd})`;
+  const isHoliday = (d: string): boolean => {
+    const y = Number(d.slice(0, 4));
+    if (!holidayCache.has(y)) holidayCache.set(y, japaneseHolidays(y));
+    return holidayCache.get(y)?.has(d) ?? false;
+  };
+  const dayClass = (d: string): string =>
+    weekdayOf(d) === 0 || isHoliday(d) ? 'sun' : weekdayOf(d) === 6 ? 'sat' : '';
+
+  const el = <K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: string) => {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text !== undefined) e.textContent = text;
+    return e;
+  };
+
+  function inMonth(ev: CalendarEvent): boolean {
+    const first = `${year}-${String(month).padStart(2, '0')}-01`;
+    const last = `${year}-${String(month).padStart(2, '0')}-31`;
+    return ev.startDate <= last && ev.endInclusive >= first;
   }
 
-  function formatWhen(ev: CalEvent): string {
-    if (ev.startDate !== ev.endInclusive) {
-      const [, sm, sd] = ev.startDate.split('-').map(Number);
-      const [, em, ed] = ev.endInclusive.split('-').map(Number);
-      return sm === em ? `${sm}月${sd}–${ed}日` : `${sm}/${sd}–${em}/${ed}`;
+  function renderGrid(): void {
+    const grid = document.getElementById('cal-grid');
+    if (!grid) return;
+    const frag = document.createDocumentFragment();
+    for (const wk of buildMonthWeeks(year, month, events.filter(inMonth))) {
+      const row = el('div', 'cal-row');
+      row.style.setProperty('--lanes', String(Math.max(wk.laneCount, 2)));
+      wk.days.forEach((d, c) => {
+        const cell = el('div', 'cal-cell');
+        cell.style.gridColumn = String(c + 1);
+        if (d) {
+          if (d < today) cell.classList.add('is-past');
+          if (d === today) cell.classList.add('is-today');
+          const num = el('span', `cal-day ${dayClass(d)}`, String(Number(d.slice(8))));
+          num.style.gridColumn = String(c + 1);
+          row.append(cell, num);
+        } else {
+          cell.classList.add('is-blank');
+          row.append(cell);
+        }
+      });
+      for (const sg of wk.segments) {
+        const ev = sg.event;
+        const label = (sg.head ? '' : '◀ ') + ev.title + (sg.tail ? '' : ' ▶');
+        const bar = el('span', 'cal-bar', label);
+        bar.title = ev.title;
+        if (sg.multi) bar.classList.add('is-multi');
+        if (sg.multi && !sg.head) bar.classList.add('cont-l');
+        if (sg.multi && !sg.tail) bar.classList.add('cont-r');
+        if (isPastEvent(ev, today)) bar.classList.add('is-past');
+        bar.style.gridColumn = `${sg.col + 1} / span ${sg.span}`;
+        bar.style.gridRow = String(sg.lane + 2);
+        row.append(bar);
+      }
+      frag.append(row);
     }
-    const day = formatDay(ev.startDate);
-    return ev.startTime ? `${day} ${ev.startTime}` : day;
+    grid.replaceChildren(frag);
   }
 
-  function monthLabel(key: string): string {
-    const [y, m] = key.split('-');
-    return `${y}年${Number(m)}月`;
-  }
-
-  function buildItem(ev: CalEvent): HTMLLIElement {
-    const li = document.createElement('li');
-    li.className = `cal-item kind-${ev.kind === '練習' ? 'practice' : 'event'}`;
-
-    const when = document.createElement('span');
-    when.className = 'cal-when';
-    when.textContent = formatWhen(ev);
-    li.appendChild(when);
-
-    const body = document.createElement('div');
-    body.className = 'cal-body';
-
-    const title = document.createElement('span');
-    title.className = 'cal-title';
-    title.textContent = ev.recurring ? `${ev.title} ↻` : ev.title;
-    body.appendChild(title);
-
-    if (ev.location) {
-      const loc = document.createElement('span');
-      loc.className = 'cal-loc';
-      loc.textContent = ev.location;
-      body.appendChild(loc);
+  function whenLabel(ev: CalendarEvent): { date: string; wd: string; cls: string } {
+    const [, sm, sd] = ev.startDate.split('-').map(Number);
+    if (ev.startDate === ev.endInclusive) {
+      return { date: `${sm}/${sd}`, wd: WEEKDAYS[weekdayOf(ev.startDate)], cls: dayClass(ev.startDate) };
     }
-    li.appendChild(body);
+    const [, em, ed] = ev.endInclusive.split('-').map(Number);
+    return {
+      date: sm === em ? `${sm}/${sd}〜${ed}` : `${sm}/${sd}〜${em}/${ed}`,
+      wd: `${WEEKDAYS[weekdayOf(ev.startDate)]}〜${WEEKDAYS[weekdayOf(ev.endInclusive)]}`,
+      cls: '',
+    };
+  }
+
+  function buildRow(ev: CalendarEvent): HTMLLIElement {
+    const li = el('li', 'list-row');
+    if (isPastEvent(ev, today)) li.classList.add('is-past');
+    const w = whenLabel(ev);
+    const blk = el('div', 'list-when');
+    blk.append(el('span', 'list-date', w.date), el('span', `list-wd ${w.cls}`, w.wd));
+    const body = el('div', 'list-body');
+    body.append(el('span', 'list-title', ev.title));
+    const meta = [ev.startTime, ev.location].filter(Boolean).join('　');
+    if (meta) body.append(el('span', 'list-meta', meta));
+    li.append(blk, body);
     return li;
   }
 
-  async function render(): Promise<void> {
-    const root = document.getElementById('calendar');
-    if (!root) return;
-    try {
-      const res = await fetch('/api/calendar');
-      const data = (await res.json()) as { events?: CalEvent[]; error?: string };
-      const events = data.events ?? [];
-      if (data.error || events.length === 0) {
-        root.innerHTML = '<p class="cal-empty">現在表示できる予定はありません。</p>';
-        return;
-      }
-
-      const groups = new Map<string, CalEvent[]>();
-      for (const ev of events) {
-        const key = ev.startDate.slice(0, 7);
-        const list = groups.get(key) ?? [];
-        list.push(ev);
-        groups.set(key, list);
-      }
-
-      const frag = document.createDocumentFragment();
-      for (const [key, list] of groups) {
-        const section = document.createElement('section');
-        section.className = 'cal-month';
-        const h = document.createElement('h2');
-        h.className = 'cal-month-title';
-        h.textContent = monthLabel(key);
-        section.appendChild(h);
-        const ul = document.createElement('ul');
-        ul.className = 'cal-month-list';
-        for (const ev of list) ul.appendChild(buildItem(ev));
-        section.appendChild(ul);
-        frag.appendChild(section);
-      }
-      root.replaceChildren(frag);
-    } catch {
-      root.innerHTML =
-        '<p class="cal-empty">予定の読み込みに失敗しました。時間をおいて再度お試しください。</p>';
+  function renderList(): void {
+    const heading = document.getElementById('list-heading');
+    const root = document.getElementById('cal-list');
+    if (!heading || !root) return;
+    heading.textContent = `${month}月の予定`;
+    if (!loaded) return;
+    if (failed) {
+      root.innerHTML = '<p class="cal-empty">予定の読み込みに失敗しました。時間をおいて再度お試しください。</p>';
+      return;
     }
+    const list = events.filter(inMonth);
+    if (!list.length) {
+      root.innerHTML = '<p class="cal-empty">この月の予定はありません。</p>';
+      return;
+    }
+    const past = list.filter((e) => isPastEvent(e, today));
+    const rest = list.filter((e) => !isPastEvent(e, today));
+    const frag = document.createDocumentFragment();
+    if (past.length) {
+      const pastUl = el('ul', 'list past-list');
+      pastUl.id = 'past-list';
+      pastUl.hidden = true;
+      for (const e of past) pastUl.append(buildRow(e));
+      const btn = el('button', 'fold', `終了した予定（${past.length}件）を見る ▼`);
+      btn.setAttribute('type', 'button');
+      btn.setAttribute('aria-expanded', 'false');
+      btn.setAttribute('aria-controls', 'past-list');
+      btn.addEventListener('click', () => {
+        const open = pastUl.hidden;
+        pastUl.hidden = !open;
+        btn.setAttribute('aria-expanded', String(open));
+        btn.textContent = open ? `終了した予定（${past.length}件）を閉じる ▲` : `終了した予定（${past.length}件）を見る ▼`;
+      });
+      frag.append(btn, pastUl);
+    }
+    if (rest.length) {
+      const ul = el('ul', 'list');
+      for (const e of rest) ul.append(buildRow(e));
+      frag.append(ul);
+    } else {
+      frag.append(el('p', 'cal-empty', 'この月のこれからの予定はありません。'));
+    }
+    root.replaceChildren(frag);
   }
 
+  function render(): void {
+    const label = document.getElementById('cal-label');
+    if (label) label.textContent = `${year}年${month}月`;
+    const prev = document.getElementById('cal-prev') as HTMLButtonElement | null;
+    if (prev) prev.disabled = ymd(year, month, 1) <= earliest;
+    renderGrid();
+    renderList();
+  }
+
+  function shift(n: number): void {
+    if (n < 0 && ymd(year, month, 1) <= earliest) return;
+    month += n;
+    if (month < 1) { month = 12; year--; }
+    if (month > 12) { month = 1; year++; }
+    render();
+  }
+
+  document.getElementById('cal-prev')?.addEventListener('click', () => shift(-1));
+  document.getElementById('cal-next')?.addEventListener('click', () => shift(1));
+
   render();
+  (async () => {
+    try {
+      const res = await fetch('/api/calendar');
+      const data = (await res.json()) as { events?: CalendarEvent[]; error?: string };
+      if (data.error) failed = true;
+      // /schedule/ は外部公開の「祭り・イベント」だけ（練習は出さない）
+      events = (data.events ?? []).filter((e) => e.kind === '祭り・イベント');
+    } catch {
+      failed = true;
+    }
+    loaded = true;
+    render();
+  })();
 </script>
 
 <style>
@@ -160,98 +234,155 @@ import PageLayout from '../layouts/PageLayout.astro';
     gap: 1.5rem;
   }
 
-  .schedule-notice {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.625rem;
-    background: var(--color-base, #F0F6FF);
-    border-left: 4px solid var(--color-sky, #6EC6F0);
-    padding: 0.875rem 1.25rem;
-    border-radius: 0 6px 6px 0;
-    font-size: 0.9rem;
+  .schedule-lead {
+    font-size: 0.95rem;
     line-height: 1.8;
     color: rgba(26, 31, 46, 0.75);
-  }
-
-  .notice-icon {
-    flex-shrink: 0;
-    margin-top: 0.2rem;
-    color: var(--color-sky, #6EC6F0);
-  }
-
-  .schedule-notice a {
-    color: var(--color-deep, #1B3F8B);
-    text-decoration: underline;
   }
 
   .calendar-card {
     background: #ffffff;
     border-radius: 12px;
     box-shadow: 0 4px 20px rgba(27, 63, 139, 0.1);
-    overflow: hidden;
     border: 1px solid rgba(27, 63, 139, 0.08);
+    padding: 1rem;
   }
 
-  .calendar-header {
+  .cal-nav {
     display: flex;
     align-items: center;
-    gap: 0.625rem;
-    padding: 1rem 1.25rem;
-    background: var(--color-deep, #1B3F8B);
-    color: #ffffff;
-    font-family: 'Noto Sans JP', sans-serif;
-    font-size: 0.9rem;
-    font-weight: 600;
-    letter-spacing: 0.05em;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
   }
 
-  .calendar-legend {
-    display: flex;
-    gap: 1.25rem;
-    padding: 0.75rem 1.25rem;
-    border-bottom: 1px solid rgba(27, 63, 139, 0.08);
-    font-size: 0.8rem;
-    color: rgba(26, 31, 46, 0.7);
+  .cal-label {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--color-deep, #1B3F8B);
   }
 
-  .legend-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
+  .nav-btn {
+    border: 1px solid rgba(27, 63, 139, 0.25);
+    background: #ffffff;
+    color: var(--color-deep, #1B3F8B);
+    border-radius: 6px;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+    min-height: 2.25rem;
   }
 
-  .legend-dot {
-    width: 0.7rem;
-    height: 0.7rem;
-    border-radius: 50%;
-    display: inline-block;
+  .nav-btn:hover:not(:disabled) {
+    background: var(--color-base, #F0F6FF);
   }
 
-  .legend-dot--event {
-    background: #E8943A;
+  .nav-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
   }
 
-  .legend-dot--practice {
-    background: var(--color-sky, #6EC6F0);
+  .cal-week,
+  :global(.cal-row) {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    column-gap: 2px;
   }
 
-  .calendar-body {
-    padding: 1.25rem;
-  }
-
-  .cal-loading,
-  .cal-empty {
+  .cal-week {
+    font-size: 0.75rem;
     text-align: center;
-    color: rgba(26, 31, 46, 0.5);
-    padding: 2.5rem 0;
-    font-size: 0.95rem;
+    color: rgba(26, 31, 46, 0.6);
+    margin-bottom: 4px;
   }
 
-  .cal-month + .cal-month {
-    margin-top: 1.75rem;
+  .sun,
+  :global(.cal-day.sun),
+  :global(.list-wd.sun) {
+    color: #B42318;
   }
 
-  .cal-month-title {
+  .sat,
+  :global(.cal-day.sat),
+  :global(.list-wd.sat) {
+    color: #1F5FBF;
+  }
+
+  :global(.cal-row) {
+    grid-template-rows: 22px repeat(var(--lanes, 2), 20px) 6px;
+    row-gap: 2px;
+    margin-bottom: 2px;
+  }
+
+  :global(.cal-cell) {
+    grid-row: 1 / -1;
+    background: #FAFBFD;
+    border-radius: 6px;
+  }
+
+  :global(.cal-cell.is-blank) {
+    background: transparent;
+  }
+
+  :global(.cal-cell.is-past) {
+    background: #F4F5F7;
+  }
+
+  :global(.cal-cell.is-today) {
+    box-shadow: inset 0 0 0 2px var(--color-deep, #1B3F8B);
+  }
+
+  :global(.cal-day) {
+    grid-row: 1;
+    z-index: 1;
+    font-size: 0.75rem;
+    padding: 3px 0 0 5px;
+    color: #1A1F2E;
+  }
+
+  :global(.cal-bar) {
+    z-index: 1;
+    margin: 0 3px;
+    border-radius: 4px;
+    background: #FDE3C4;
+    color: #6E3A08;
+    font-size: 11px;
+    line-height: 20px;
+    padding: 0 4px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  :global(.cal-bar.is-multi) {
+    background: #E8943A;
+    color: #ffffff;
+    font-weight: 700;
+  }
+
+  :global(.cal-bar.cont-l) {
+    margin-left: -1px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+
+  :global(.cal-bar.cont-r) {
+    margin-right: -1px;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  :global(.cal-bar.is-past) {
+    background: #e4e6ea;
+    color: #555b6b;
+  }
+
+  :global(.cal-bar.is-multi.is-past) {
+    background: #b7bcc6;
+    color: #ffffff;
+  }
+
+  .list-heading {
     font-family: 'Noto Serif JP', serif;
     font-size: 1.05rem;
     font-weight: 700;
@@ -261,65 +392,113 @@ import PageLayout from '../layouts/PageLayout.astro';
     border-bottom: 1px solid rgba(110, 198, 240, 0.35);
   }
 
-  .cal-month-list {
+  :global(.month-list .list) {
     list-style: none;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    padding: 0;
   }
 
-  .cal-item {
+  :global(.month-list .list[hidden]) {
+    display: none;
+  }
+
+  :global(.past-list) {
+    margin-bottom: 0.5rem;
+  }
+
+  :global(.fold) {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: 1px dashed rgba(27, 63, 139, 0.25);
+    border-radius: 8px;
+    padding: 0.55rem 0.9rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+    color: rgba(26, 31, 46, 0.65);
+    cursor: pointer;
+  }
+
+  :global(.list-row) {
     display: flex;
     gap: 0.9rem;
     align-items: baseline;
     padding: 0.6rem 0.9rem;
     border-radius: 8px;
-    background: var(--color-base, #F0F6FF);
-    border-left: 4px solid var(--color-sky, #6EC6F0);
-  }
-
-  .cal-item.kind-event {
-    border-left-color: #E8943A;
     background: #FFF6EC;
+    border-left: 4px solid #E8943A;
   }
 
-  .cal-when {
+  :global(.list-row.is-past) {
+    background: #F4F5F7;
+    border-left-color: #b7bcc6;
+    color: #8a909c;
+  }
+
+  :global(.list-when) {
     flex-shrink: 0;
-    min-width: 8.5rem;
+    min-width: 7.5rem;
+    display: flex;
+    gap: 0.4rem;
     font-size: 0.85rem;
     font-weight: 600;
-    color: var(--color-deep, #1B3F8B);
-  }
-
-  .cal-item.kind-event .cal-when {
     color: #B96A18;
   }
 
-  .cal-body {
+  :global(.list-row.is-past .list-when),
+  :global(.list-row.is-past .list-wd) {
+    color: #8a909c;
+  }
+
+  :global(.list-body) {
     display: flex;
     flex-direction: column;
     gap: 0.15rem;
     min-width: 0;
   }
 
-  .cal-title {
+  :global(.list-title) {
     font-size: 0.95rem;
-    color: var(--color-ink, #1A1F2E);
     overflow-wrap: anywhere;
   }
 
-  .cal-loc {
+  :global(.list-meta) {
     font-size: 0.8rem;
     color: rgba(26, 31, 46, 0.55);
   }
 
+  .cal-empty,
+  :global(.cal-empty) {
+    text-align: center;
+    color: rgba(26, 31, 46, 0.5);
+    padding: 1.5rem 0;
+    font-size: 0.95rem;
+  }
+
   @media (max-width: 560px) {
-    .cal-item {
+    .calendar-card {
+      padding: 0.6rem;
+    }
+    .nav-txt {
+      display: none;
+    }
+    :global(.cal-row) {
+      grid-template-rows: 22px repeat(var(--lanes, 2), 15px) 6px;
+    }
+    :global(.cal-bar) {
+      font-size: 9px;
+      line-height: 15px;
+      padding: 0 2px;
+      margin: 0 1px;
+    }
+    :global(.list-row) {
       flex-direction: column;
       gap: 0.2rem;
     }
-
-    .cal-when {
+    :global(.list-when) {
       min-width: 0;
     }
   }

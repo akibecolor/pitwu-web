@@ -163,18 +163,9 @@ const latestArticles = allArticles.slice(0, 6);
         直近のイベント
       </h2>
 
-      <div class="calendar-card">
-        <iframe
-          loading="lazy"
-          title="夢源風人 活動カレンダー"
-          style="border: 0;"
-          src="https://www.google.com/calendar/embed?showTitle=0&showPrint=0&showTz=0&height=400&wkst=2&bgcolor=%231B3F8B&src=c_8c348a7de6ebcb3bde56362ea56d577f7d4ec9dcc67596b51dd1ddf1faffe020%40group.calendar.google.com&color=%236EC6F0&ctz=Asia%2FTokyo&mode=AGENDA"
-          width="100%"
-          height="400"
-          frameborder="0"
-          scrolling="no"
-        ></iframe>
-      </div>
+      <ul id="upcoming" class="upcoming" aria-live="polite">
+        <li class="upcoming-empty">予定を読み込んでいます…</li>
+      </ul>
 
       <div class="section-more">
         <a href="/schedule/" class="more-link more-link--light">スケジュール詳細を見る →</a>
@@ -273,6 +264,59 @@ const latestArticles = allArticles.slice(0, 6);
     </div>
   </section>
 </BaseLayout>
+
+<script>
+  import { todayInTokyo, upcomingEvents, weekdayOf, type CalendarEvent } from '../lib/calendar';
+
+  const WD = ['日', '月', '火', '水', '木', '金', '土'];
+  const fmt = (ev: CalendarEvent): string => {
+    const [, sm, sd] = ev.startDate.split('-').map(Number);
+    if (ev.startDate === ev.endInclusive) return `${sm}月${sd}日(${WD[weekdayOf(ev.startDate)]})`;
+    const [, em, ed] = ev.endInclusive.split('-').map(Number);
+    const end = sm === em ? `${ed}日` : `${em}月${ed}日`;
+    return `${sm}月${sd}日(${WD[weekdayOf(ev.startDate)]})〜${end}(${WD[weekdayOf(ev.endInclusive)]})`;
+  };
+
+  (async () => {
+    const root = document.getElementById('upcoming');
+    if (!root) return;
+    const empty = (msg: string) => {
+      const li = document.createElement('li');
+      li.className = 'upcoming-empty';
+      li.textContent = msg;
+      root.replaceChildren(li);
+    };
+    try {
+      const res = await fetch('/api/calendar');
+      const data = (await res.json()) as { events?: CalendarEvent[]; error?: string };
+      // API は失敗しても 200 + error を返す。「予定なし」と取り違えないよう、/schedule/ と同じく失敗として出す
+      if (data.error) return empty('予定を読み込めませんでした。');
+      const today = todayInTokyo();
+      // トップは祭り・イベントのみ3件。同じ日でもカードは分ける
+      const list = upcomingEvents((data.events ?? []).filter((e) => e.kind === '祭り・イベント'), today, 3);
+      if (!list.length) return empty('現在お知らせできる予定はありません。');
+      root.replaceChildren(
+        ...list.map((ev) => {
+          const li = document.createElement('li');
+          li.className = 'upcoming-card';
+          const add = (cls: string, text: string) => {
+            const s = document.createElement('span');
+            s.className = cls;
+            s.textContent = text;
+            li.append(s);
+          };
+          add('upcoming-date', fmt(ev));
+          add('upcoming-title', ev.title);
+          const meta = [ev.startTime, ev.location].filter(Boolean).join('　');
+          if (meta) add('upcoming-meta', meta);
+          return li;
+        })
+      );
+    } catch {
+      empty('予定を読み込めませんでした。');
+    }
+  })();
+</script>
 
 <style>
   /* ヒーロー */
@@ -797,15 +841,54 @@ const latestArticles = allArticles.slice(0, 6);
     color: #ffffff;
   }
 
-  .calendar-card {
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+  .upcoming {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
   }
 
-  .calendar-card iframe {
-    display: block;
-    width: 100%;
+  :global(.upcoming-card) {
+    background: #ffffff;
+    border-radius: 10px;
+    border-top: 4px solid #E8943A;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+    padding: 1rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-width: 0;
+  }
+
+  :global(.upcoming-date) {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #B96A18;
+  }
+
+  :global(.upcoming-title) {
+    font-size: 1rem;
+    color: var(--color-ink, #1A1F2E);
+    overflow-wrap: anywhere;
+  }
+
+  :global(.upcoming-meta) {
+    font-size: 0.8rem;
+    color: rgba(26, 31, 46, 0.6);
+  }
+
+  :global(.upcoming-empty) {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.8);
+    padding: 1.5rem 0;
+  }
+
+  @media (max-width: 768px) {
+    .upcoming {
+      grid-template-columns: 1fr;
+    }
   }
 
   .more-link--light {
