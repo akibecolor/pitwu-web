@@ -41,12 +41,17 @@ import PageLayout from '../layouts/PageLayout.astro';
     buildMonthWeeks,
     isPastEvent,
     japaneseHolidays,
+    previousMonthStart,
+    todayInTokyo,
     weekdayOf,
+    ymd,
     type CalendarEvent,
   } from '../lib/calendar';
 
   const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
-  const today = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Tokyo' }).format(new Date());
+  const today = todayInTokyo();
+  // /api/calendar が返すのは前の月の1日から。それより前の月は予定が無いように見えるので戻れなくする
+  const earliest = previousMonthStart(today);
   let year = Number(today.slice(0, 4));
   let month = Number(today.slice(5, 7));
   let events: CalendarEvent[] = [];
@@ -189,11 +194,14 @@ import PageLayout from '../layouts/PageLayout.astro';
   function render(): void {
     const label = document.getElementById('cal-label');
     if (label) label.textContent = `${year}年${month}月`;
+    const prev = document.getElementById('cal-prev') as HTMLButtonElement | null;
+    if (prev) prev.disabled = ymd(year, month, 1) <= earliest;
     renderGrid();
     renderList();
   }
 
   function shift(n: number): void {
+    if (n < 0 && ymd(year, month, 1) <= earliest) return;
     month += n;
     if (month < 1) { month = 12; year--; }
     if (month > 12) { month = 1; year++; }
@@ -265,8 +273,13 @@ import PageLayout from '../layouts/PageLayout.astro';
     min-height: 2.25rem;
   }
 
-  .nav-btn:hover {
+  .nav-btn:hover:not(:disabled) {
     background: var(--color-base, #F0F6FF);
+  }
+
+  .nav-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
   }
 
   .cal-week,

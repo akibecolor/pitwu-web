@@ -137,6 +137,21 @@ export function ymd(y: number, m: number, d: number): string {
   return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 }
 
+/** 日本時間の今日（'YYYY-MM-DD'）。 */
+export function todayInTokyo(now: Date = new Date()): string {
+  return new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Tokyo' }).format(now);
+}
+
+/**
+ * 前の月の1日（'YYYY-MM-01'）。/api/calendar はここから取得し、/schedule/ はここより前に戻れない。
+ * 取得範囲と表示できる月を揃えるため、両方がこの関数を使う。
+ */
+export function previousMonthStart(today: string): string {
+  const y = Number(today.slice(0, 4));
+  const m = Number(today.slice(5, 7));
+  return m === 1 ? ymd(y - 1, 12, 1) : ymd(y, m - 1, 1);
+}
+
 /** その日の曜日（0=日）。TZ に左右されないよう UTC で計算。 */
 export function weekdayOf(dateStr: string): number {
   const [y, m, d] = dateStr.split('-').map(Number);
